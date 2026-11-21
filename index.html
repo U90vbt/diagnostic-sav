@@ -10,6 +10,22 @@
   <title>DIAG·SAV — Assistant de diagnostic N1</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
+  <script>
+    // Adresse sans « / » final (…/diagnostic-sav) : les chemins relatifs ne fonctionneraient pas.
+    if (!/\/$|\.[a-z0-9]+$/i.test(location.pathname)) {
+      location.replace(location.pathname + '/' + location.search + location.hash);
+    }
+    // Filet de sécurité : si app.js ne démarre pas, on le dit au lieu de rester bloqué sur « Chargement… ».
+    setTimeout(function () {
+      if (window.DIAGSAV_STARTED) return;
+      var v = document.getElementById('view-loading');
+      if (v && !v.hidden) {
+        v.innerHTML = '<p><strong>L\'application n\'a pas pu démarrer.</strong></p>' +
+          '<p>Le fichier <code>app.js</code> est introuvable ou bloqué à l\'adresse ' +
+          new URL('app.js', document.baseURI).href + '.</p><p>Rechargez la page ; si le problème persiste, vérifiez le déploiement.</p>';
+      }
+    }, 8000);
+  </script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -57,8 +73,9 @@
       <div class="panel panel--alert">
         <header class="panel__head"><span class="panel__tag">ERREUR</span><span>Procédures indisponibles</span></header>
         <div class="panel__body">
-          <p id="error-message">Le fichier de procédures n'a pas pu être chargé.</p>
-          <p class="muted">Si vous avez ouvert <code>index.html</code> directement depuis le disque, lancez un serveur local (voir README) : les navigateurs bloquent la lecture de fichiers JSON en <code>file://</code>.</p>
+          <p id="error-message">Chargement impossible.</p>
+          <p id="error-hint" class="muted" hidden></p>
+          <pre id="error-detail" class="error-detail" hidden></pre>
           <button type="button" class="btn btn--primary" id="btn-retry">Réessayer</button>
         </div>
       </div>

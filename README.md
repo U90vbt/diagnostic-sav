@@ -209,6 +209,22 @@ Convention d'identifiants conseillée : `<préfixe>-q<n>` pour les questions et 
 
 ---
 
+## En cas d'erreur de chargement
+
+Si les procédures ne se chargent pas, l'écran d'erreur indique la cause, l'adresse exacte du fichier et le statut HTTP :
+
+| Message | Cause | Que faire |
+|---|---|---|
+| « n'a pas pu être chargé (HTTP 404) » | `data/decisions.json` absent à cette adresse | Vérifier que le fichier est bien dans `data/` sur la branche `main`, ou attendre la fin du déploiement Pages (1–2 min) |
+| « contient une erreur de syntaxe (ligne X, colonne Y) » | JSON mal formé | Corriger la ligne indiquée (virgule, guillemet) |
+| « a bien été chargé, mais son contenu ne peut pas être exploité » | Section `symptoms` ou `nodes` absente ou mal formée | Comparer avec le format ci-dessus |
+| « n'a pas pu être téléchargé » + mention `file://` | Page ouverte depuis le disque | Lancer un serveur local (voir plus haut) |
+| « L'application n'a pas pu démarrer » | `app.js` introuvable | Vérifier le déploiement |
+
+Le chemin du fichier est calculé à partir de `app.js`, et une adresse sans `/` final est automatiquement complétée.
+
+---
+
 ## Mode hors ligne
 
 Au premier chargement, `sw.js` met en cache tous les fichiers. Ensuite :

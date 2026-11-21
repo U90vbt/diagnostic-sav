@@ -9,7 +9,12 @@
 (() => {
   'use strict';
 
-  const DATA_URL = 'data/decisions.json';
+  /* Chemin du fichier de procédures, résolu par rapport à app.js (et non à l'adresse
+     de la page) : fonctionne même si l'URL est appelée sans « / » final
+     (ex. …/diagnostic-sav au lieu de …/diagnostic-sav/). */
+  const SCRIPT_URL = (document.currentScript && document.currentScript.src) || document.baseURI;
+  const DATA_PATH = 'data/decisions.json';
+  const DATA_URL = new URL(DATA_PATH, SCRIPT_URL).href;
   const RECENTS_KEY = 'diagsav.recents.v1';
   const RECENTS_MAX = 6;
 
@@ -162,22 +167,82 @@
   /* ---------------------------------------------------------------------
      Chargement & validation des données
      --------------------------------------------------------------------- */
+  /** Affiche l'écran d'erreur : un message clair + le détail technique (adresse, statut HTTP). */
+  function showLoadError(message, detail, hint) {
+    $('#error-message').textContent = message;
+    $('#error-detail').textContent = detail || '';
+    $('#error-detail').hidden = !detail;
+    $('#error-hint').textContent = hint || '';
+    $('#error-hint').hidden = !hint;
+    showView('error');
+  }
+
+  /** Numéro de ligne / colonne d'une erreur JSON, à partir de la position donnée par le navigateur. */
+  function jsonErrorPosition(text, err) {
+    const lc = /line (\d+) column (\d+)/i.exec(err.message);   // Chrome, Firefox
+    if (lc) return ' (ligne ' + lc[1] + ', colonne ' + lc[2] + ')';
+    const m = /position (\d+)/i.exec(err.message);
+    if (!m) return '';
+    const pos = Number(m[1]);
+    const before = text.slice(0, pos);
+    const line = before.split('\n').length;
+    const col = pos - before.lastIndexOf('\n');
+    return ' (ligne ' + line + ', colonne ' + col + ')';
+  }
+
   async function loadData() {
     showView('loading');
+    const fileHint = location.protocol === 'file:'
+      ? 'La page est ouverte depuis un fichier local (file://) : les navigateurs y bloquent la lecture du JSON. Lancez un petit serveur local (voir README) ou utilisez l\'adresse GitHub Pages.'
+      : '';
+
+    // 1. Téléchargement
+    let res;
     try {
-      const res = await fetch(DATA_URL, { cache: 'no-cache' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      ingest(data);
-      onRoute();
+      res = await fetch(DATA_URL, { cache: 'no-cache' });
     } catch (err) {
-      console.error('[DIAG·SAV] Chargement impossible :', err);
-      const msg = err instanceof SyntaxError
-        ? 'Le fichier data/decisions.json contient une erreur de syntaxe JSON : ' + err.message
-        : 'Le fichier de procédures n\'a pas pu être chargé (' + err.message + ').';
-      $('#error-message').textContent = msg;
-      showView('error');
+      console.error('[DIAG·SAV] Requête impossible :', DATA_URL, err);
+      return showLoadError(
+        'Le fichier de procédures n\'a pas pu être téléchargé.',
+        'Adresse : ' + DATA_URL + '\nErreur réseau : ' + (err && err.message || err),
+        fileHint || (!navigator.onLine
+          ? 'L\'appareil est hors ligne et les procédures ne sont pas encore en cache : ouvrez le site une fois avec du réseau.'
+          : 'Vérifiez la connexion, puis réessayez.'));
     }
+    if (!res.ok) {
+      console.error('[DIAG·SAV] Réponse HTTP', res.status, DATA_URL);
+      return showLoadError(
+        'Le fichier de procédures n\'a pas pu être chargé (HTTP ' + res.status + (res.statusText ? ' ' + res.statusText : '') + ').',
+        'Adresse : ' + DATA_URL + '\nStatut HTTP : ' + res.status + (res.statusText ? ' ' + res.statusText : ''),
+        res.status === 404
+          ? 'Le fichier est introuvable à cette adresse : vérifiez qu\'il est bien publié dans le dossier data/ du dépôt, ou attendez la fin du déploiement GitHub Pages (1 à 2 minutes).'
+          : 'Le serveur a refusé ou n\'a pas pu servir le fichier. Réessayez dans un instant.');
+    }
+
+    // 2. Lecture du JSON
+    let text, data;
+    try {
+      text = await res.text();
+      data = JSON.parse(text);
+    } catch (err) {
+      console.error('[DIAG·SAV] JSON invalide :', err);
+      return showLoadError(
+        'Le fichier data/decisions.json contient une erreur de syntaxe' + (text ? jsonErrorPosition(text, err) : '') + '.',
+        'Adresse : ' + DATA_URL + '\nStatut HTTP : ' + res.status + '\nDétail : ' + err.message,
+        'Cause fréquente : virgule en trop ou manquante, guillemet oublié. Vérifiez le fichier avec VS Code ou un validateur JSON.');
+    }
+
+    // 3. Traitement des données
+    try {
+      ingest(data);
+    } catch (err) {
+      console.error('[DIAG·SAV] Données inexploitables :', err);
+      return showLoadError(
+        'Le fichier de procédures a bien été chargé, mais son contenu ne peut pas être exploité.',
+        'Adresse : ' + DATA_URL + '\nStatut HTTP : ' + res.status + '\nDétail : ' + err.message,
+        'Une section obligatoire est peut-être absente ou mal formée (symptoms, nodes). Comparez avec le format décrit dans le README.');
+    }
+    onRoute();
   }
 
   /**
@@ -1107,6 +1172,7 @@
   /* ---------------------------------------------------------------------
      Démarrage
      --------------------------------------------------------------------- */
+  window.DIAGSAV_STARTED = true;
   bindEvents();
   registerServiceWorker();
   loadData();

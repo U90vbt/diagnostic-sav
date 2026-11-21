@@ -357,6 +357,11 @@ body.is-home .crumbs { display: none; }
 }
 .panel__body { padding: 18px clamp(20px, 3.5vw, 32px) clamp(22px, 3.5vw, 32px); }
 .panel--alert { max-width: 640px; margin: 12vh auto 0; }
+.error-detail {
+  margin: 0 0 18px; padding: 12px 14px; border-radius: var(--r-sm); background: var(--bg-deep);
+  font: .8rem/1.5 ui-monospace, Menlo, Consolas, monospace; color: var(--text-2);
+  white-space: pre-wrap; word-break: break-all;
+}
 .panel--alert .panel__tag { background: rgba(239, 91, 82, .15); color: var(--sev-high); }
 
 /* ---------- Diagnostic ---------- */
