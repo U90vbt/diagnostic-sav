@@ -1,0 +1,15 @@
+{
+  "name": "DIAG·SAV — Assistant de diagnostic N1",
+  "short_name": "DIAG·SAV",
+  "description": "Assistant de diagnostic de premier niveau pour techniciens terrain.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#171b20",
+  "theme_color": "#171b20",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

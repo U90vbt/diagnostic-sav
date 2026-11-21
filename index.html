@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#171b20">
+  <meta name="description" content="Assistant de diagnostic SAV de premier niveau — usage interne.">
+  <title>DIAG·SAV — Assistant de diagnostic N1</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#app">Aller au contenu</a>
+
+  <header class="topbar" role="banner">
+    <a class="brand" href="#/" aria-label="Accueil — DIAG SAV">
+      <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="29" height="29" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M6 18h5l2.5-7 4 12 3-9 1.5 4H26" fill="none" stroke="#a4d06f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand__text">
+        <span class="brand__name">DIAG<span class="brand__dot">·</span>SAV</span>
+        <span class="brand__sub">Assistant de diagnostic N1</span>
+      </span>
+    </a>
+
+    <div class="status" aria-label="État du système">
+      <span class="status__item" title="État de la connexion">
+        <span class="led" id="net-led" aria-hidden="true"></span>
+        <span id="net-label">EN LIGNE</span>
+      </span>
+      <span class="status__item status__item--data" title="Version des procédures">
+        DATA <span id="data-version">—</span>
+      </span>
+    </div>
+  </header>
+
+  <nav class="crumbs" aria-label="Fil d'Ariane">
+    <ol id="crumbs" class="crumbs__list"></ol>
+  </nav>
+
+  <main id="app" class="app" tabindex="-1">
+
+    <!-- Chargement -->
+    <section id="view-loading" class="view view--loading" aria-live="polite">
+      <div class="loader" aria-hidden="true"><span></span><span></span><span></span></div>
+      <p class="mono">CHARGEMENT DES PROCÉDURES…</p>
+    </section>
+
+    <!-- Erreur -->
+    <section id="view-error" class="view" hidden>
+      <div class="panel panel--alert">
+        <header class="panel__head"><span class="panel__tag">ERREUR</span><span>Procédures indisponibles</span></header>
+        <div class="panel__body">
+          <p id="error-message">Le fichier de procédures n'a pas pu être chargé.</p>
+          <p class="muted">Si vous avez ouvert <code>index.html</code> directement depuis le disque, lancez un serveur local (voir README) : les navigateurs bloquent la lecture de fichiers JSON en <code>file://</code>.</p>
+          <button type="button" class="btn btn--primary" id="btn-retry">Réessayer</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Accueil -->
+    <section id="view-home" class="view" hidden aria-labelledby="home-title">
+      <div class="hero">
+        <p class="eyebrow mono">MODULE 01 · IDENTIFICATION DU SYMPTÔME</p>
+        <h1 id="home-title" class="hero__title">Quel est le symptôme&nbsp;?</h1>
+
+        <form class="search" role="search" id="search-form" autocomplete="off">
+          <label for="search-input" class="visually-hidden">Rechercher un symptôme</label>
+          <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="search-input" class="search__input" type="search" inputmode="search"
+                 placeholder="ex. pas de son, écran noir, surchauffe…" aria-describedby="search-hint" enterkeyhint="search">
+          <kbd class="search__kbd" aria-hidden="true">/</kbd>
+        </form>
+        <p id="search-hint" class="search__hint">
+          Suggestions :
+          <button type="button" class="chip chip--ghost" data-suggest="pas de son">pas de son</button>
+          <button type="button" class="chip chip--ghost" data-suggest="écran noir">écran noir</button>
+          <button type="button" class="chip chip--ghost" data-suggest="surchauffe">surchauffe</button>
+          <button type="button" class="chip chip--ghost" data-suggest="dante">dante</button>
+        </p>
+      </div>
+
+      <div class="filters" role="group" aria-label="Filtrer par catégorie" id="filters"></div>
+
+      <div class="section-head">
+        <h2 class="section-title">Symptômes</h2>
+        <span class="mono muted" id="result-count" aria-live="polite"></span>
+      </div>
+      <ul class="grid" id="symptom-grid"></ul>
+      <p class="empty" id="empty-state" hidden>
+        Aucun symptôme ne correspond. Essayez un autre mot-clé ou contactez le N2.
+      </p>
+
+      <section class="recents" id="recents" hidden aria-labelledby="recents-title">
+        <div class="section-head">
+          <h2 class="section-title" id="recents-title">Diagnostics récents <span class="muted">(sur cet appareil)</span></h2>
+          <button type="button" class="btn btn--small btn--ghost" id="btn-clear-recents">Effacer</button>
+        </div>
+        <ul class="recents__list" id="recents-list"></ul>
+      </section>
+    </section>
+
+    <!-- Diagnostic -->
+    <section id="view-diag" class="view" hidden aria-labelledby="diag-symptom">
+      <div class="diag">
+        <div class="diag__main">
+          <div class="diag__header">
+            <p class="eyebrow mono" id="diag-category"></p>
+            <h1 class="diag__title" id="diag-symptom"></h1>
+            <div class="progress" id="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress__meta mono">
+                <span id="progress-step"></span>
+                <span id="progress-remaining"></span>
+              </div>
+              <div class="progress__track" id="progress-track"></div>
+            </div>
+          </div>
+
+          <div id="diag-stage" class="stage" aria-live="polite"></div>
+
+          <div class="diag__controls">
+            <button type="button" class="btn btn--ghost" id="btn-back">
+              <span aria-hidden="true">←</span> Étape précédente
+            </button>
+            <button type="button" class="btn btn--ghost" id="btn-restart">
+              <span aria-hidden="true">↺</span> Recommencer
+            </button>
+            <a class="btn btn--ghost" href="#/">
+              <span aria-hidden="true">⌂</span> Accueil
+            </a>
+          </div>
+        </div>
+
+        <aside class="diag__aside" aria-labelledby="journal-title">
+          <details class="journal" id="journal" open>
+            <summary class="journal__head">
+              <span class="panel__tag">LOG</span>
+              <span id="journal-title">Journal du diagnostic</span>
+              <span class="journal__count mono" id="journal-count">0</span>
+            </summary>
+            <ol class="journal__list" id="journal-list"></ol>
+            <p class="journal__empty muted" id="journal-empty">Les réponses apparaîtront ici.</p>
+          </details>
+          <p class="kbd-help muted">
+            Raccourcis : <kbd>1</kbd>–<kbd>9</kbd> répondre · <kbd>⌫</kbd> retour · <kbd>Échap</kbd> accueil
+          </p>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <span id="footer-disclaimer">Diagnostic de premier niveau — usage interne.</span>
+    <span class="footer__sep" aria-hidden="true">|</span>
+    <span>Aucune donnée collectée</span>
+    <span id="data-warnings" class="footer__warn" hidden></span>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <noscript>
+    <div class="noscript">JavaScript est nécessaire pour utiliser l'assistant de diagnostic.</div>
+  </noscript>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

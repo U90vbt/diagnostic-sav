@@ -1,0 +1,1435 @@
+{
+  "meta": {
+    "title": "Assistant de diagnostic SAV — Niveau 1",
+    "version": "1.0.0",
+    "updated": "2026-11-21",
+    "maintainer": "Équipe SAV",
+    "disclaimer": "Diagnostic de premier niveau. Toute intervention à l'intérieur d'un équipement sous tension est réservée au personnel habilité."
+  },
+
+  "severities": {
+    "low":      { "label": "Faible",  "description": "Intervention simple sur site, aucun risque pour le matériel ni les personnes." },
+    "moderate": { "label": "Modéré",  "description": "Intervention technique requise. Prévoir du temps ou un second avis." },
+    "high":     { "label": "Élevé",   "description": "Risque matériel ou sécurité. Mise hors service et escalade vers l'atelier / N2." }
+  },
+
+  "categories": [
+    { "id": "alimentation", "label": "Alimentation", "icon": "power" },
+    { "id": "audio",        "label": "Audio",        "icon": "audio" },
+    { "id": "video",        "label": "Vidéo",        "icon": "video" },
+    { "id": "reseau",       "label": "Réseau",       "icon": "network" },
+    { "id": "thermique",    "label": "Thermique",    "icon": "thermal" },
+    { "id": "stabilite",    "label": "Stabilité",    "icon": "stability" },
+    { "id": "peripherique", "label": "Périphériques","icon": "usb" },
+    { "id": "firmware",     "label": "Firmware",     "icon": "chip" }
+  ],
+
+  "symptoms": [
+    {
+      "id": "pas-alimentation",
+      "title": "L'appareil ne s'allume pas",
+      "category": "alimentation",
+      "summary": "Aucune mise sous tension, aucun voyant ou appareil qui reste en veille.",
+      "keywords": ["allume pas", "ne démarre pas", "pas de courant", "éteint", "mort", "aucun voyant", "led éteinte", "alimentation", "secteur", "fusible", "power"],
+      "start": "alim-q1"
+    },
+    {
+      "id": "redemarrages",
+      "title": "Redémarrages intempestifs",
+      "category": "alimentation",
+      "summary": "L'appareil s'éteint et redémarre seul, de façon aléatoire ou répétée.",
+      "keywords": ["reboot", "redémarre", "s'éteint", "coupure", "reset", "relance", "poe", "onduleur", "micro-coupure"],
+      "start": "reboot-q1"
+    },
+    {
+      "id": "pas-de-son",
+      "title": "Pas de son",
+      "category": "audio",
+      "summary": "Aucun son sur une zone, une sortie ou une enceinte.",
+      "keywords": ["pas de son", "aucun son", "muet", "silence", "mute", "enceinte", "haut-parleur", "ampli", "sortie audio", "dsp"],
+      "start": "audio-q1"
+    },
+    {
+      "id": "son-degrade",
+      "title": "Son saturé, ronflette ou craquements",
+      "category": "audio",
+      "summary": "Bourdonnement, distorsion, grésillements ou coupures audio.",
+      "keywords": ["saturé", "saturation", "distorsion", "ronflette", "buzz", "bourdonnement", "50 hz", "grésille", "craque", "souffle", "parasite", "masse", "clip"],
+      "start": "bruit-q1"
+    },
+    {
+      "id": "ecran-noir",
+      "title": "Écran noir / pas d'image",
+      "category": "video",
+      "summary": "L'afficheur ou le projecteur n'affiche aucune image.",
+      "keywords": ["écran noir", "pas d'image", "no signal", "pas de signal", "projecteur", "hdmi", "afficheur", "moniteur", "vidéoprojecteur", "edid", "hdcp"],
+      "start": "video-q1"
+    },
+    {
+      "id": "image-instable",
+      "title": "Image instable ou parasitée",
+      "category": "video",
+      "summary": "Coupures d'image, scintillement, pixels, couleurs erronées.",
+      "keywords": ["scintille", "clignote", "coupure image", "neige", "pixels", "artefacts", "couleurs", "rose", "vert", "décroche", "4k", "hdr"],
+      "start": "img-q1"
+    },
+    {
+      "id": "pas-reseau",
+      "title": "Appareil injoignable sur le réseau",
+      "category": "reseau",
+      "summary": "Pas de lien, pas d'adresse IP ou impossible de se connecter à l'appareil.",
+      "keywords": ["réseau", "ethernet", "injoignable", "ping", "ip", "dhcp", "lien", "link", "connexion", "switch", "rj45", "vlan", "169.254"],
+      "start": "net-q1"
+    },
+    {
+      "id": "latence-reseau",
+      "title": "Décrochages audio sur IP (Dante / AES67 / Q-LAN)",
+      "category": "reseau",
+      "summary": "Pertes de flux, clics, erreurs d'horloge sur un réseau audio.",
+      "keywords": ["dante", "aes67", "q-lan", "audio ip", "latence", "dropout", "décrochage", "clock", "horloge", "ptp", "multicast", "qos", "eee"],
+      "start": "lat-q1"
+    },
+    {
+      "id": "surchauffe",
+      "title": "Surchauffe",
+      "category": "thermique",
+      "summary": "Appareil très chaud, alarme température ou mise en protection thermique.",
+      "keywords": ["surchauffe", "chaud", "chauffe", "température", "ventilateur", "ventilo", "thermique", "protection", "rack", "poussière"],
+      "start": "th-q1"
+    },
+    {
+      "id": "gel-plantage",
+      "title": "Gel ou plantage",
+      "category": "stabilite",
+      "summary": "Interface figée, appareil qui ne répond plus, comportement erratique.",
+      "keywords": ["gel", "figé", "freeze", "plante", "bloqué", "ne répond plus", "crash", "bug", "lent", "erratique"],
+      "start": "gel-q1"
+    },
+    {
+      "id": "peripherique-non-detecte",
+      "title": "Périphérique non détecté",
+      "category": "peripherique",
+      "summary": "Caméra, micro, clé USB ou module déporté non reconnu.",
+      "keywords": ["non détecté", "pas reconnu", "usb", "caméra", "webcam", "micro", "périphérique", "hub", "extendeur", "i/o", "découverte"],
+      "start": "per-q1"
+    },
+    {
+      "id": "firmware-echec",
+      "title": "Échec de mise à jour firmware",
+      "category": "firmware",
+      "summary": "Mise à jour refusée, interrompue ou suivie d'un dysfonctionnement.",
+      "keywords": ["firmware", "mise à jour", "update", "upgrade", "flash", "brické", "bootloader", "recovery", "version"],
+      "start": "fw-q1"
+    },
+    {
+      "id": "firmware-incompatible",
+      "title": "Version firmware incompatible",
+      "category": "firmware",
+      "summary": "Le logiciel de configuration refuse l'appareil ou signale une version incompatible.",
+      "keywords": ["incompatible", "version", "compatibilité", "logiciel", "configurator", "designer", "refuse", "mismatch"],
+      "start": "comp-q1"
+    }
+  ],
+
+  "nodes": {
+
+    "alim-q1": {
+      "type": "question",
+      "text": "Un voyant (LED façade ou arrière) s'allume-t-il ?",
+      "help": "Observer l'appareil quelques secondes après la mise sous tension, y compris les LED de port réseau.",
+      "options": [
+        { "label": "Oui, un voyant est allumé ou clignote", "next": "alim-q4" },
+        { "label": "Non, aucun voyant", "next": "alim-q2" }
+      ]
+    },
+    "alim-q2": {
+      "type": "question",
+      "text": "La prise ou le bloc multiprise est-il alimenté ?",
+      "help": "Tester la prise avec un autre appareil connu bon ou un testeur de prise.",
+      "options": [
+        { "label": "Oui, la prise est alimentée", "next": "alim-q3" },
+        { "label": "Non, pas de courant", "next": "alim-r-secteur" }
+      ]
+    },
+    "alim-q3": {
+      "type": "question",
+      "text": "Le câble d'alimentation (ou le bloc externe) a-t-il été remplacé par un modèle identique connu bon ?",
+      "options": [
+        { "label": "Oui, toujours aucun voyant", "next": "alim-q5" },
+        { "label": "Non, pas encore testé", "next": "alim-r-cable" }
+      ]
+    },
+    "alim-q5": {
+      "type": "question",
+      "text": "L'appareil possède-t-il un interrupteur arrière ou un porte-fusible accessible sans ouvrir le capot ?",
+      "help": "Appareil débranché du secteur avant toute vérification du fusible.",
+      "options": [
+        { "label": "Fusible grillé constaté", "next": "alim-r-fusible" },
+        { "label": "Interrupteur sur ON et fusible OK", "next": "alim-r-psu" },
+        { "label": "Ni interrupteur ni fusible accessible", "next": "alim-r-psu" }
+      ]
+    },
+    "alim-q4": {
+      "type": "question",
+      "text": "Comment se comporte le voyant ?",
+      "options": [
+        { "label": "Orange ou rouge fixe (veille / défaut)", "next": "alim-r-veille" },
+        { "label": "Clignote en boucle sans jamais démarrer", "next": "alim-r-bootloop" },
+        { "label": "Vert / normal, mais pas d'image", "symptom": "ecran-noir" },
+        { "label": "Vert / normal, mais pas de son", "symptom": "pas-de-son" }
+      ]
+    },
+    "alim-r-secteur": {
+      "type": "result",
+      "severity": "low",
+      "title": "Défaut d'alimentation en amont",
+      "summary": "L'appareil n'est pas en cause : le courant n'arrive pas jusqu'à lui.",
+      "actions": [
+        "Vérifier le disjoncteur / différentiel du circuit et l'interrupteur du bloc multiprise.",
+        "Vérifier le séquenceur ou la PDU du rack (sortie activée, ordre de séquence).",
+        "Rebrancher l'appareil sur un circuit connu bon pour confirmer.",
+        "Signaler le circuit défaillant au responsable du site."
+      ]
+    },
+    "alim-r-cable": {
+      "type": "result",
+      "severity": "low",
+      "title": "Câble ou bloc d'alimentation suspect",
+      "summary": "Le cordon secteur ou le bloc externe est la cause la plus probable.",
+      "actions": [
+        "Remplacer le cordon ou le bloc par un modèle identique (même tension, même ampérage, même polarité).",
+        "Vérifier que le connecteur est bien verrouillé (IEC, powerCON, jack).",
+        "Si l'appareil démarre : étiqueter le câble défectueux et le retirer du stock."
+      ],
+      "warning": "Ne jamais utiliser un bloc externe de tension ou de polarité différente, même temporairement."
+    },
+    "alim-r-fusible": {
+      "type": "result",
+      "severity": "high",
+      "title": "Fusible grillé",
+      "summary": "Un fusible qui grille révèle souvent un défaut interne : il protège l'appareil.",
+      "actions": [
+        "Remplacer une seule fois par un fusible de calibre et type strictement identiques (valeur indiquée près du porte-fusible).",
+        "Si le fusible grille à nouveau : ne plus remettre sous tension.",
+        "Étiqueter l'appareil « HORS SERVICE » et l'envoyer à l'atelier.",
+        "Noter dans le ticket les conditions de la panne (orage, coupure, déplacement récent)."
+      ],
+      "warning": "Ne jamais installer un fusible de calibre supérieur ni ponter le porte-fusible.",
+      "escalate": "Atelier / N2 si le fusible grille une deuxième fois."
+    },
+    "alim-r-psu": {
+      "type": "result",
+      "severity": "high",
+      "title": "Défaillance probable de l'alimentation interne",
+      "summary": "Le courant arrive à l'appareil, mais celui-ci ne réagit pas.",
+      "actions": [
+        "Ne pas ouvrir l'appareil sur site.",
+        "Déployer un appareil de remplacement si disponible et recharger la configuration.",
+        "Étiqueter l'appareil « HORS SERVICE » avec la date et le symptôme.",
+        "Ouvrir un retour atelier avec numéro de série."
+      ],
+      "escalate": "Retour atelier systématique."
+    },
+    "alim-r-veille": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Appareil en veille ou en protection",
+      "summary": "L'appareil est alimenté mais ne quitte pas l'état de veille ou de défaut.",
+      "actions": [
+        "Effectuer un appui long (3 à 5 s) sur le bouton marche, ou réveiller l'appareil depuis le système de contrôle.",
+        "Si l'appareil est chaud : le laisser refroidir 15 minutes avant une nouvelle tentative.",
+        "Débrancher le secteur 30 secondes puis rebrancher.",
+        "Consulter le journal d'événements (interface web ou logiciel constructeur) pour identifier le code défaut."
+      ],
+      "related": ["surchauffe"]
+    },
+    "alim-r-bootloop": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Démarrage en boucle",
+      "summary": "L'appareil tente de démarrer sans y parvenir : firmware corrompu ou périphérique bloquant.",
+      "actions": [
+        "Couper l'alimentation 30 secondes.",
+        "Débrancher tous les périphériques (USB, cartes d'extension, réseau) puis redémarrer.",
+        "Si le démarrage aboutit : rebrancher les périphériques un par un pour isoler le fautif.",
+        "Si la boucle persiste : suivre la procédure de récupération firmware."
+      ],
+      "related": ["firmware-echec", "peripherique-non-detecte"]
+    },
+
+    "reboot-q1": {
+      "type": "question",
+      "text": "Les redémarrages coïncident-ils avec la mise en route d'autres équipements (éclairage, moteurs, climatisation) ?",
+      "options": [
+        { "label": "Oui, c'est simultané", "next": "reboot-r-secteur" },
+        { "label": "Non ou impossible à dire", "next": "reboot-q2" }
+      ]
+    },
+    "reboot-q2": {
+      "type": "question",
+      "text": "L'appareil est-il anormalement chaud ou mal ventilé ?",
+      "options": [
+        { "label": "Oui, il chauffe", "symptom": "surchauffe" },
+        { "label": "Non, température normale", "next": "reboot-q3" }
+      ]
+    },
+    "reboot-q3": {
+      "type": "question",
+      "text": "Comment l'appareil est-il alimenté ?",
+      "options": [
+        { "label": "Par le câble réseau (PoE)", "next": "reboot-r-poe" },
+        { "label": "Via un onduleur ou un bloc externe", "next": "reboot-r-bloc" },
+        { "label": "Directement sur le secteur", "next": "reboot-r-interne" }
+      ]
+    },
+    "reboot-r-secteur": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Chutes de tension sur le circuit",
+      "summary": "Les appels de courant d'autres équipements provoquent des micro-coupures.",
+      "actions": [
+        "Séparer l'audiovisuel des circuits éclairage / moteurs / climatisation.",
+        "Installer un onduleur ou un conditionneur secteur sur les équipements critiques.",
+        "Vérifier le séquenceur : l'audiovisuel doit démarrer après les gros consommateurs.",
+        "Faire contrôler la qualité du réseau électrique par l'électricien du site."
+      ]
+    },
+    "reboot-r-poe": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Alimentation PoE insuffisante",
+      "summary": "Le switch ne fournit pas assez de puissance ou la liaison est trop longue.",
+      "actions": [
+        "Vérifier la classe PoE requise (PoE / PoE+ / PoE++) et celle délivrée par le port.",
+        "Contrôler le budget PoE total du switch : la somme des appareils ne doit pas le dépasser.",
+        "Vérifier la longueur (100 m max) et la catégorie du câble (Cat5e minimum).",
+        "Tester sur un autre port ou avec un injecteur PoE dédié."
+      ]
+    },
+    "reboot-r-bloc": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Onduleur ou bloc externe défaillant",
+      "summary": "La source d'alimentation intermédiaire n'est plus stable.",
+      "actions": [
+        "Brancher temporairement l'appareil en direct sur le secteur pour comparer.",
+        "Vérifier l'état de la batterie de l'onduleur (voyant, autotest, date de remplacement).",
+        "Remplacer le bloc externe par un modèle identique connu bon."
+      ]
+    },
+    "reboot-r-interne": {
+      "type": "result",
+      "severity": "high",
+      "title": "Défaut interne probable",
+      "summary": "Alimentation stable et température normale : l'appareil lui-même est en cause.",
+      "actions": [
+        "Relever l'heure et la fréquence des redémarrages.",
+        "Exporter les journaux système avant tout retour.",
+        "Vérifier si une mise à jour corrige un problème connu de redémarrage.",
+        "Prévoir un appareil de remplacement et ouvrir un retour atelier."
+      ],
+      "escalate": "N2 avec journaux exportés.",
+      "related": ["gel-plantage", "firmware-incompatible"]
+    },
+
+    "audio-q1": {
+      "type": "question",
+      "text": "L'absence de son concerne :",
+      "options": [
+        { "label": "Toute la zone / toutes les sorties", "next": "audio-q2" },
+        { "label": "Un seul canal ou une seule enceinte", "next": "audio-q5" }
+      ]
+    },
+    "audio-q2": {
+      "type": "question",
+      "text": "Les vumètres d'entrée (DSP, console, processeur) montrent-ils du signal ?",
+      "help": "Consulter les indicateurs de niveau dans le logiciel de contrôle ou en façade.",
+      "options": [
+        { "label": "Oui, signal présent en entrée", "next": "audio-q3" },
+        { "label": "Non, aucun signal en entrée", "next": "audio-q4" }
+      ]
+    },
+    "audio-q4": {
+      "type": "question",
+      "text": "La source est-elle confirmée active (lecture en cours, volume source > 0, pas de mute) ?",
+      "options": [
+        { "label": "Oui, la source joue", "next": "audio-r-entree" },
+        { "label": "Non ou pas sûr", "next": "audio-r-source" }
+      ]
+    },
+    "audio-q3": {
+      "type": "question",
+      "text": "Les vumètres de sortie montrent-ils du signal ?",
+      "options": [
+        { "label": "Oui, signal présent en sortie", "next": "audio-q6" },
+        { "label": "Non, rien en sortie", "next": "audio-r-dsp" }
+      ]
+    },
+    "audio-q6": {
+      "type": "question",
+      "text": "État des amplificateurs :",
+      "options": [
+        { "label": "Sous tension, aucun voyant de défaut", "next": "audio-r-liaison" },
+        { "label": "Voyant PROTECT / FAULT allumé", "next": "audio-r-ampli" },
+        { "label": "Amplificateur éteint", "symptom": "pas-alimentation" }
+      ]
+    },
+    "audio-q5": {
+      "type": "question",
+      "text": "En permutant l'enceinte (ou son câble) avec un canal qui fonctionne, le défaut :",
+      "options": [
+        { "label": "Suit l'enceinte", "next": "audio-r-hp" },
+        { "label": "Reste sur le même canal", "next": "audio-r-canal" }
+      ]
+    },
+    "audio-r-source": {
+      "type": "result",
+      "severity": "low",
+      "title": "Source inactive ou en sourdine",
+      "summary": "Aucun signal n'est émis par la source.",
+      "actions": [
+        "Vérifier que la lecture est lancée et que le volume de la source n'est pas à zéro.",
+        "Vérifier la sortie audio sélectionnée sur la source (PC : périphérique de lecture par défaut).",
+        "Tester avec une autre source connue bonne."
+      ]
+    },
+    "audio-r-entree": {
+      "type": "result",
+      "severity": "low",
+      "title": "Problème de liaison ou d'entrée",
+      "summary": "La source joue mais le signal n'arrive pas au processeur.",
+      "actions": [
+        "Vérifier l'entrée sélectionnée sur le processeur / la console.",
+        "Contrôler le câble entre la source et l'entrée (remplacer par un câble connu bon).",
+        "Vérifier le gain d'entrée et, pour un micro statique, l'alimentation fantôme 48 V.",
+        "Pour une entrée numérique (Dante, USB) : vérifier l'abonnement du flux."
+      ]
+    },
+    "audio-r-dsp": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Mute ou routage DSP",
+      "summary": "Le signal entre dans le processeur mais n'en ressort pas.",
+      "actions": [
+        "Rechercher un mute actif (global, zone, sortie) dans l'interface de contrôle.",
+        "Vérifier que le bon preset / snapshot est chargé.",
+        "Vérifier le routage de la matrice et les niveaux des faders de sortie.",
+        "Ne pas modifier le fichier de conception sans validation : noter l'état avant toute action."
+      ],
+      "escalate": "N2 si une modification du design est nécessaire."
+    },
+    "audio-r-liaison": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Liaison amplificateur → enceintes",
+      "summary": "L'ampli fonctionne mais le signal n'atteint pas les haut-parleurs.",
+      "actions": [
+        "Contrôler les connecteurs (speakON, borniers) côté ampli et côté enceinte.",
+        "Tester la continuité du câble HP, ampli hors tension.",
+        "Mesurer l'impédance de la ligne et la comparer à la valeur attendue.",
+        "Sur une ligne 100 V : vérifier les prises de transformateur des enceintes."
+      ]
+    },
+    "audio-r-ampli": {
+      "type": "result",
+      "severity": "high",
+      "title": "Amplificateur en protection",
+      "summary": "Court-circuit, impédance trop basse ou surchauffe de l'ampli.",
+      "actions": [
+        "Mettre l'ampli hors tension et attendre qu'il refroidisse.",
+        "Débrancher les sorties HP et redémarrer : si la protection disparaît, le défaut est côté ligne.",
+        "Mesurer l'impédance de chaque ligne : rechercher un court-circuit ou une charge trop basse.",
+        "Ne pas réarmer la protection en boucle."
+      ],
+      "warning": "Des réarmements répétés sur un court-circuit peuvent détruire l'étage de sortie.",
+      "escalate": "Atelier si la protection persiste ampli à vide.",
+      "related": ["surchauffe"]
+    },
+    "audio-r-hp": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Enceinte défectueuse",
+      "summary": "Le défaut suit l'enceinte : haut-parleur ou filtre endommagé.",
+      "actions": [
+        "Mesurer l'impédance de l'enceinte (circuit ouvert = bobine coupée).",
+        "Remplacer l'enceinte par une unité de secours.",
+        "Étiqueter l'enceinte et l'envoyer à l'atelier."
+      ]
+    },
+    "audio-r-canal": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Canal d'amplification ou de sortie défaillant",
+      "summary": "Le défaut reste sur le canal : ampli, carte de sortie ou réglage DSP.",
+      "actions": [
+        "Vérifier le mute et le niveau de ce canal dans le DSP.",
+        "Basculer temporairement l'enceinte sur un canal de secours.",
+        "Signaler le canal défaillant avec le numéro de série de l'ampli."
+      ],
+      "escalate": "Atelier si le canal est muet sans réglage en cause."
+    },
+
+    "bruit-q1": {
+      "type": "question",
+      "text": "Quel type de défaut entendez-vous ?",
+      "options": [
+        { "label": "Ronflette grave / bourdonnement continu", "next": "bruit-q2" },
+        { "label": "Distorsion ou saturation à fort niveau", "next": "bruit-q3" },
+        { "label": "Craquements ou coupures intermittentes", "next": "bruit-q4" }
+      ]
+    },
+    "bruit-q2": {
+      "type": "question",
+      "text": "Le bruit disparaît-il en débranchant la liaison audio entre deux équipements alimentés sur des prises différentes ?",
+      "options": [
+        { "label": "Oui, il disparaît", "next": "bruit-r-masse" },
+        { "label": "Non, il persiste", "next": "bruit-r-blindage" }
+      ]
+    },
+    "bruit-q3": {
+      "type": "question",
+      "text": "Les indicateurs de clip ou de limiteur s'allument-ils ?",
+      "options": [
+        { "label": "Oui, en entrée", "next": "bruit-r-gain-entree" },
+        { "label": "Oui, en sortie ou sur l'ampli", "next": "bruit-r-gain-sortie" },
+        { "label": "Non, aucun indicateur", "next": "bruit-r-hp" }
+      ]
+    },
+    "bruit-q4": {
+      "type": "question",
+      "text": "Les craquements varient-ils quand on manipule les câbles ou les connecteurs ?",
+      "options": [
+        { "label": "Oui", "next": "bruit-r-connectique" },
+        { "label": "Non", "next": "bruit-q5" }
+      ]
+    },
+    "bruit-q5": {
+      "type": "question",
+      "text": "Le système utilise-t-il de l'audio sur IP (Dante, AES67, Q-LAN) ?",
+      "options": [
+        { "label": "Oui", "symptom": "latence-reseau" },
+        { "label": "Non (analogique, AES3, MADI)", "next": "bruit-r-horloge" }
+      ]
+    },
+    "bruit-r-masse": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Boucle de masse",
+      "summary": "Deux équipements reliés n'ont pas le même potentiel de terre.",
+      "actions": [
+        "Alimenter les équipements reliés depuis le même circuit / la même PDU.",
+        "Utiliser des liaisons symétriques (XLR, jack TRS) plutôt qu'asymétriques (RCA).",
+        "Insérer un isolateur galvanique ou une DI avec ground lift sur la liaison audio."
+      ],
+      "warning": "Ne jamais supprimer la terre du cordon secteur pour éliminer une ronflette : danger d'électrocution."
+    },
+    "bruit-r-blindage": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Rayonnement ou blindage défaillant",
+      "summary": "Le bruit est capté par le câblage ou provient d'une source interne.",
+      "actions": [
+        "Éloigner les câbles audio des câbles secteur, variateurs et alimentations à découpage.",
+        "Croiser les câbles audio et secteur à 90° plutôt qu'en parallèle.",
+        "Vérifier le blindage des câbles (reprise de masse aux connecteurs).",
+        "Couper les sources une à une pour identifier l'origine."
+      ]
+    },
+    "bruit-r-gain-entree": {
+      "type": "result",
+      "severity": "low",
+      "title": "Gain d'entrée trop élevé",
+      "summary": "Le signal sature dès l'entrée du processeur.",
+      "actions": [
+        "Réduire le gain d'entrée jusqu'à extinction de l'indicateur de clip en crête.",
+        "Vérifier le niveau de sortie de la source (niveau ligne vs niveau micro).",
+        "Activer le pad d'atténuation si disponible."
+      ]
+    },
+    "bruit-r-gain-sortie": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Saturation en sortie / amplification",
+      "summary": "La structure de gain est mal répartie entre processeur et amplis.",
+      "actions": [
+        "Réduire le niveau de sortie du DSP plutôt que de pousser les amplis.",
+        "Vérifier la sensibilité d'entrée de l'ampli et ses atténuateurs.",
+        "Contrôler les réglages du limiteur de protection.",
+        "Faire valider la structure de gain par le N2 si les réglages sont verrouillés."
+      ]
+    },
+    "bruit-r-hp": {
+      "type": "result",
+      "severity": "high",
+      "title": "Haut-parleur probablement endommagé",
+      "summary": "Distorsion sans saturation électronique : défaut mécanique probable.",
+      "actions": [
+        "Baisser immédiatement le niveau pour éviter d'aggraver le défaut.",
+        "Identifier l'enceinte en cause en écoutant de près ou en coupant les canaux un à un.",
+        "Remplacer par une enceinte de secours et envoyer l'unité à l'atelier."
+      ],
+      "escalate": "Atelier."
+    },
+    "bruit-r-connectique": {
+      "type": "result",
+      "severity": "low",
+      "title": "Connectique défaillante",
+      "summary": "Faux contact sur un câble ou un connecteur.",
+      "actions": [
+        "Identifier le câble en cause en les manipulant un par un.",
+        "Remplacer le câble par un câble connu bon.",
+        "Vérifier le serrage et l'état des connecteurs en façade d'équipement.",
+        "Étiqueter et retirer du stock le câble défectueux."
+      ]
+    },
+    "bruit-r-horloge": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Problème de synchronisation d'horloge numérique",
+      "summary": "Plusieurs équipements numériques ne partagent pas la même horloge.",
+      "actions": [
+        "Vérifier qu'un seul équipement est maître d'horloge et que les autres le suivent.",
+        "Contrôler que tous les équipements utilisent la même fréquence d'échantillonnage.",
+        "Vérifier le câble word clock / AES (impédance 75 Ω ou 110 Ω selon la liaison)."
+      ]
+    },
+
+    "video-q1": {
+      "type": "question",
+      "text": "L'afficheur (écran ou projecteur) est-il allumé ?",
+      "options": [
+        { "label": "Oui, il est allumé", "next": "video-q2" },
+        { "label": "Non, il ne s'allume pas", "symptom": "pas-alimentation" }
+      ]
+    },
+    "video-q2": {
+      "type": "question",
+      "text": "Que montre l'afficheur ?",
+      "options": [
+        { "label": "Un message « Pas de signal / No input »", "next": "video-q3" },
+        { "label": "Un écran noir sans message", "next": "video-q6" }
+      ]
+    },
+    "video-q3": {
+      "type": "question",
+      "text": "La bonne entrée est-elle sélectionnée sur l'afficheur et sur le sélecteur / la matrice ?",
+      "options": [
+        { "label": "Oui, vérifié", "next": "video-q4" },
+        { "label": "Non ou à vérifier", "next": "video-r-entree" }
+      ]
+    },
+    "video-q4": {
+      "type": "question",
+      "text": "En branchant la source directement sur l'afficheur avec un câble court connu bon, l'image apparaît-elle ?",
+      "options": [
+        { "label": "Oui, l'image apparaît", "next": "video-q5" },
+        { "label": "Non, toujours rien", "next": "video-r-source" }
+      ]
+    },
+    "video-q5": {
+      "type": "question",
+      "text": "La liaison habituelle passe-t-elle par un extendeur (HDBaseT, fibre) ou un câble de plus de 10 m ?",
+      "options": [
+        { "label": "Oui", "next": "video-r-extendeur" },
+        { "label": "Non", "next": "video-r-edid" }
+      ]
+    },
+    "video-q6": {
+      "type": "question",
+      "text": "Le menu à l'écran (OSD) de l'afficheur s'affiche-t-il ?",
+      "options": [
+        { "label": "Oui, le menu s'affiche", "next": "video-r-source-noire" },
+        { "label": "Non, rien ne s'affiche", "next": "video-r-dalle" }
+      ]
+    },
+    "video-r-entree": {
+      "type": "result",
+      "severity": "low",
+      "title": "Mauvaise entrée sélectionnée",
+      "summary": "Le signal est présent mais n'est pas aiguillé vers l'afficheur.",
+      "actions": [
+        "Sélectionner la bonne entrée sur l'afficheur (télécommande ou système de contrôle).",
+        "Vérifier l'aiguillage de la matrice / du sélecteur vers la sortie de l'afficheur.",
+        "Vérifier que la sélection automatique d'entrée n'a pas basculé sur une autre source."
+      ]
+    },
+    "video-r-source": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Source sans sortie vidéo",
+      "summary": "La source n'émet pas de signal exploitable.",
+      "actions": [
+        "Vérifier que la source n'est pas en veille et que sa sortie vidéo est active.",
+        "Sur un PC : contrôler le mode d'affichage (dupliquer / étendre) et la résolution.",
+        "Tester une autre sortie de la source ou une autre source.",
+        "Redémarrer la source."
+      ]
+    },
+    "video-r-extendeur": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Défaut sur l'extendeur ou la liaison longue",
+      "summary": "La liaison directe fonctionne : la chaîne d'extension est en cause.",
+      "actions": [
+        "Vérifier l'alimentation de l'émetteur et du récepteur (LED, PoH).",
+        "Contrôler les LED de lien / HDCP sur les deux boîtiers.",
+        "Vérifier la catégorie (Cat6 minimum) et la longueur du câble ; éviter les prises intermédiaires.",
+        "Réduire la résolution de la source pour tester une limite de bande passante."
+      ]
+    },
+    "video-r-edid": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Négociation EDID / HDCP",
+      "summary": "La source et l'afficheur ne s'accordent pas sur le format ou la protection.",
+      "actions": [
+        "Redémarrer la chaîne dans l'ordre : afficheur, puis matrice, puis source.",
+        "Forcer un EDID fixe (ex. 1080p60) sur la matrice ou le sélecteur.",
+        "Vérifier que tous les maillons sont compatibles avec la version HDCP de la source.",
+        "Remplacer le câble par un câble certifié."
+      ]
+    },
+    "video-r-source-noire": {
+      "type": "result",
+      "severity": "low",
+      "title": "La source envoie une image noire",
+      "summary": "L'afficheur fonctionne : il reçoit un signal noir.",
+      "actions": [
+        "Vérifier un mute vidéo (AV mute, blank) sur l'afficheur, la matrice ou le système de contrôle.",
+        "Vérifier que la source n'affiche pas un écran noir (économiseur, veille).",
+        "Vérifier l'obturateur du projecteur."
+      ]
+    },
+    "video-r-dalle": {
+      "type": "result",
+      "severity": "high",
+      "title": "Défaut de dalle, de rétroéclairage ou de lampe",
+      "summary": "L'afficheur ne produit plus d'image, même ses propres menus.",
+      "actions": [
+        "Projecteur : vérifier le voyant lampe / filtre et le compteur d'heures.",
+        "Écran : éclairer la dalle avec une lampe torche pour voir si une image faible apparaît (rétroéclairage HS).",
+        "Remplacer l'afficheur et ouvrir un retour atelier."
+      ],
+      "escalate": "Atelier."
+    },
+
+    "img-q1": {
+      "type": "question",
+      "text": "Le défaut se manifeste par :",
+      "options": [
+        { "label": "Des coupures noires de quelques secondes", "next": "img-q2" },
+        { "label": "Du scintillement, des parasites ou des pixels", "next": "img-q3" },
+        { "label": "Des couleurs erronées (teinte rose, verte…)", "next": "img-r-couleur" }
+      ]
+    },
+    "img-q2": {
+      "type": "question",
+      "text": "Les coupures surviennent-elles lors d'un changement de source ou de résolution ?",
+      "options": [
+        { "label": "Oui, uniquement à ce moment", "next": "img-r-resync" },
+        { "label": "Non, de façon aléatoire", "next": "img-q3" }
+      ]
+    },
+    "img-q3": {
+      "type": "question",
+      "text": "Le signal est-il en 4K60, HDR ou à fréquence élevée (débit important) ?",
+      "options": [
+        { "label": "Oui", "next": "img-r-bande-passante" },
+        { "label": "Non (1080p ou 4K30)", "next": "img-r-cable" }
+      ]
+    },
+    "img-r-couleur": {
+      "type": "result",
+      "severity": "low",
+      "title": "Espace colorimétrique ou connexion partielle",
+      "summary": "Le format couleur est mal interprété ou une paire du câble est défaillante.",
+      "actions": [
+        "Vérifier que le connecteur est enfoncé à fond des deux côtés.",
+        "Régler l'espace colorimétrique de la source (RGB / YCbCr) et la plage (complète / limitée).",
+        "Remplacer le câble."
+      ]
+    },
+    "img-r-resync": {
+      "type": "result",
+      "severity": "low",
+      "title": "Resynchronisation normale du signal",
+      "summary": "Un délai de resynchronisation HDCP est normal lors d'un changement de format.",
+      "actions": [
+        "Fixer une résolution de sortie unique sur la matrice ou le scaler pour éviter les renégociations.",
+        "Configurer les sources sur la même résolution.",
+        "Utiliser un sélecteur sans coupure (seamless) si l'usage l'exige."
+      ]
+    },
+    "img-r-bande-passante": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Limite de bande passante",
+      "summary": "Le câble ou un maillon de la chaîne ne supporte pas le débit demandé.",
+      "actions": [
+        "Utiliser un câble certifié (HDMI Premium High Speed / Ultra High Speed) adapté à la longueur.",
+        "Réduire temporairement le débit (4K30, ou chroma 4:2:0) pour confirmer le diagnostic.",
+        "Au-delà de 5 m en 4K60 : envisager un câble actif ou optique.",
+        "Vérifier la compatibilité de chaque maillon (matrice, extendeur) avec le format."
+      ]
+    },
+    "img-r-cable": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Câble ou connecteur dégradé",
+      "summary": "Le signal est perturbé par un câble abîmé ou un faux contact.",
+      "actions": [
+        "Remplacer le câble par un câble court connu bon pour confirmer.",
+        "Vérifier les connecteurs (broches, maintien mécanique, contrainte sur le câble).",
+        "Éloigner le câble des sources de perturbation (alimentations, variateurs)."
+      ]
+    },
+
+    "net-q1": {
+      "type": "question",
+      "text": "La LED de lien du port réseau est-elle allumée (côté appareil et côté switch) ?",
+      "options": [
+        { "label": "Oui, lien présent", "next": "net-q2" },
+        { "label": "Non, aucune LED", "next": "net-q4" }
+      ]
+    },
+    "net-q4": {
+      "type": "question",
+      "text": "Avec un autre câble et un autre port de switch connus bons, le lien remonte-t-il ?",
+      "options": [
+        { "label": "Oui, le lien remonte", "next": "net-r-cable" },
+        { "label": "Non, toujours aucun lien", "next": "net-r-port" }
+      ]
+    },
+    "net-q2": {
+      "type": "question",
+      "text": "L'appareil a-t-il une adresse IP cohérente avec le réseau ?",
+      "help": "Lire l'adresse en façade ou via l'outil de découverte du constructeur.",
+      "options": [
+        { "label": "Oui, adresse cohérente", "next": "net-q3" },
+        { "label": "Non, ou adresse en 169.254.x.x", "next": "net-r-dhcp" },
+        { "label": "Impossible de lire l'adresse", "next": "net-r-decouverte" }
+      ]
+    },
+    "net-q3": {
+      "type": "question",
+      "text": "Un ping depuis un poste sur le même VLAN répond-il ?",
+      "options": [
+        { "label": "Oui, le ping répond", "next": "net-r-service" },
+        { "label": "Non, pas de réponse", "next": "net-r-vlan" }
+      ]
+    },
+    "net-r-cable": {
+      "type": "result",
+      "severity": "low",
+      "title": "Câble ou port de switch défectueux",
+      "summary": "Le lien remonte avec un autre câble ou un autre port.",
+      "actions": [
+        "Identifier l'élément fautif (câble ou port) en ne changeant qu'un seul élément à la fois.",
+        "Étiqueter le câble défectueux et le retirer.",
+        "Signaler le port de switch défaillant à l'équipe réseau."
+      ]
+    },
+    "net-r-port": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Interface réseau de l'appareil en défaut",
+      "summary": "Aucun lien malgré un câble et un port connus bons.",
+      "actions": [
+        "Vérifier que le port n'est pas désactivé dans la configuration de l'appareil.",
+        "Tester un autre port réseau de l'appareil s'il en possède plusieurs (LAN A / LAN B).",
+        "Forcer la vitesse (ex. 1 Gbit/s full duplex) côté switch pour tester un problème de négociation.",
+        "Si toujours aucun lien : retour atelier."
+      ],
+      "escalate": "Atelier si aucun port ne fonctionne."
+    },
+    "net-r-dhcp": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Adressage IP incorrect",
+      "summary": "L'appareil n'a pas obtenu d'adresse du serveur DHCP ou a une IP fixe erronée.",
+      "actions": [
+        "Une adresse 169.254.x.x signifie qu'aucun serveur DHCP n'a répondu : vérifier le DHCP du VLAN.",
+        "Vérifier si l'appareil doit être en IP fixe selon le plan d'adressage du site.",
+        "Contrôler le masque et la passerelle.",
+        "Rechercher un conflit d'adresse IP avec un autre appareil."
+      ]
+    },
+    "net-r-decouverte": {
+      "type": "result",
+      "severity": "low",
+      "title": "Identifier l'appareil sur le réseau",
+      "summary": "Il faut d'abord retrouver l'adresse de l'appareil.",
+      "actions": [
+        "Utiliser l'outil de découverte du constructeur, sur un poste du même sous-réseau.",
+        "Consulter la table ARP / DHCP du switch ou du routeur à partir de l'adresse MAC (étiquette de l'appareil).",
+        "Reprendre le diagnostic une fois l'adresse connue."
+      ]
+    },
+    "net-r-service": {
+      "type": "result",
+      "severity": "low",
+      "title": "Réseau OK, service inaccessible",
+      "summary": "L'appareil répond, mais le logiciel ou l'interface web ne s'y connecte pas.",
+      "actions": [
+        "Vérifier que le logiciel de contrôle est sur la bonne carte réseau du poste.",
+        "Vérifier le pare-feu du poste (ports du logiciel constructeur).",
+        "Contrôler la compatibilité entre la version du logiciel et celle du firmware.",
+        "Essayer l'interface web en http et en https."
+      ],
+      "related": ["firmware-incompatible"]
+    },
+    "net-r-vlan": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Problème de VLAN ou de filtrage",
+      "summary": "Lien et adresse corrects, mais le trafic ne passe pas.",
+      "actions": [
+        "Vérifier l'affectation VLAN du port de switch (access / trunk).",
+        "Vérifier que le poste de test est bien sur le même VLAN.",
+        "Rechercher une règle de filtrage (ACL, sécurité de port, 802.1X).",
+        "Transmettre à l'équipe réseau avec le port et l'adresse MAC."
+      ],
+      "escalate": "Équipe réseau."
+    },
+
+    "lat-q1": {
+      "type": "question",
+      "text": "Les équipements audio sur IP signalent-ils des erreurs d'horloge ou de synchronisation ?",
+      "help": "Voir l'état de l'horloge dans Dante Controller ou le logiciel de supervision.",
+      "options": [
+        { "label": "Oui, erreurs d'horloge", "next": "lat-q2" },
+        { "label": "Non, horloge stable", "next": "lat-q3" }
+      ]
+    },
+    "lat-q2": {
+      "type": "question",
+      "text": "Plusieurs appareils se déclarent-ils maître (leader) d'horloge ?",
+      "options": [
+        { "label": "Oui, plusieurs maîtres", "next": "lat-r-multi-master" },
+        { "label": "Non ou inconnu", "next": "lat-r-ptp" }
+      ]
+    },
+    "lat-q3": {
+      "type": "question",
+      "text": "Le trafic audio partage-t-il le réseau avec d'autres usages (bureautique, vidéo, Wi-Fi) ?",
+      "options": [
+        { "label": "Oui, réseau partagé", "next": "lat-r-qos" },
+        { "label": "Non, réseau dédié", "next": "lat-q4" }
+      ]
+    },
+    "lat-q4": {
+      "type": "question",
+      "text": "Les switchs sont-ils en Gigabit avec l'économie d'énergie (EEE / Green Ethernet) désactivée ?",
+      "options": [
+        { "label": "Oui, vérifié", "next": "lat-r-latence" },
+        { "label": "Non ou inconnu", "next": "lat-r-eee" }
+      ]
+    },
+    "lat-r-multi-master": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Conflit de maîtres d'horloge",
+      "summary": "Plusieurs appareils revendiquent l'horloge : le réseau est probablement segmenté.",
+      "actions": [
+        "Désigner un maître d'horloge préféré dans le logiciel de gestion.",
+        "Vérifier que tous les appareils sont sur le même VLAN / sous-réseau.",
+        "Rechercher un switch ou un câble qui isole une partie du réseau."
+      ]
+    },
+    "lat-r-ptp": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Synchronisation PTP perturbée",
+      "summary": "Les messages d'horloge sont retardés ou perdus.",
+      "actions": [
+        "Vérifier que la QoS (DSCP) priorise bien les paquets PTP.",
+        "Contrôler les erreurs sur les ports de switch (CRC, pertes).",
+        "Limiter le nombre de switchs traversés entre maître et esclaves."
+      ],
+      "escalate": "Équipe réseau si la configuration des switchs est verrouillée."
+    },
+    "lat-r-qos": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Réseau partagé sans QoS adaptée",
+      "summary": "Le trafic non audio entre en concurrence avec les flux audio.",
+      "actions": [
+        "Isoler l'audio sur un VLAN dédié.",
+        "Configurer la QoS selon les recommandations du constructeur (priorité horloge > audio > reste).",
+        "Activer l'IGMP snooping (avec querier) si des flux multicast sont utilisés.",
+        "Passer les flux en unicast si leur nombre le permet."
+      ],
+      "escalate": "Équipe réseau."
+    },
+    "lat-r-latence": {
+      "type": "result",
+      "severity": "low",
+      "title": "Latence de réception trop faible",
+      "summary": "Le réseau est sain mais la marge de latence configurée est insuffisante.",
+      "actions": [
+        "Augmenter la latence de réception des appareils concernés (ex. de 1 ms à 2 ms).",
+        "Vérifier qu'aucun appareil n'est connecté en 100 Mbit/s.",
+        "Surveiller les compteurs d'erreurs après modification."
+      ]
+    },
+    "lat-r-eee": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Économie d'énergie ou vitesse de port inadaptée",
+      "summary": "L'EEE introduit des micro-latences incompatibles avec l'audio sur IP.",
+      "actions": [
+        "Désactiver l'EEE / Green Ethernet sur tous les ports audio.",
+        "Vérifier que les liens entre switchs sont au moins en Gigabit.",
+        "Transmettre la configuration recommandée à l'équipe réseau."
+      ]
+    },
+
+    "th-q1": {
+      "type": "question",
+      "text": "Le(s) ventilateur(s) de l'appareil tournent-ils ?",
+      "options": [
+        { "label": "Oui, normalement", "next": "th-q2" },
+        { "label": "Non, à l'arrêt ou bruit anormal", "next": "th-r-ventilo" },
+        { "label": "Appareil sans ventilateur (passif)", "next": "th-q2" }
+      ]
+    },
+    "th-q2": {
+      "type": "question",
+      "text": "Les ouïes d'aération sont-elles dégagées et propres ?",
+      "options": [
+        { "label": "Oui, dégagées", "next": "th-q3" },
+        { "label": "Non, obstruées ou empoussiérées", "next": "th-r-poussiere" }
+      ]
+    },
+    "th-q3": {
+      "type": "question",
+      "text": "L'appareil est-il dans un meuble fermé ou empilé sans espacement ?",
+      "options": [
+        { "label": "Oui", "next": "th-r-rack" },
+        { "label": "Non, bien dégagé", "next": "th-q4" }
+      ]
+    },
+    "th-q4": {
+      "type": "question",
+      "text": "La température ambiante du local dépasse-t-elle 35 °C ?",
+      "options": [
+        { "label": "Oui", "next": "th-r-ambiant" },
+        { "label": "Non", "next": "th-r-charge" }
+      ]
+    },
+    "th-r-ventilo": {
+      "type": "result",
+      "severity": "high",
+      "title": "Ventilation interne défaillante",
+      "summary": "Sans ventilation, l'appareil risque une dégradation rapide.",
+      "actions": [
+        "Mettre l'appareil hors service dès que l'exploitation le permet.",
+        "Déployer un appareil de remplacement.",
+        "Ne pas ouvrir l'appareil pour débloquer le ventilateur sur site.",
+        "Ouvrir un retour atelier."
+      ],
+      "warning": "Un fonctionnement prolongé sans ventilation peut endommager définitivement l'électronique.",
+      "escalate": "Atelier."
+    },
+    "th-r-poussiere": {
+      "type": "result",
+      "severity": "low",
+      "title": "Aération encrassée ou obstruée",
+      "summary": "Le flux d'air est réduit par la poussière ou un obstacle.",
+      "actions": [
+        "Dégager les ouïes (câbles, documents, objets posés dessus).",
+        "Appareil hors tension et débranché : dépoussiérer à la bombe d'air sec, sans faire tourner les ventilateurs à vide.",
+        "Nettoyer ou remplacer les filtres s'il y en a.",
+        "Planifier un nettoyage périodique dans la maintenance préventive."
+      ]
+    },
+    "th-r-rack": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Installation mal ventilée",
+      "summary": "La chaleur s'accumule dans le meuble ou entre les appareils.",
+      "actions": [
+        "Laisser 1U d'espace au-dessus des appareils qui chauffent (amplis).",
+        "Respecter le sens du flux d'air (avant → arrière) et ne pas mélanger les sens dans un même rack.",
+        "Ouvrir les portes du meuble ou ajouter une ventilation forcée.",
+        "Installer des panneaux pleins pour éviter le recyclage d'air chaud."
+      ]
+    },
+    "th-r-ambiant": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Température ambiante trop élevée",
+      "summary": "Le local dépasse la plage de fonctionnement des équipements.",
+      "actions": [
+        "Vérifier la plage de fonctionnement constructeur (souvent 0–40 °C).",
+        "Signaler le défaut de climatisation au responsable du site.",
+        "En urgence : réduire la charge (niveau sonore, appareils non essentiels éteints)."
+      ]
+    },
+    "th-r-charge": {
+      "type": "result",
+      "severity": "high",
+      "title": "Surcharge ou défaut interne",
+      "summary": "Environnement normal : l'appareil chauffe à cause de sa charge ou d'un défaut.",
+      "actions": [
+        "Amplificateur : vérifier que l'impédance de charge n'est pas inférieure au minimum admis.",
+        "Réduire le niveau de fonctionnement et surveiller la température.",
+        "Relever les températures internes (logiciel de supervision) et les journaux.",
+        "Si la surchauffe persiste à charge réduite : retour atelier."
+      ],
+      "escalate": "Atelier / N2.",
+      "related": ["redemarrages"]
+    },
+
+    "gel-q1": {
+      "type": "question",
+      "text": "Le blocage survient :",
+      "options": [
+        { "label": "Aléatoirement, après plusieurs heures ou jours", "next": "gel-q2" },
+        { "label": "Toujours lors d'une action précise", "next": "gel-r-reproductible" },
+        { "label": "Dès le démarrage", "next": "gel-r-boot" }
+      ]
+    },
+    "gel-q2": {
+      "type": "question",
+      "text": "Pendant le gel, l'appareil reste-t-il accessible à distance (ping, interface web) ?",
+      "options": [
+        { "label": "Oui, il répond", "next": "gel-r-applicatif" },
+        { "label": "Non, plus aucune réponse", "next": "gel-q3" }
+      ]
+    },
+    "gel-q3": {
+      "type": "question",
+      "text": "Le firmware est-il à la version recommandée par le constructeur ?",
+      "options": [
+        { "label": "Oui, à jour", "next": "gel-r-materiel" },
+        { "label": "Non ou inconnu", "next": "gel-r-firmware" }
+      ]
+    },
+    "gel-r-reproductible": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Bug reproductible",
+      "summary": "Le gel est déclenché par une action identifiable : cas idéal pour le support constructeur.",
+      "actions": [
+        "Noter précisément les étapes pour reproduire le problème.",
+        "Relever les versions (firmware, logiciel de conception, système de contrôle).",
+        "Faire une capture (photo, vidéo) du comportement.",
+        "Éviter l'action en cause et informer les utilisateurs en attendant le correctif."
+      ],
+      "escalate": "N2 / support constructeur avec le scénario de reproduction."
+    },
+    "gel-r-boot": {
+      "type": "result",
+      "severity": "high",
+      "title": "Blocage au démarrage",
+      "summary": "L'appareil ne termine pas sa séquence de démarrage.",
+      "actions": [
+        "Débrancher tous les périphériques et redémarrer.",
+        "Tenter un démarrage en mode de récupération (procédure constructeur).",
+        "Ne pas réinitialiser en configuration usine sans avoir une sauvegarde de la configuration."
+      ],
+      "escalate": "N2.",
+      "related": ["firmware-echec"]
+    },
+    "gel-r-applicatif": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Blocage logiciel / applicatif",
+      "summary": "Le système tourne toujours mais l'application ou l'interface est figée.",
+      "actions": [
+        "Redémarrer le service, le design ou l'interface depuis l'accès distant si possible.",
+        "Exporter les journaux avant tout redémarrage complet.",
+        "En palliatif, planifier un redémarrage automatique en dehors des heures d'exploitation.",
+        "Vérifier les notes de version : fuite mémoire connue ?"
+      ]
+    },
+    "gel-r-materiel": {
+      "type": "result",
+      "severity": "high",
+      "title": "Défaut matériel probable",
+      "summary": "Gel complet malgré un firmware à jour.",
+      "actions": [
+        "Vérifier l'alimentation et la température (causes fréquentes de gels).",
+        "Exporter les journaux système.",
+        "Prévoir un appareil de remplacement et ouvrir un retour atelier."
+      ],
+      "escalate": "Atelier / N2.",
+      "related": ["surchauffe", "redemarrages"]
+    },
+    "gel-r-firmware": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Firmware obsolète",
+      "summary": "Le problème peut être corrigé par une version plus récente.",
+      "actions": [
+        "Relever la version actuelle et consulter les notes de version.",
+        "Vérifier la compatibilité avec le logiciel de conception utilisé sur le site.",
+        "Planifier la mise à jour en dehors des heures d'exploitation, après sauvegarde de la configuration."
+      ],
+      "related": ["firmware-incompatible"]
+    },
+
+    "per-q1": {
+      "type": "question",
+      "text": "Quel type de périphérique n'est pas détecté ?",
+      "options": [
+        { "label": "USB (caméra, micro, clé, clavier)", "next": "per-q2" },
+        { "label": "Réseau (micro plafond, I/O déporté, caméra IP)", "next": "per-q4" },
+        { "label": "Écran ou source HDMI", "symptom": "ecran-noir" }
+      ]
+    },
+    "per-q2": {
+      "type": "question",
+      "text": "Le périphérique est-il reconnu sur un autre poste ou un autre port ?",
+      "options": [
+        { "label": "Oui, il fonctionne ailleurs", "next": "per-q3" },
+        { "label": "Non, nulle part", "next": "per-r-defectueux" }
+      ]
+    },
+    "per-q3": {
+      "type": "question",
+      "text": "Passe-t-il par un hub, une rallonge ou un extendeur USB ?",
+      "options": [
+        { "label": "Oui", "next": "per-r-usb-chaine" },
+        { "label": "Non, branché en direct", "next": "per-r-usb-pilote" }
+      ]
+    },
+    "per-q4": {
+      "type": "question",
+      "text": "Le périphérique apparaît-il dans l'outil de découverte (Dante Controller, outil constructeur…) ?",
+      "options": [
+        { "label": "Oui, il est visible", "next": "per-r-config" },
+        { "label": "Non, invisible", "next": "per-q5" }
+      ]
+    },
+    "per-q5": {
+      "type": "question",
+      "text": "Le périphérique est-il alimenté (LED allumée, PoE actif sur le port) ?",
+      "options": [
+        { "label": "Oui, il est alimenté", "symptom": "pas-reseau" },
+        { "label": "Non", "next": "per-r-poe" }
+      ]
+    },
+    "per-r-defectueux": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Périphérique défectueux",
+      "summary": "Le périphérique n'est reconnu sur aucun hôte.",
+      "actions": [
+        "Tester avec un autre câble USB.",
+        "Remplacer le périphérique par une unité de secours.",
+        "Étiqueter et envoyer le périphérique à l'atelier."
+      ]
+    },
+    "per-r-usb-chaine": {
+      "type": "result",
+      "severity": "low",
+      "title": "Chaîne USB trop longue ou sous-alimentée",
+      "summary": "Le hub, la rallonge ou l'extendeur dégrade la liaison.",
+      "actions": [
+        "Brancher le périphérique en direct pour confirmer.",
+        "Respecter les longueurs passives (environ 5 m en USB 2.0, 3 m en USB 3.x).",
+        "Utiliser un hub alimenté pour les périphériques gourmands (caméras).",
+        "Vérifier l'alimentation et les LED de l'extendeur USB."
+      ]
+    },
+    "per-r-usb-pilote": {
+      "type": "result",
+      "severity": "low",
+      "title": "Pilote ou configuration de l'hôte",
+      "summary": "Le périphérique fonctionne ailleurs : l'hôte ne le gère pas correctement.",
+      "actions": [
+        "Débrancher, attendre 10 secondes, rebrancher.",
+        "Redémarrer l'hôte.",
+        "Vérifier que le périphérique est sélectionné dans l'application (caméra / micro par défaut).",
+        "Installer ou mettre à jour le pilote si le périphérique n'est pas en mode classe standard."
+      ]
+    },
+    "per-r-config": {
+      "type": "result",
+      "severity": "low",
+      "title": "Périphérique visible mais non affecté",
+      "summary": "Le périphérique est sur le réseau mais n'est pas associé dans la configuration.",
+      "actions": [
+        "Vérifier que le nom de l'appareil correspond à celui attendu par la configuration.",
+        "Vérifier les abonnements / routages des flux.",
+        "Contrôler que l'appareil n'est pas verrouillé ou associé à un autre système.",
+        "Après un remplacement : réaffecter le nouvel appareil dans l'inventaire du design."
+      ]
+    },
+    "per-r-poe": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Périphérique non alimenté",
+      "summary": "Le port réseau ne délivre pas l'alimentation PoE.",
+      "actions": [
+        "Vérifier que le PoE est activé sur le port de switch.",
+        "Vérifier la classe PoE requise et le budget restant du switch.",
+        "Tester avec un injecteur PoE ou un autre port.",
+        "Vérifier le câble (Cat5e minimum, 100 m max)."
+      ],
+      "related": ["redemarrages"]
+    },
+
+    "fw-q1": {
+      "type": "question",
+      "text": "À quel moment la mise à jour a-t-elle échoué ?",
+      "options": [
+        { "label": "Fichier refusé / transfert impossible", "next": "fw-q2" },
+        { "label": "Coupure pendant l'écriture (secteur, réseau)", "next": "fw-q3" },
+        { "label": "Mise à jour terminée, mais l'appareil fonctionne mal", "next": "fw-r-regression" }
+      ]
+    },
+    "fw-q2": {
+      "type": "question",
+      "text": "Le fichier correspond-il exactement au modèle et à la révision matérielle de l'appareil ?",
+      "options": [
+        { "label": "Oui, vérifié", "next": "fw-q4" },
+        { "label": "Non ou pas sûr", "next": "fw-r-fichier" }
+      ]
+    },
+    "fw-q4": {
+      "type": "question",
+      "text": "La version cible peut-elle être installée directement depuis la version actuelle ?",
+      "help": "Certaines versions exigent une mise à jour intermédiaire : consulter les notes de version.",
+      "options": [
+        { "label": "Oui, sans version intermédiaire", "next": "fw-r-transfert" },
+        { "label": "Non ou inconnu", "next": "fw-r-palier" }
+      ]
+    },
+    "fw-q3": {
+      "type": "question",
+      "text": "L'appareil démarre-t-il encore (voyants normaux, accessible) ?",
+      "options": [
+        { "label": "Oui, il démarre", "next": "fw-r-relancer" },
+        { "label": "Non, il ne démarre plus", "next": "fw-r-brick" }
+      ]
+    },
+    "fw-r-regression": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Régression après mise à jour",
+      "summary": "La nouvelle version introduit un comportement différent ou incompatible.",
+      "actions": [
+        "Consulter les notes de version (changements de comportement, problèmes connus).",
+        "Vérifier la compatibilité avec le logiciel de conception et le système de contrôle.",
+        "Restaurer la configuration sauvegardée.",
+        "Si nécessaire, revenir à la version précédente selon la procédure constructeur."
+      ],
+      "escalate": "N2 avant tout retour à une version antérieure."
+    },
+    "fw-r-fichier": {
+      "type": "result",
+      "severity": "low",
+      "title": "Mauvais fichier de firmware",
+      "summary": "Le fichier ne correspond pas à l'appareil.",
+      "actions": [
+        "Relever le modèle exact et la révision matérielle (étiquette, interface web).",
+        "Télécharger le firmware uniquement depuis le site officiel du constructeur.",
+        "Vérifier l'empreinte (checksum) du fichier si elle est fournie."
+      ]
+    },
+    "fw-r-palier": {
+      "type": "result",
+      "severity": "low",
+      "title": "Mise à jour intermédiaire requise",
+      "summary": "La version cible nécessite de passer par une ou plusieurs versions intermédiaires.",
+      "actions": [
+        "Lire les notes de version pour identifier le chemin de mise à jour.",
+        "Appliquer les versions dans l'ordre, en vérifiant le redémarrage après chacune.",
+        "Sauvegarder la configuration avant de commencer."
+      ]
+    },
+    "fw-r-transfert": {
+      "type": "result",
+      "severity": "low",
+      "title": "Échec de transfert",
+      "summary": "Le fichier est correct mais le transfert n'aboutit pas.",
+      "actions": [
+        "Se connecter en câble direct (sans Wi-Fi ni VPN) sur le même sous-réseau.",
+        "Utiliser un autre navigateur ou la dernière version de l'outil constructeur.",
+        "Re-télécharger le fichier (fichier possiblement corrompu).",
+        "Redémarrer l'appareil puis relancer la mise à jour."
+      ]
+    },
+    "fw-r-relancer": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Mise à jour interrompue, appareil récupérable",
+      "summary": "L'appareil a conservé une version fonctionnelle.",
+      "actions": [
+        "Vérifier la version actuellement installée.",
+        "Sécuriser l'alimentation (onduleur) et la liaison réseau (câble direct).",
+        "Relancer la mise à jour sans interruption.",
+        "Vérifier le fonctionnement et restaurer la configuration si nécessaire."
+      ]
+    },
+    "fw-r-brick": {
+      "type": "result",
+      "severity": "high",
+      "title": "Appareil ne démarre plus après mise à jour",
+      "summary": "Le firmware est probablement corrompu.",
+      "actions": [
+        "Ne pas couper et rallumer l'appareil à répétition.",
+        "Tenter la procédure de récupération du constructeur (mode recovery / bootloader) si elle est documentée.",
+        "Sinon, étiqueter l'appareil et ouvrir un retour atelier.",
+        "Déployer un appareil de remplacement."
+      ],
+      "escalate": "N2 / atelier."
+    },
+
+    "comp-q1": {
+      "type": "question",
+      "text": "Le logiciel de configuration affiche-t-il explicitement une erreur de version ?",
+      "options": [
+        { "label": "Oui, message de version / compatibilité", "next": "comp-q2" },
+        { "label": "Non, il ne trouve simplement pas l'appareil", "symptom": "pas-reseau" }
+      ]
+    },
+    "comp-q2": {
+      "type": "question",
+      "text": "Le firmware de l'appareil est-il plus ancien ou plus récent que le logiciel ?",
+      "options": [
+        { "label": "Plus ancien que le logiciel", "next": "comp-r-maj-appareil" },
+        { "label": "Plus récent que le logiciel", "next": "comp-r-maj-logiciel" },
+        { "label": "Je ne sais pas", "next": "comp-r-identifier" }
+      ]
+    },
+    "comp-r-maj-appareil": {
+      "type": "result",
+      "severity": "low",
+      "title": "Mettre à jour l'appareil",
+      "summary": "Le firmware doit être aligné sur la version du logiciel.",
+      "actions": [
+        "Sauvegarder la configuration de l'appareil.",
+        "Mettre à jour le firmware vers la version attendue par le logiciel (souvent proposée automatiquement).",
+        "Vérifier que les autres appareils du système sont aussi alignés."
+      ],
+      "related": ["firmware-echec"]
+    },
+    "comp-r-maj-logiciel": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Aligner le logiciel sur le firmware",
+      "summary": "L'appareil a été mis à jour (ou remplacé) avec une version plus récente que le projet.",
+      "actions": [
+        "Installer la version du logiciel correspondant au firmware (plusieurs versions peuvent coexister).",
+        "Ne pas rétrograder le firmware sans validation.",
+        "Vérifier avec le N2 si le fichier de conception doit être migré."
+      ],
+      "escalate": "N2 si le fichier de conception doit être migré."
+    },
+    "comp-r-identifier": {
+      "type": "result",
+      "severity": "low",
+      "title": "Identifier les versions en présence",
+      "summary": "Il faut connaître les deux versions avant d'agir.",
+      "actions": [
+        "Relever la version du firmware (interface web, façade, outil de découverte).",
+        "Relever la version du logiciel (menu « À propos »).",
+        "Consulter la matrice de compatibilité du constructeur, puis reprendre ce diagnostic."
+      ]
+    }
+  }
+}
