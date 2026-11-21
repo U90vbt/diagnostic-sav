@@ -46,6 +46,7 @@
       <nav class="tabs" aria-label="Sections">
         <a class="tabs__tab" href="#/" data-tab="diag">Diagnostic</a>
         <a class="tabs__tab" href="#/produits" data-tab="products"><span class="tabs__long">Assistant </span>produit</a>
+        <a class="tabs__tab tabs__tab--wide" href="#/editeur" data-tab="editor">Éditeur</a>
       </nav>
 
       <div class="status" aria-label="État du système">
@@ -60,6 +61,11 @@
       </div>
     </div>
   </header>
+
+  <div class="preview-banner" id="preview-banner" role="status" hidden>
+    <span><strong>Mode test</strong> — vous naviguez dans vos modifications, rien n'est publié.</span>
+    <button type="button" class="btn btn--small btn--light" id="btn-exit-preview">Revenir à l'éditeur</button>
+  </div>
 
   <nav class="crumbs" aria-label="Fil d'Ariane">
     <ol id="crumbs" class="crumbs__list"></ol>
@@ -155,6 +161,11 @@
       <div id="product-detail"></div>
     </section>
 
+    <!-- Éditeur des procédures (editor.js) -->
+    <section id="view-editor" class="view" hidden aria-label="Éditeur des procédures">
+      <div id="editor-root"><p class="pstatus">Chargement de l'éditeur…</p></div>
+    </section>
+
     <!-- Diagnostic -->
     <section id="view-diag" class="view" hidden aria-labelledby="diag-symptom">
       <div class="diag">
@@ -216,6 +227,8 @@
     <span id="footer-disclaimer">Diagnostic de premier niveau — usage interne.</span>
     <span class="footer__sep" aria-hidden="true">|</span>
     <span>Aucune donnée collectée</span>
+    <span class="footer__sep" aria-hidden="true">|</span>
+    <a href="#/editeur">Éditer les procédures</a>
     <span id="data-warnings" class="footer__warn" hidden></span>
   </footer>
 

@@ -234,6 +234,7 @@
 
     // 3. Traitement des données
     try {
+      state.published = JSON.parse(text);   // copie intacte du fichier publié (éditeur, sortie du mode test)
       ingest(data);
     } catch (err) {
       console.error('[DIAG·SAV] Données inexploitables :', err);
@@ -329,90 +330,107 @@
     renderFilters();
   }
 
-  /** Contrôle de cohérence de l'arbre : aide les équipes SAV qui éditent le JSON. */
-  function validate(data) {
+  /**
+   * Contrôle de cohérence des données, avec des messages en français courant.
+   * Renvoie [{ msg, ref: { kind: 'symptom' | 'node' | 'product' | 'family', id } }].
+   * Utilisé par le pied de page (diagnostic) et par l'éditeur (liens « Corriger »).
+   */
+  function validateDetailed(data) {
     const w = [];
+    const add = (msg, kind, id) => w.push({ msg, ref: kind ? { kind, id } : null });
     const nodes = data.nodes || {};
+    const symptoms = Array.isArray(data.symptoms) ? data.symptoms : [];
     const symptomIds = new Set();
     const catIds = new Set((data.categories || []).map(c => c.id));
-    const reached = new Set();
+    const products = data.products || {};
+    const families = data.families || {};
+    const sources = data.sources || {};
+    const STATUSES = ['draft', 'validated'];
+    const q = t => '« ' + truncate(t || '?', 70) + ' »';
+    const nodeName = id => {
+      const n = nodes[id];
+      if (!n) return '« ' + id + ' »';
+      return n.type === 'result' ? 'le résultat ' + q(n.title) : 'la question ' + q(n.text);
+    };
 
-    for (const s of data.symptoms || []) {
-      if (!s.id) { w.push('Symptôme sans identifiant : ' + (s.title || '?')); continue; }
-      if (symptomIds.has(s.id)) w.push('Identifiant de symptôme dupliqué : ' + s.id);
+    for (const s of symptoms) {
+      if (!s.id) { add('Un symptôme n\'a pas d\'identifiant (' + q(s.title) + ').'); continue; }
+      if (symptomIds.has(s.id)) add('Deux symptômes portent le même identifiant « ' + s.id + ' ».', 'symptom', s.id);
       symptomIds.add(s.id);
-      if (!nodes[s.start]) w.push('Symptôme « ' + s.id + ' » : nœud de départ introuvable (' + s.start + ')');
-      if (s.category && !catIds.has(s.category)) w.push('Symptôme « ' + s.id + ' » : catégorie inconnue (' + s.category + ')');
+      if (!s.title) add('Le symptôme « ' + s.id + ' » n\'a pas de titre.', 'symptom', s.id);
+      if (!s.start) add('Le symptôme ' + q(s.title || s.id) + ' n\'a pas de question de départ.', 'symptom', s.id);
+      else if (!nodes[s.start]) add('Le symptôme ' + q(s.title || s.id) + ' commence par une étape qui n\'existe pas (« ' + s.start + ' »).', 'symptom', s.id);
+      if (s.category && !catIds.has(s.category)) add('Le symptôme ' + q(s.title || s.id) + ' utilise une catégorie inconnue (« ' + s.category + ' »).', 'symptom', s.id);
     }
 
     for (const [id, n] of Object.entries(nodes)) {
       if (n.type === 'question') {
-        if (!Array.isArray(n.options) || n.options.length === 0) w.push('Question « ' + id + ' » sans option');
-        if (n.options && n.options.length > 9) w.push('Question « ' + id + ' » : plus de 9 options (raccourcis clavier limités)');
+        if (!n.text) add('Une question n\'a pas de texte (« ' + id + ' »).', 'node', id);
+        if (!Array.isArray(n.options) || n.options.length === 0) add(cap(nodeName(id)) + ' n\'a aucune réponse possible.', 'node', id);
+        if (n.options && n.options.length > 9) add(cap(nodeName(id)) + ' a plus de 9 réponses (les raccourcis clavier s\'arrêtent à 9).', 'node', id);
         for (const o of n.options || []) {
-          if (o.next && !nodes[o.next]) w.push('Question « ' + id + ' » : nœud suivant introuvable (' + o.next + ')');
-          if (o.symptom && !symptomIds.has(o.symptom) && !(data.symptoms || []).some(s => s.id === o.symptom)) w.push('Question « ' + id + ' » : symptôme cible introuvable (' + o.symptom + ')');
-          if (!o.next && !o.symptom) w.push('Question « ' + id + ' » : option sans destination (' + (o.label || '?') + ')');
+          const lbl = q(o.label || '(sans libellé)');
+          if (!o.label) add(cap(nodeName(id)) + ' a une réponse sans libellé.', 'node', id);
+          if (o.next && !nodes[o.next]) add('La réponse ' + lbl + ' de ' + nodeName(id) + ' mène vers une étape qui n\'existe plus (« ' + o.next + ' »).', 'node', id);
+          if (o.symptom && !symptoms.some(s => s.id === o.symptom)) add('La réponse ' + lbl + ' de ' + nodeName(id) + ' renvoie vers un symptôme inconnu (« ' + o.symptom + ' »).', 'node', id);
+          if (!o.next && !o.symptom) add('La réponse ' + lbl + ' de ' + nodeName(id) + ' ne mène nulle part : choisissez l\'étape suivante.', 'node', id);
         }
       } else if (n.type === 'result') {
-        if (!SEVERITY_ORDER.includes(n.severity)) w.push('Résultat « ' + id + ' » : gravité invalide (' + n.severity + '), attendu low / moderate / high');
-        if (!Array.isArray(n.actions) || n.actions.length === 0) w.push('Résultat « ' + id + ' » sans action');
+        if (!n.title) add('Un résultat n\'a pas de titre (« ' + id + ' »).', 'node', id);
+        if (!SEVERITY_ORDER.includes(n.severity)) add(cap(nodeName(id)) + ' a une gravité invalide (« ' + n.severity + ' ») : choisissez Faible, Modéré ou Élevé.', 'node', id);
+        if (!Array.isArray(n.actions) || !n.actions.filter(a => String(a).trim()).length) add(cap(nodeName(id)) + ' ne contient aucune action.', 'node', id);
+        for (const r of n.related || []) {
+          if (!symptomIds.has(r) && !symptoms.some(s => s.id === r)) add(cap(nodeName(id)) + ' propose un diagnostic lié inconnu (« ' + r + ' »).', 'node', id);
+        }
       } else {
-        w.push('Nœud « ' + id + ' » : type inconnu (' + n.type + ')');
+        add('L\'étape « ' + id + ' » a un type inconnu (« ' + n.type + ' ») : attendu question ou result.', 'node', id);
       }
-    }
-
-    // Les symptômes « related » doivent exister (vérifié après collecte complète)
-    for (const [id, n] of Object.entries(nodes)) {
-      for (const r of n.related || []) {
-        if (!symptomIds.has(r)) w.push('Résultat « ' + id + ' » : symptôme lié introuvable (' + r + ')');
-      }
-    }
-
-    // Produits, familles, sources
-    const products = data.products || {};
-    const families = data.families || {};
-    const sources = data.sources || {};
-    for (const [fid, f] of Object.entries(families)) {
-      if (!f.label) w.push('Famille « ' + fid + ' » sans libellé (label)');
-      for (const sid of f.symptoms || []) {
-        if (!symptomIds.has(sid)) w.push('Famille « ' + fid + ' » : symptôme introuvable (' + sid + ')');
-      }
-    }
-    for (const [pid, pr] of Object.entries(products)) {
-      if (!pr.brand || !pr.model) w.push('Produit « ' + pid + ' » : marque (brand) ou modèle (model) manquant');
-      if (!families[pr.family]) w.push('Produit « ' + pid + ' » : famille inconnue (' + pr.family + ')');
-      if (pr.source && !sources[pr.source]) w.push('Produit « ' + pid + ' » : source inconnue (' + pr.source + ')');
-      if (pr.page != null && !(Number.isInteger(pr.page) && pr.page > 0)) w.push('Produit « ' + pid + ' » : la page doit être un nombre entier (' + pr.page + ')');
-    }
-    const STATUSES = ['draft', 'validated'];
-    for (const [id, n] of Object.entries(nodes)) {
-      if (n.status && !STATUSES.includes(n.status)) w.push('Nœud « ' + id + ' » : statut invalide (' + n.status + '), attendu draft ou validated');
+      if (n.status && !STATUSES.includes(n.status)) add(cap(nodeName(id)) + ' a un statut invalide (« ' + n.status + ' ») : attendu draft ou validated.', 'node', id);
       for (const pid of n.products || []) {
-        if (!products[pid]) w.push('Nœud « ' + id + ' » : produit introuvable (' + pid + ')');
+        if (!products[pid]) add(cap(nodeName(id)) + ' cite un produit inconnu (« ' + pid + ' »).', 'node', id);
       }
       (n.brandSteps || []).forEach((b, i) => {
-        const where = 'Résultat « ' + id + ' », étapes ' + (b.brand || '#' + (i + 1));
-        if (!b.brand) w.push(where + ' : marque (brand) manquante');
-        if (!Array.isArray(b.actions) || !b.actions.length) w.push(where + ' : aucune action');
-        if (b.status && !STATUSES.includes(b.status)) w.push(where + ' : statut invalide (' + b.status + ')');
-        for (const pid of b.products || []) {
-          if (!products[pid]) w.push(where + ' : produit introuvable (' + pid + ')');
-        }
+        const where = 'Les étapes « ' + (b.brand || 'marque n° ' + (i + 1)) + ' » de ' + nodeName(id);
+        if (!b.brand) add(where + ' n\'indiquent pas de marque.', 'node', id);
+        if (!Array.isArray(b.actions) || !b.actions.filter(a => String(a).trim()).length) add(where + ' ne contiennent aucune action.', 'node', id);
+        if (b.status && !STATUSES.includes(b.status)) add(where + ' ont un statut invalide (« ' + b.status + ' »).', 'node', id);
+        for (const pid of b.products || []) if (!products[pid]) add(where + ' citent un produit inconnu (« ' + pid + ' »).', 'node', id);
       });
     }
 
-    // Nœuds orphelins
+    for (const [fid, f] of Object.entries(families)) {
+      if (!f.label) add('La famille « ' + fid + ' » n\'a pas de nom.', 'family', fid);
+      for (const sid of f.symptoms || []) {
+        if (!symptomIds.has(sid)) add('La famille ' + q(f.label || fid) + ' est reliée à un symptôme inconnu (« ' + sid + ' »).', 'family', fid);
+      }
+    }
+    for (const [pid, pr] of Object.entries(products)) {
+      const name = q([pr.brand, pr.model].filter(Boolean).join(' ') || pid);
+      if (!pr.brand || !pr.model) add('Le produit ' + name + ' n\'a pas de marque ou de modèle.', 'product', pid);
+      if (!families[pr.family]) add('Le produit ' + name + ' appartient à une famille inconnue (« ' + pr.family + ' »).', 'product', pid);
+      if (pr.source && !sources[pr.source]) add('Le produit ' + name + ' cite une source inconnue (« ' + pr.source + ' »).', 'product', pid);
+      if (pr.page != null && !(Number.isInteger(pr.page) && pr.page > 0)) add('La page du produit ' + name + ' doit être un nombre entier (actuellement « ' + pr.page + ' »).', 'product', pid);
+    }
+
+    // Étapes jamais atteintes
+    const reached = new Set();
     const walk = (id) => {
       if (!id || reached.has(id) || !nodes[id]) return;
       reached.add(id);
       for (const o of nodes[id].options || []) walk(o.next);
     };
-    for (const s of data.symptoms || []) walk(s.start);
+    for (const s of symptoms) walk(s.start);
     for (const id of Object.keys(nodes)) {
-      if (!reached.has(id)) w.push('Nœud « ' + id + ' » inaccessible depuis les symptômes');
+      if (!reached.has(id)) add(cap(nodeName(id)) + ' n\'est atteinte depuis aucun symptôme.', 'node', id);
     }
     return w;
+  }
+
+  function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+
+  /** Version texte (pied de page, console). */
+  function validate(data) {
+    return validateDetailed(data).map(x => x.msg);
   }
 
   /* ---------------------------------------------------------------------
@@ -476,6 +494,9 @@
     if (parts[0] === 'd' && parts[1]) {
       return { view: 'diag', symptomId: parts[1], path: parts.slice(2) };
     }
+    if (parts[0] === 'editeur') {
+      return { view: 'editor', sub: parts.slice(1) };
+    }
     if (parts[0] && parts[0].split('?')[0] === 'produits') {
       const q = (raw.split('?')[1] || '').match(/(?:^|&)q=([^&]*)/);
       let query = '';
@@ -519,7 +540,12 @@
     if (!state.data) return;
     const route = parseHash();
 
-    setActiveTab(route.view === 'products' ? 'products' : 'diag');
+    setActiveTab(route.view === 'products' ? 'products' : route.view === 'editor' ? 'editor' : 'diag');
+    if (route.view === 'editor') {
+      trackNav();
+      renderEditor(route);
+      return;
+    }
     if (route.view === 'products') {
       trackNav();
       renderProducts(route);
@@ -553,7 +579,7 @@
   }
 
   function showView(name) {
-    for (const v of ['loading', 'error', 'home', 'diag', 'products']) {
+    for (const v of ['loading', 'error', 'home', 'diag', 'products', 'editor']) {
       const el = $('#view-' + v);
       if (el) el.hidden = v !== name;
     }
@@ -790,7 +816,7 @@
 
     $('#btn-back').disabled = false;
 
-    if (isResult) {
+    if (isResult && !state.preview) {
       recordRecent({
         hash: hashNow,
         symptomTitle: rootSymptom.title + (active !== rootSymptom ? ' → ' + active.title : ''),
@@ -1369,6 +1395,74 @@
   }
 
   /* ---------------------------------------------------------------------
+     Éditeur (editor.js, chargé seulement à la demande) et mode test
+     --------------------------------------------------------------------- */
+  let editorPromise = null;
+  function loadEditor() {
+    if (window.DIAGSAV_EDITOR) return Promise.resolve(window.DIAGSAV_EDITOR);
+    if (!editorPromise) {
+      editorPromise = new Promise((resolve, reject) => {
+        const sc = document.createElement('script');
+        sc.src = new URL('editor.js', SCRIPT_URL).href;
+        sc.onload = () => window.DIAGSAV_EDITOR ? resolve(window.DIAGSAV_EDITOR) : reject(new Error('editor.js chargé mais inactif'));
+        sc.onerror = () => reject(new Error('editor.js introuvable (' + sc.src + ')'));
+        document.head.append(sc);
+      });
+      editorPromise.catch(() => { editorPromise = null; });
+    }
+    return editorPromise;
+  }
+
+  async function renderEditor(route) {
+    if (state.preview) stopPreview(false);
+    showView('editor');
+    renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Éditeur des procédures', href: '#/editeur' }]);
+    const root = $('#editor-root');
+    try {
+      const ed = await loadEditor();
+      ed.render(route, root);
+    } catch (err) {
+      console.error('[DIAG·SAV] Éditeur :', err);
+      root.replaceChildren(h('p', { class: 'pstatus__error' }, 'L\'éditeur n\'a pas pu être chargé. ', h('code', null, err.message)));
+    }
+  }
+
+  /** Mode test : l'application tourne sur les données de l'éditeur, sans rien publier. */
+  function startPreview(decisions, catalogue, hash) {
+    state.preview = true;
+    ingest(JSON.parse(JSON.stringify(decisions)));
+    if (catalogue) {
+      buildCatalogueIndex(JSON.parse(JSON.stringify(catalogue)));
+      cataloguePromise = Promise.resolve(state.catalogue);
+    }
+    $('#preview-banner').hidden = false;
+    document.body.classList.add('is-preview');
+    navigate(hash || '#/');
+  }
+
+  function stopPreview(goBack = true) {
+    if (!state.preview) return;
+    state.preview = false;
+    ingest(JSON.parse(JSON.stringify(state.published)));
+    state.pIndex = null; state.catalogue = null; cataloguePromise = null;
+    $('#preview-banner').hidden = true;
+    document.body.classList.remove('is-preview');
+    if (goBack) navigate('#/editeur');
+  }
+
+  /* Interface exposée à editor.js (même origine, aucun appel externe). */
+  window.DIAGSAV = {
+    h, icon, normalize, truncate, toast, jsonErrorPosition, validateDetailed, severityInfo, SEVERITY_ORDER,
+    published: () => state.published,
+    loadPublishedCatalogue: async () => {
+      const res = await fetch(CATALOGUE_URL, { cache: 'no-cache' });
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + CATALOGUE_URL);
+      return res.json();
+    },
+    startPreview, stopPreview, navigate
+  };
+
+  /* ---------------------------------------------------------------------
      Rapport texte (à coller dans un ticket)
      --------------------------------------------------------------------- */
   function buildReport(node, rootSymptom, active, steps) {
@@ -1470,6 +1564,8 @@
       onProductInput();
     }));
 
+    $('#btn-exit-preview').addEventListener('click', () => stopPreview(true));
+
     $('#btn-back').addEventListener('click', goBack);
     $('#btn-restart').addEventListener('click', restart);
     $('#btn-retry').addEventListener('click', loadData);
@@ -1496,6 +1592,7 @@
         if (e.key === '/') { e.preventDefault(); input.focus(); input.select(); }
         return;
       }
+      if (route.view === 'editor') return;
       if (route.view === 'products') {
         if (e.key === '/') { e.preventDefault(); $('#psearch-input').focus(); $('#psearch-input').select(); }
         return;
