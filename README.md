@@ -15,14 +15,15 @@ Site web statique qui remplace les procédures papier par un arbre de décision 
 ```
 .
 ├── index.html             Structure de la page
-├── styles.css             Thème sombre « control room »
-├── app.js                 Navigation, recherche, historique, rendu
+├── styles.css             Thème sombre épuré
+├── app.js                 Navigation, recherche, diagnostic, assistant produit
 ├── sw.js                  Service worker (mode hors ligne)
 ├── manifest.webmanifest   Installation sur l'écran d'accueil (tablette)
 ├── icon.svg               Icône de l'application
 ├── .nojekyll              Désactive Jekyll sur GitHub Pages
 └── data/
-    └── decisions.json     Arbre de décision (symptômes, questions, résultats)
+    ├── decisions.json     Arbre de décision + fiches produits (marque, modèle, page)
+    └── catalogue.json     Caractéristiques produits et synonymes (Assistant produit)
 ```
 
 ---
@@ -209,6 +210,38 @@ Convention d'identifiants conseillée : `<préfixe>-q<n>` pour les questions et 
 
 ---
 
+## Assistant produit
+
+L'onglet **Assistant produit** (`#/produits`) répond aux questions sur le matériel du catalogue Focus été 2025, **sans IA ni connexion** : c'est un moteur de recherche local sur les caractéristiques.
+
+- On tape une question en langage courant : « switch PoE 48 ports », « vidéoprojecteur 8000 lumens », « caméra PTZ SDI », « MCTRL4K ».
+- Chaque réponse cite le **produit**, les **caractéristiques qui correspondent** (surlignées) et la **page du catalogue**.
+- Les nombres suivis d'une unité sont compris comme un minimum : `48 ports` → 48 ports ou plus ; `8000 lumens` → 8000 lm ou plus ; `70 m`. Les tailles d'écran (`98 pouces`, `98"`) sont comparées à l'identique.
+- Tous les mots doivent être trouvés. Sinon l'assistant le dit : « Aucun produit ne remplit tous les critères » (correspondance partielle, au moins 2 critères), ou « Aucun produit du catalogue ne correspond ». **Il n'invente jamais de réponse.**
+- La fiche d'un produit (`#/produits/<id>`) propose **Diagnostiquer ce produit** (symptômes de sa famille, diagnostic ouvert avec le produit présélectionné) et un accès direct aux **étapes spécifiques** à ce produit.
+- La requête est dans l'URL (`#/produits?q=…`) : un lien peut être partagé.
+
+### Format de `data/catalogue.json`
+
+```json
+{
+  "meta": { "version": "1.0.0", "updated": "2026-11-21", "source": "focus-ete-2025" },
+  "synonyms": { "lm": "lumens", "projo": "videoprojecteur", "sans fil": "sans-fil" },
+  "products": {
+    "novastar-mctrl4k": { "facts": ["Contrôleur LED 4K", "HDR10 et HLG", "Latence inférieure à 1 ms"] }
+  }
+}
+```
+
+- Les **identifiants** de `products` sont ceux de `decisions.json`. La marque, le modèle, la page et la famille ne sont pas répétés : on les modifie dans `decisions.json`.
+- `facts` : 2 à 6 caractéristiques **courtes et factuelles**, reformulées. Pas de texte commercial ni de prix.
+- `synonyms` : mot ou expression → terme utilisé dans les fiches. Ajoutez-y le vocabulaire des techniciens (« projo », « alim »…).
+- Un identifiant inconnu est signalé dans la console du navigateur.
+
+Pour **ajouter un produit** : créer sa fiche dans `decisions.json` (`products`), puis ses caractéristiques dans `catalogue.json`.
+
+---
+
 ## En cas d'erreur de chargement
 
 Si les procédures ne se chargent pas, l'écran d'erreur indique la cause, l'adresse exacte du fichier et le statut HTTP :
@@ -229,7 +262,7 @@ Le chemin du fichier est calculé à partir de `app.js`, et une adresse sans `/`
 
 Au premier chargement, `sw.js` met en cache tous les fichiers. Ensuite :
 
-- **Procédures** (`decisions.json`) : le réseau est interrogé en premier, le cache sert de secours. Une modification publiée est donc visible dès que l'appareil a du réseau.
+- **Données** (`decisions.json`, `catalogue.json`) : le réseau est interrogé en premier, le cache sert de secours. Une modification publiée est donc visible dès que l'appareil a du réseau.
 - **Code** (HTML, CSS, JS) : servi depuis le cache, mis à jour en arrière-plan.
 
 Après une modification de `index.html`, `styles.css` ou `app.js`, changez `CACHE_VERSION` dans `sw.js` (ex. `diagsav-v1.0.1`) pour forcer la mise à jour chez tous les utilisateurs.
