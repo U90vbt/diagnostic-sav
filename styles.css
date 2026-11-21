@@ -171,6 +171,23 @@ kbd {
 .pstatus__error { color: var(--sev-high); }
 .pstatus__error code { display: block; margin-top: 8px; color: var(--text-2); white-space: pre-wrap; word-break: break-all; }
 
+.pstatus__partial, .pstatus__none { color: var(--sev-moderate); }
+.presults { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+.presults__more { display: flex; margin: 22px auto 0; }
+.pcard {
+  display: flex; flex-direction: column; gap: 10px; height: 100%;
+  padding: 20px 22px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow);
+}
+.pcard__title { font-size: 1.2rem; }
+.pcard__title a { color: var(--text); text-decoration: none; }
+.pcard__title a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.pcard__type { margin: 2px 0 0; font-size: .86rem; color: var(--muted); }
+.pcard__facts { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.pcard__facts li { padding: 6px 10px; border-radius: var(--r-sm); background: var(--surface-2); font-size: .9rem; color: var(--text-2); }
+.pcard__facts li.is-match { background: var(--green-soft); color: #dcefc4; box-shadow: inset 3px 0 0 var(--green); }
+.pcard__src { margin: auto 0 0; padding-top: 6px; font-size: .8rem; color: var(--muted); }
+.pcard__actions { display: flex; gap: 8px; }
+
 /* ---------- Fil d'Ariane ---------- */
 .crumbs { max-width: var(--maxw); width: 100%; margin: 14px auto 0; padding: 0 var(--gap); }
 .crumbs__list {

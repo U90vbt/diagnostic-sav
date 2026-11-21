@@ -1063,8 +1063,171 @@
     return cataloguePromise;
   }
 
+  /* ----- Moteur de recherche produit (100 % local) ----- */
+  const P_STOP = new Set([...STOP_WORDS, 'quel', 'quels', 'quelle', 'quelles', 'produit', 'produits', 'avec', 'pour',
+    'qui', 'que', 'quoi', 'sont', 'existe', 'avez', 'a', 'un', 'une', 'des', 'les', 'catalogue', 'modele', 'modeles',
+    'compatible', 'supporte', 'gere', 'faut', 'cherche', 'besoin', 'je', 'me', 'on', 'il', 'plus', 'moins', 'minimum', 'au']);
+  const UNITS = { lumen: 'lumens', nit: 'cd/m² / nits', port: 'ports', w: 'W', canal: 'canaux', canaux: 'canaux', m: 'm', pouce: 'pouces' };
+  // Unités comparées en « au moins » (luminosité, ports…) ; les tailles d'écran sont comparées à l'identique.
+  const EXACT_UNITS = new Set(['pouce']);
+
+  /** Normalise un texte pour l'index : minuscules, sans accents, milliers recollés, synonymes, singulier. */
+  function pNormalize(text, syn) {
+    let t = String(text || '')
+      .replace(/(\d)[\s\u00a0\u202f](?=\d{3}\b)/g, '$1')             // 8 000 → 8000
+      .replace(/(\d),(\d)/g, '$1.$2')                                   // 1,5 → 1.5
+      .replace(/(\d)\s*(?:"|”|''|’’|pouces?\b)/gi, '$1 pouce ')          // 98" → 98 pouce
+      .replace(/(\d)\s*V\b/g, '$1v');                                   // 100 V → 100v
+    t = ' ' + normalize(t).replace(/\bcd m2?\b/g, 'nit') + ' ';
+    for (const [k, v] of syn.phrases) t = t.split(' ' + k + ' ').join(' ' + v + ' ');
+    const singular = w => (w.length > 3 && /[a-z][sx]$/.test(w) && !/(ss|us|is)$/.test(w)) ? w.slice(0, -1) : w;
+    return t.trim().split(/\s+/).filter(Boolean)
+      .flatMap(w => (syn.words.get(w) || syn.words.get(singular(w)) || w).split(' '))   // un synonyme peut valoir plusieurs mots
+      .map(singular);
+  }
+
+  /** Valeurs numériques avec unité : « 5200 à 8200 lumens » → [5200 lumen, 8200 lumen]. */
+  function extractNumbers(tokens) {
+    const out = [];
+    let pending = [];
+    for (const t of tokens) {
+      if (/^\d+(\.\d+)?$/.test(t)) { pending.push(Number(t)); continue; }
+      if (UNITS[t] && pending.length) { for (const v of pending) out.push({ v, unit: t === 'canaux' ? 'canal' : t }); }
+      if (!['a', 'et', 'ou', 'de', 'jusqu', 'x'].includes(t)) pending = [];
+    }
+    return out;
+  }
+
   function buildCatalogueIndex(cat) {
+    const syn = { words: new Map(), phrases: [] };
+    for (const [k, v] of Object.entries(cat.synonyms || {})) {
+      const nk = normalize(k), nv = normalize(v);
+      if (!nk) continue;
+      if (nk.includes(' ')) syn.phrases.push([nk, nv]); else syn.words.set(nk, nv);
+    }
+    syn.phrases.sort((a, b) => b[0].length - a[0].length);
+    state.pSyn = syn;
+
+    state.pIndex = [];
+    for (const [id, entry] of Object.entries(cat.products || {})) {
+      const pr = state.products.get(id);
+      if (!pr) { console.warn('[DIAG·SAV] catalogue.json : produit inconnu dans decisions.json (' + id + ')'); continue; }
+      const fam = state.families.get(pr.family);
+      const facts = (entry.facts || []).map(text => {
+        const tokens = pNormalize(text, syn);
+        return { text, tokens, nums: extractNumbers(tokens) };
+      });
+      state.pIndex.push({
+        id, pr, facts,
+        fields: [
+          { w: 6, tokens: pNormalize(pr.brand, syn) },
+          { w: 6, tokens: pNormalize(pr.model, syn) },
+          { w: 6, tokens: pNormalize(pr.ref, syn) },
+          { w: 4, tokens: pNormalize(pr.type, syn) },
+          { w: 3, tokens: pNormalize(fam ? fam.label : '', syn) }
+        ]
+      });
+    }
     state.catalogue = cat;
+  }
+
+  const tokenHit = (tokens, q) => tokens.some(t => t === q || (q.length >= 3 && t.startsWith(q)));
+
+  /**
+   * Recherche : renvoie { results, partial }.
+   * results : [{ entry, score, matchedFacts:Set<index> }] ; partial = aucun produit ne couvre tous les critères.
+   */
+  function productSearch(query) {
+    const raw = pNormalize(query, state.pSyn).filter(t => !P_STOP.has(t));
+    // contraintes numériques « 48 port », « 8000 lumen »
+    const constraints = [];
+    const words = [];
+    for (let i = 0; i < raw.length; i++) {
+      if (/^\d+(\.\d+)?$/.test(raw[i]) && UNITS[raw[i + 1]]) {
+        constraints.push({ v: Number(raw[i]), unit: raw[i + 1] === 'canaux' ? 'canal' : raw[i + 1] });
+        i++;
+      } else words.push(raw[i]);
+    }
+    const total = words.length + constraints.length;
+    if (!total) return { results: [], partial: false, criteria: 0 };
+
+    const scored = [];
+    for (const entry of state.pIndex) {
+      let score = 0, hits = 0;
+      const matchedFacts = new Set();
+      words.forEach((q, qi) => {
+        let best = 0;
+        for (const f of entry.fields) if (f.w > best && tokenHit(f.tokens, q)) best = f.w;
+        // le premier mot désigne souvent le type de produit cherché (« micro Dante PoE »)
+        if (qi === 0 && (tokenHit(entry.fields[3].tokens, q) || tokenHit(entry.fields[4].tokens, q))) best += 3;
+        entry.facts.forEach((f, i) => { if (tokenHit(f.tokens, q)) { matchedFacts.add(i); if (best < 2) best = 2; } });
+        if (best) { score += best; hits++; }
+      });
+      for (const c of constraints) {
+        let ok = false;
+        entry.facts.forEach((f, i) => {
+          const fits = n => n.unit === c.unit && (EXACT_UNITS.has(c.unit) ? Math.abs(n.v - c.v) < 0.5 : n.v >= c.v * 0.98);
+          if (f.nums.some(fits)) { ok = true; matchedFacts.add(i); }
+        });
+        if (ok) { score += 5; hits++; }
+      }
+      if (hits) scored.push({ entry, score, hits, matchedFacts });
+    }
+    const full = scored.filter(r => r.hits === total);
+    const sorter = (a, b) => b.score - a.score || a.entry.pr.brand.localeCompare(b.entry.pr.brand, 'fr');
+    if (full.length) return { results: full.sort(sorter), partial: false, criteria: total };
+    // correspondance partielle seulement si au moins 2 critères sont remplis (évite « sys » → « système »)
+    const half = scored.filter(r => total > 2 && r.hits >= Math.max(2, Math.ceil(total / 2))).sort((a, b) => b.hits - a.hits || sorter(a, b));
+    return { results: half, partial: half.length > 0, criteria: total };
+  }
+
+  function productCard(r) {
+    const { pr, facts, id } = r.entry;
+    const fam = state.families.get(pr.family);
+    return h('li', null,
+      h('article', { class: 'pcard' },
+        h('header', { class: 'pcard__head' },
+          h('h3', { class: 'pcard__title' }, h('a', { href: '#/produits/' + encodeURIComponent(id) }, productLabel(pr))),
+          h('p', { class: 'pcard__type' }, pr.type + (fam ? ' · ' + fam.label : ''))
+        ),
+        h('ul', { class: 'pcard__facts' }, facts.map((f, i) =>
+          h('li', { class: r.matchedFacts.has(i) ? 'is-match' : null }, f.text))),
+        h('p', { class: 'pcard__src' },
+          'Source : ' + productSourceLabel(pr) + (pr.ref ? ' · réf. ' + pr.ref : '')),
+        h('div', { class: 'pcard__actions' },
+          h('a', { class: 'btn btn--small btn--ghost', href: '#/produits/' + encodeURIComponent(id) }, 'Fiche et diagnostic →'))
+      )
+    );
+  }
+
+  const P_PAGE = 20;
+  function renderProductResults(query, limit = P_PAGE) {
+    const box = $('#products-results');
+    const statusEl = $('#products-status');
+    const q = query.trim();
+    if (!q) {
+      statusEl.textContent = state.pIndex.length + ' produits indexés. Tapez une marque, une référence ou une caractéristique.';
+      box.replaceChildren();
+      return;
+    }
+    const { results, partial } = productSearch(q);
+    if (!results.length) {
+      statusEl.replaceChildren(h('p', { class: 'pstatus__none' },
+        'Aucun produit du catalogue ne correspond à « ' + q + ' ». ',
+        'Essayez avec moins de mots, une marque ou une référence.'));
+      box.replaceChildren();
+      return;
+    }
+    statusEl.replaceChildren(h('p', { class: partial ? 'pstatus__partial' : null },
+      partial
+        ? 'Aucun produit ne remplit tous les critères. ' + results.length + ' produit' + (results.length > 1 ? 's' : '') + ' en remplissent une partie :'
+        : results.length + ' produit' + (results.length > 1 ? 's' : '') + ' correspond' + (results.length > 1 ? 'ent' : '') + ' à « ' + q + ' » :'));
+    const list = h('ul', { class: 'presults' }, results.slice(0, limit).map(productCard));
+    const more = results.length > limit
+      ? h('button', { type: 'button', class: 'btn btn--ghost presults__more', onclick: () => renderProductResults(query, limit + P_PAGE) },
+          'Afficher ' + Math.min(P_PAGE, results.length - limit) + ' de plus (' + (results.length - limit) + ' restants)')
+      : null;
+    box.replaceChildren(list, more || '');
   }
 
   async function renderProducts(route) {
@@ -1080,7 +1243,20 @@
       statusEl.replaceChildren(h('p', { class: 'pstatus__error' }, 'Le catalogue produit n\'a pas pu être chargé. ', h('code', null, err.message)));
       return;
     }
-    statusEl.textContent = Object.keys(state.catalogue.products || {}).length + ' produits indexés.';
+    const input = $('#psearch-input');
+    if (route.query !== undefined && input.value !== route.query) input.value = route.query;
+    $('#product-detail').replaceChildren();
+    renderProductResults(input.value);
+  }
+
+  let pTimer = null;
+  function onProductInput() {
+    clearTimeout(pTimer);
+    pTimer = setTimeout(() => {
+      const q = $('#psearch-input').value;
+      history.replaceState(null, '', '#/produits' + (q.trim() ? '?q=' + encodeURIComponent(q.trim()) : ''));
+      if (state.pIndex) renderProductResults(q);
+    }, 120);
   }
 
   /* ---------------------------------------------------------------------
@@ -1178,6 +1354,13 @@
       card.style.setProperty('--my', (e.clientY - r.top) + 'px');
     });
 
+    $('#psearch-input').addEventListener('input', onProductInput);
+    $('#psearch-form').addEventListener('submit', (e) => { e.preventDefault(); onProductInput(); $('#psearch-input').blur(); });
+    document.querySelectorAll('[data-psuggest]').forEach(btn => btn.addEventListener('click', () => {
+      $('#psearch-input').value = btn.dataset.psuggest;
+      onProductInput();
+    }));
+
     $('#btn-back').addEventListener('click', goBack);
     $('#btn-restart').addEventListener('click', restart);
     $('#btn-retry').addEventListener('click', loadData);
@@ -1202,6 +1385,10 @@
 
       if (route.view === 'home') {
         if (e.key === '/') { e.preventDefault(); input.focus(); input.select(); }
+        return;
+      }
+      if (route.view === 'products') {
+        if (e.key === '/') { e.preventDefault(); $('#psearch-input').focus(); $('#psearch-input').select(); }
         return;
       }
 
