@@ -1,10 +1,11 @@
 {
   "meta": {
     "title": "Assistant de diagnostic SAV — Niveau 1",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "updated": "2026-11-21",
     "maintainer": "Équipe SAV",
-    "disclaimer": "Diagnostic de premier niveau. Toute intervention à l'intérieur d'un équipement sous tension est réservée au personnel habilité."
+    "disclaimer": "Diagnostic de premier niveau. Toute intervention à l'intérieur d'un équipement sous tension est réservée au personnel habilité.",
+    "schemaVersion": 2
   },
   "severities": {
     "low": {
@@ -687,6 +688,21 @@
         "Contrôler le budget PoE total du switch : la somme des appareils ne doit pas le dépasser.",
         "Vérifier la longueur (100 m max) et la catégorie du câble (Cat5e minimum).",
         "Tester sur un autre port ou avec un injecteur PoE dédié."
+      ],
+      "brandSteps": [
+        {
+          "brand": "Netgear",
+          "products": [
+            "netgear-gsm4248px",
+            "netgear-gsm4352",
+            "netgear-gsm4230px"
+          ],
+          "status": "draft",
+          "actions": [
+            "Consulter la page PoE du switch : puissance consommée par port et budget restant.",
+            "Vérifier que la classe PoE délivrée sur le port correspond à celle de l'appareil."
+          ]
+        }
       ]
     },
     "reboot-r-bloc": {
@@ -840,7 +856,34 @@
         "Vérifier le routage de la matrice et les niveaux des faders de sortie.",
         "Ne pas modifier le fichier de conception sans validation : noter l'état avant toute action."
       ],
-      "escalate": "N2 si une modification du design est nécessaire."
+      "escalate": "N2 si une modification du design est nécessaire.",
+      "brandSteps": [
+        {
+          "brand": "Biamp",
+          "products": [
+            "biamp-tesiraforte-x",
+            "biamp-tesiraforte"
+          ],
+          "status": "draft",
+          "actions": [
+            "Se connecter avec le logiciel Tesira : vérifier que l'appareil est en ligne et que le bon fichier de configuration est chargé.",
+            "Passer en mode « live » pour visualiser les vumètres et rechercher un bloc de mute ou un niveau à zéro.",
+            "Consulter le journal d'événements de l'appareil pour repérer une alarme (DSP, réseau, audio)."
+          ]
+        },
+        {
+          "brand": "Shure",
+          "products": [
+            "shure-p300",
+            "shure-aniusb-matrix"
+          ],
+          "status": "draft",
+          "actions": [
+            "Ouvrir Shure Designer (ou l'interface web de l'appareil) et vérifier les vumètres d'entrée et de sortie.",
+            "Vérifier la matrice de routage et les mutes, y compris le mute logique commandé par les micros."
+          ]
+        }
+      ]
     },
     "audio-r-liaison": {
       "type": "result",
@@ -869,6 +912,21 @@
       "escalate": "Atelier si la protection persiste ampli à vide.",
       "related": [
         "surchauffe"
+      ],
+      "brandSteps": [
+        {
+          "brand": "Powersoft",
+          "products": [
+            "powersoft-mezzo",
+            "powersoft-unica",
+            "powersoft-nota"
+          ],
+          "status": "draft",
+          "actions": [
+            "Ouvrir ArmoníaPlus sur un PC du même réseau pour lire l'état et les alarmes de chaque canal (protection, température, charge).",
+            "Comparer l'impédance mesurée par l'ampli sur le canal en défaut avec celle des autres canaux."
+          ]
+        }
       ]
     },
     "audio-r-hp": {
@@ -1159,6 +1217,22 @@
         "Sur un PC : contrôler le mode d'affichage (dupliquer / étendre) et la résolution.",
         "Tester une autre sortie de la source ou une autre source.",
         "Redémarrer la source."
+      ],
+      "brandSteps": [
+        {
+          "brand": "Barco ClickShare",
+          "products": [
+            "barco-clickshare-c-5-c-10-gen-2",
+            "barco-clickshare-cx-20-cx-30-gen-2",
+            "barco-clickshare-cx-50-gen-2"
+          ],
+          "status": "draft",
+          "actions": [
+            "Réappairer le bouton en le branchant sur le port USB de la base, puis attendre la fin de l'appairage.",
+            "Vérifier que la base affiche bien son écran d'accueil sur l'afficheur (sortie HDMI de la base).",
+            "Ouvrir l'interface web de la base pour vérifier la version du firmware et l'état réseau."
+          ]
+        }
       ]
     },
     "video-r-extendeur": {
@@ -1171,6 +1245,22 @@
         "Contrôler les LED de lien / HDCP sur les deux boîtiers.",
         "Vérifier la catégorie (Cat6 minimum) et la longueur du câble ; éviter les prises intermédiaires.",
         "Réduire la résolution de la source pour tester une limite de bande passante."
+      ],
+      "brandSteps": [
+        {
+          "brand": "Kramer / Lindy",
+          "products": [
+            "kramer-ext3-h-t",
+            "lindy-38346",
+            "lindy-38360"
+          ],
+          "status": "draft",
+          "actions": [
+            "Vérifier les voyants de liaison (Link / HDCP) sur l'émetteur et le récepteur.",
+            "HDBaseT 3.0 : respecter la longueur maximale indiquée pour le modèle et utiliser un câble Cat6A blindé.",
+            "Extendeur fibre : vérifier la propreté et le sens des connecteurs fibre."
+          ]
+        }
       ]
     },
     "video-r-edid": {
@@ -1183,6 +1273,23 @@
         "Forcer un EDID fixe (ex. 1080p60) sur la matrice ou le sélecteur.",
         "Vérifier que tous les maillons sont compatibles avec la version HDCP de la source.",
         "Remplacer le câble par un câble certifié."
+      ],
+      "brandSteps": [
+        {
+          "brand": "Kramer / Visionary",
+          "products": [
+            "kramer-kds-en7",
+            "kramer-kds-dec7",
+            "visionary-e5100-d5100",
+            "visionary-duet5"
+          ],
+          "status": "draft",
+          "actions": [
+            "Ouvrir l'interface web de l'encodeur : vérifier la résolution d'entrée détectée et l'EDID présenté à la source.",
+            "Ouvrir l'interface web du décodeur : vérifier qu'il est abonné au bon flux (canal) et le format de sortie.",
+            "Vérifier sur le switch que le multicast (IGMP) est correctement configuré."
+          ]
+        }
       ]
     },
     "video-r-source-noire": {
@@ -1206,7 +1313,24 @@
         "Écran : éclairer la dalle avec une lampe torche pour voir si une image faible apparaît (rétroéclairage HS).",
         "Remplacer l'afficheur et ouvrir un retour atelier."
       ],
-      "escalate": "Atelier."
+      "escalate": "Atelier.",
+      "brandSteps": [
+        {
+          "brand": "Vidéoprojecteurs (Epson, Panasonic, Barco, Sharp/NEC)",
+          "products": [
+            "epson-eb-l890e",
+            "panasonic-pt-mz882",
+            "barco-serie-i600",
+            "sharp-pv800ul"
+          ],
+          "status": "draft",
+          "actions": [
+            "Relever la combinaison des voyants (alimentation, source lumineuse, température) et la comparer au tableau du manuel du modèle.",
+            "Consulter dans le menu du projecteur la page d'état ou d'informations (heures de la source lumineuse, températures, erreurs).",
+            "Vérifier l'interface web du projecteur si l'écran ne montre rien."
+          ]
+        }
+      ]
     },
     "img-q1": {
       "type": "question",
@@ -1526,7 +1650,24 @@
         "Activer l'IGMP snooping (avec querier) si des flux multicast sont utilisés.",
         "Passer les flux en unicast si leur nombre le permet."
       ],
-      "escalate": "Équipe réseau."
+      "escalate": "Équipe réseau.",
+      "brandSteps": [
+        {
+          "brand": "Netgear",
+          "products": [
+            "netgear-gsm4248px",
+            "netgear-gsm4352",
+            "netgear-gsm4230px",
+            "netgear-xsm4340v"
+          ],
+          "status": "draft",
+          "actions": [
+            "Ouvrir l'interface AV des switchs M4250 / M4350 et appliquer le profil prévu pour le protocole utilisé (Dante, AES67, AV sur IP).",
+            "Vérifier que l'IGMP snooping et un querier sont actifs sur le VLAN audio.",
+            "Contrôler que les liens entre switchs sont configurés de la même manière des deux côtés."
+          ]
+        }
+      ]
     },
     "lat-r-latence": {
       "type": "result",
@@ -1548,6 +1689,22 @@
         "Désactiver l'EEE / Green Ethernet sur tous les ports audio.",
         "Vérifier que les liens entre switchs sont au moins en Gigabit.",
         "Transmettre la configuration recommandée à l'équipe réseau."
+      ],
+      "brandSteps": [
+        {
+          "brand": "Netgear",
+          "products": [
+            "netgear-gsm4248px",
+            "netgear-gsm4352",
+            "netgear-gsm4230px",
+            "netgear-xsm4340v"
+          ],
+          "status": "draft",
+          "actions": [
+            "Dans l'interface du switch : vérifier que l'économie d'énergie (EEE / Green Ethernet) est désactivée sur les ports audio.",
+            "Appliquer un profil AV prédéfini, qui règle en une fois les options adaptées."
+          ]
+        }
       ]
     },
     "th-q1": {
@@ -1622,7 +1779,23 @@
         "Ouvrir un retour atelier."
       ],
       "warning": "Un fonctionnement prolongé sans ventilation peut endommager définitivement l'électronique.",
-      "escalate": "Atelier."
+      "escalate": "Atelier.",
+      "brandSteps": [
+        {
+          "brand": "Vidéoprojecteurs (Epson, Panasonic, Barco, Sharp/NEC)",
+          "products": [
+            "epson-eb-l890e",
+            "panasonic-pt-mz882",
+            "barco-serie-i600",
+            "sharp-pv800ul"
+          ],
+          "status": "draft",
+          "actions": [
+            "Relever le voyant de température et le code d'erreur éventuel affiché.",
+            "Vérifier et nettoyer le filtre à air si le modèle en possède un."
+          ]
+        }
+      ]
     },
     "th-r-poussiere": {
       "type": "result",
@@ -1759,6 +1932,20 @@
         "Exporter les journaux avant tout redémarrage complet.",
         "En palliatif, planifier un redémarrage automatique en dehors des heures d'exploitation.",
         "Vérifier les notes de version : fuite mémoire connue ?"
+      ],
+      "brandSteps": [
+        {
+          "brand": "BrightSign",
+          "products": [
+            "brightsign-xc4055-xc2055"
+          ],
+          "status": "draft",
+          "actions": [
+            "Relever l'état des voyants du lecteur.",
+            "Se connecter au serveur web de diagnostic du lecteur (adresse IP du lecteur) pour lire l'état et les journaux.",
+            "Vérifier la carte mémoire (présence, contenu) et republier la présentation depuis BrightAuthor:connected."
+          ]
+        }
       ]
     },
     "gel-r-materiel": {
@@ -2200,6 +2387,20 @@
         "Vérifier que l'émetteur n'est pas en mode veille / RF coupée.",
         "Resynchroniser l'émetteur avec le récepteur (fonction Sync / IR).",
         "Vérifier que le groupe, le canal et la bande de fréquences sont identiques des deux côtés."
+      ],
+      "brandSteps": [
+        {
+          "brand": "Shure",
+          "products": [
+            "shure-slxd"
+          ],
+          "status": "draft",
+          "actions": [
+            "Récepteur SLXD : lancer Scan pour choisir une fréquence libre, puis Sync en plaçant l'émetteur face au port infrarouge du récepteur.",
+            "Vérifier sur l'émetteur que la fréquence affichée correspond au récepteur après la synchronisation.",
+            "Accus rechargeables Shure : contrôler l'autonomie restante sur l'afficheur de l'émetteur ou du récepteur."
+          ]
+        }
       ]
     },
     "hf-r-antennes": {
@@ -2227,7 +2428,20 @@
         "Rester dans les bandes autorisées pour le matériel utilisé.",
         "Noter la fréquence perturbée dans le rapport pour les prochains montages sur ce site."
       ],
-      "escalate": "Régisseur du salon si le conflit vient d'un autre stand."
+      "escalate": "Régisseur du salon si le conflit vient d'un autre stand.",
+      "brandSteps": [
+        {
+          "brand": "Shure",
+          "products": [
+            "shure-slxd"
+          ],
+          "status": "draft",
+          "actions": [
+            "Relancer un Scan de groupe sur le récepteur SLXD, puis synchroniser chaque émetteur.",
+            "Avec plusieurs récepteurs en réseau : utiliser Wireless Workbench pour coordonner les fréquences de tous les canaux d'un coup."
+          ]
+        }
+      ]
     },
     "hf-r-sortie": {
       "type": "result",
@@ -2570,6 +2784,22 @@
         "Vérifier les convertisseurs fibre et leur alimentation.",
         "Vérifier que le bon preset / la bonne configuration est chargé sur le processeur.",
         "Si une boucle de secours est câblée : basculer dessus."
+      ],
+      "brandSteps": [
+        {
+          "brand": "Novastar",
+          "products": [
+            "novastar-mctrl4k",
+            "novastar-serie-coex"
+          ],
+          "status": "draft",
+          "actions": [
+            "MCTRL4K : vérifier en façade que les voyants des ports de sortie Ethernet utilisés clignotent (données envoyées).",
+            "Ouvrir NovaLCT (MCTRL4K) ou VMP (série COEX) sur un PC relié au contrôleur et vérifier que le contrôleur et les cartes de réception sont détectés.",
+            "Si des cartes de réception manquent : le défaut se situe sur le câble ou le caisson juste avant la première carte absente.",
+            "Recharger la configuration d'écran enregistrée lors du montage plutôt que de la refaire."
+          ]
+        }
       ]
     },
     "led-r-alim": {
@@ -2596,6 +2826,20 @@
         "Remplacer le câble de données (et/ou d'alimentation) entre ce caisson et le précédent.",
         "Si le défaut persiste : remplacer le caisson par un caisson de secours.",
         "Vérifier le serrage des connecteurs (vibrations au montage)."
+      ],
+      "brandSteps": [
+        {
+          "brand": "Novastar",
+          "products": [
+            "novastar-mctrl4k",
+            "novastar-serie-coex"
+          ],
+          "status": "draft",
+          "actions": [
+            "Dans NovaLCT ou VMP : repérer la première carte de réception qui ne répond plus ; le défaut est sur elle ou sur le câble qui la précède.",
+            "Si une boucle de secours est câblée sur un second port de sortie, vérifier qu'elle prend le relais."
+          ]
+        }
       ]
     },
     "led-r-module": {
@@ -2621,7 +2865,24 @@
         "Image qui scintille à la caméra : ajuster la fréquence de rafraîchissement ou synchroniser sur la régie (genlock).",
         "Recharger le preset validé lors du montage."
       ],
-      "escalate": "N2 si la configuration du processeur doit être modifiée."
+      "escalate": "N2 si la configuration du processeur doit être modifiée.",
+      "brandSteps": [
+        {
+          "brand": "Novastar",
+          "products": [
+            "novastar-mctrl4k",
+            "novastar-serie-coex",
+            "novastar-serie-h"
+          ],
+          "status": "draft",
+          "actions": [
+            "Dans NovaLCT ou VMP : vérifier que la résolution d'entrée correspond à celle de la source.",
+            "Contrôler la configuration d'écran (nombre de cartes, ordre de câblage, position de départ) par rapport au plan de montage.",
+            "Série H : vérifier dans l'interface web la disposition des couches (layers) et le preset chargé.",
+            "Image qui scintille à la caméra : ajuster la fréquence de rafraîchissement dans le logiciel ou synchroniser le contrôleur sur la régie."
+          ]
+        }
+      ]
     },
     "rg-q1": {
       "type": "question",
@@ -2693,6 +2954,20 @@
         "Vérifier la résolution de la source et la configuration de l'entrée (scaler activé si nécessaire).",
         "Vérifier la référence de synchronisation (genlock) si la régie en utilise une.",
         "Régler la sortie de la source (PC, caméra) sur le format du projet."
+      ],
+      "brandSteps": [
+        {
+          "brand": "Datapath",
+          "products": [
+            "datapath-serie-fx4",
+            "datapath-vsn-mini-300"
+          ],
+          "status": "draft",
+          "actions": [
+            "Ouvrir Wall Designer : vérifier la résolution des entrées et la configuration de sortie de chaque écran.",
+            "Recharger la configuration enregistrée lors du montage."
+          ]
+        }
       ]
     },
     "rg-r-entree": {
@@ -2731,6 +3006,1706 @@
         "Régler le format de sortie sur ce qu'accepte l'appareil en aval (écran, processeur LED, enregistreur).",
         "Vérifier le câble et les convertisseurs de la sortie."
       ]
+    }
+  },
+  "sources": {
+    "focus-ete-2025": {
+      "title": "Catalogue Focus",
+      "edition": "Été 2025",
+      "publisher": "Focus (groupe Midwich)"
+    }
+  },
+  "families": {
+    "ecran": {
+      "label": "Écrans professionnels",
+      "symptoms": [
+        "ecran-noir",
+        "image-instable",
+        "pas-alimentation"
+      ]
+    },
+    "ecran-interactif": {
+      "label": "Écrans interactifs et tactiles",
+      "symptoms": [
+        "ecran-noir",
+        "image-instable",
+        "peripherique-non-detecte"
+      ]
+    },
+    "affichage-epaper": {
+      "label": "Affichage e-paper",
+      "symptoms": [
+        "pas-alimentation",
+        "pas-reseau"
+      ]
+    },
+    "led-caisson": {
+      "label": "Murs LED (caissons, modules)",
+      "symptoms": [
+        "mur-led",
+        "pas-alimentation",
+        "surchauffe"
+      ]
+    },
+    "led-tout-en-un": {
+      "label": "Écrans LED tout-en-un",
+      "symptoms": [
+        "mur-led",
+        "ecran-noir",
+        "pas-alimentation"
+      ]
+    },
+    "led-controleur": {
+      "label": "Contrôleurs LED",
+      "symptoms": [
+        "mur-led",
+        "firmware-echec",
+        "firmware-incompatible"
+      ]
+    },
+    "videoprojecteur": {
+      "label": "Vidéoprojecteurs",
+      "symptoms": [
+        "ecran-noir",
+        "image-instable",
+        "surchauffe",
+        "pas-alimentation"
+      ]
+    },
+    "presentation-sans-fil": {
+      "label": "Présentation sans fil",
+      "symptoms": [
+        "ecran-noir",
+        "pas-reseau",
+        "firmware-echec"
+      ]
+    },
+    "visio": {
+      "label": "Barres et systèmes de visioconférence",
+      "symptoms": [
+        "peripherique-non-detecte",
+        "pas-de-son",
+        "ecran-noir",
+        "firmware-echec"
+      ]
+    },
+    "camera-usb": {
+      "label": "Caméras de visioconférence",
+      "symptoms": [
+        "peripherique-non-detecte",
+        "firmware-echec"
+      ]
+    },
+    "camera-ptz": {
+      "label": "Caméras PTZ et captation",
+      "symptoms": [
+        "regie-video",
+        "pas-reseau",
+        "peripherique-non-detecte"
+      ]
+    },
+    "regie-captation": {
+      "label": "Stations de captation et matrices",
+      "symptoms": [
+        "regie-video",
+        "ecran-noir",
+        "gel-plantage"
+      ]
+    },
+    "av-ip": {
+      "label": "AV sur IP et extendeurs",
+      "symptoms": [
+        "ecran-noir",
+        "image-instable",
+        "pas-reseau",
+        "latence-reseau"
+      ]
+    },
+    "commutateur-video": {
+      "label": "Commutateurs vidéo",
+      "symptoms": [
+        "ecran-noir",
+        "image-instable"
+      ]
+    },
+    "processeur-mur": {
+      "label": "Processeurs et contrôleurs de mur d'images",
+      "symptoms": [
+        "regie-video",
+        "image-instable",
+        "ecran-noir"
+      ]
+    },
+    "switch-reseau": {
+      "label": "Switchs réseau AV",
+      "symptoms": [
+        "pas-reseau",
+        "latence-reseau",
+        "redemarrages"
+      ]
+    },
+    "lecteur-media": {
+      "label": "Lecteurs d'affichage dynamique",
+      "symptoms": [
+        "ecran-noir",
+        "gel-plantage",
+        "pas-reseau"
+      ]
+    },
+    "gestion-salle": {
+      "label": "Réservation et capteurs de salle",
+      "symptoms": [
+        "pas-reseau",
+        "pas-alimentation"
+      ]
+    },
+    "dsp": {
+      "label": "Processeurs audio (DSP)",
+      "symptoms": [
+        "pas-de-son",
+        "son-degrade",
+        "larsen",
+        "latence-reseau",
+        "firmware-incompatible"
+      ]
+    },
+    "ampli": {
+      "label": "Amplificateurs",
+      "symptoms": [
+        "pas-de-son",
+        "son-degrade",
+        "surchauffe"
+      ]
+    },
+    "enceinte": {
+      "label": "Enceintes",
+      "symptoms": [
+        "pas-de-son",
+        "son-degrade"
+      ]
+    },
+    "enceinte-ip": {
+      "label": "Enceintes et amplis réseau (Dante, PoE)",
+      "symptoms": [
+        "pas-de-son",
+        "latence-reseau",
+        "pas-reseau"
+      ]
+    },
+    "micro-conference": {
+      "label": "Micros de conférence et plafond",
+      "symptoms": [
+        "pas-de-son",
+        "larsen",
+        "son-degrade",
+        "latence-reseau"
+      ]
+    },
+    "micro-hf": {
+      "label": "Micros HF",
+      "symptoms": [
+        "hf-coupures",
+        "larsen",
+        "pas-de-son"
+      ]
+    },
+    "diffusion-audio": {
+      "label": "Diffusion audio (Wi-Fi, Bluetooth, streaming)",
+      "symptoms": [
+        "pas-de-son",
+        "pas-reseau"
+      ]
+    },
+    "connectique": {
+      "label": "Prises, hubs et chargeurs",
+      "symptoms": [
+        "peripherique-non-detecte",
+        "pas-alimentation"
+      ]
+    }
+  },
+  "products": {
+    "samsung-qp105dx-5k": {
+      "brand": "Samsung",
+      "model": "QP105DX 5K",
+      "type": "Écran ultra-large 105\" 21:9",
+      "family": "ecran",
+      "ref": "SAMQP105DX5K",
+      "source": "focus-ete-2025",
+      "page": 9
+    },
+    "samsung-em32dx": {
+      "brand": "Samsung",
+      "model": "EM32DX",
+      "type": "Écran e-paper couleur 32\"",
+      "family": "affichage-epaper",
+      "ref": "EM32DX",
+      "source": "focus-ete-2025",
+      "page": 9
+    },
+    "samsung-serie-qhc": {
+      "brand": "Samsung",
+      "model": "Série QHC",
+      "type": "Écran UHD 700 nits",
+      "family": "ecran",
+      "source": "focus-ete-2025",
+      "page": 10
+    },
+    "lg-serie-xs4p": {
+      "brand": "LG",
+      "model": "Série XS4P",
+      "type": "Écran haute luminosité vitrine",
+      "family": "ecran",
+      "source": "focus-ete-2025",
+      "page": 11
+    },
+    "lg-86bh5f": {
+      "brand": "LG",
+      "model": "86BH5F",
+      "type": "Écran ultra-large 86\" 58:9",
+      "family": "ecran",
+      "ref": "86BH5F",
+      "source": "focus-ete-2025",
+      "page": 11
+    },
+    "lg-serie-tr3dq": {
+      "brand": "LG",
+      "model": "Série TR3DQ",
+      "type": "Écran interactif Android",
+      "family": "ecran-interactif",
+      "source": "focus-ete-2025",
+      "page": 12
+    },
+    "lg-serie-un640s": {
+      "brand": "LG",
+      "model": "Série UN640S",
+      "type": "Écran UHD 4K webOS",
+      "family": "ecran",
+      "source": "focus-ete-2025",
+      "page": 12
+    },
+    "iiyama-te7513a-te8613a": {
+      "brand": "iiyama",
+      "model": "TE7513A / TE8613A",
+      "type": "Écrans interactifs",
+      "family": "ecran-interactif",
+      "ref": "TE7513A-B1AG",
+      "source": "focus-ete-2025",
+      "page": 14
+    },
+    "iiyama-lh4375uhs-b1ag": {
+      "brand": "iiyama",
+      "model": "LH4375UHS-B1AG",
+      "type": "Moniteur professionnel 43\"",
+      "family": "ecran",
+      "ref": "LH4375UHS-B1AG",
+      "source": "focus-ete-2025",
+      "page": 15
+    },
+    "iiyama-le9864uhs-b1ag": {
+      "brand": "iiyama",
+      "model": "LE9864UHS-B1AG",
+      "type": "Écran 98\" 4K UHD",
+      "family": "ecran",
+      "ref": "LE9864UHS-B1AG",
+      "source": "focus-ete-2025",
+      "page": 15
+    },
+    "sharp-serie-m": {
+      "brand": "Sharp/NEC",
+      "model": "Série M",
+      "type": "Écrans professionnels",
+      "family": "ecran",
+      "ref": "SHARPM552",
+      "source": "focus-ete-2025",
+      "page": 16
+    },
+    "sharp-serie-me2": {
+      "brand": "Sharp/NEC",
+      "model": "Série ME2",
+      "type": "Écrans 4K Android",
+      "family": "ecran",
+      "source": "focus-ete-2025",
+      "page": 16
+    },
+    "sharp-serie-e": {
+      "brand": "Sharp/NEC",
+      "model": "Série E",
+      "type": "Écrans professionnels",
+      "family": "ecran",
+      "source": "focus-ete-2025",
+      "page": 17
+    },
+    "sharp-ep-c251": {
+      "brand": "Sharp",
+      "model": "EP-C251",
+      "type": "Écran e-paper 25,3\"",
+      "family": "affichage-epaper",
+      "ref": "EP-C251",
+      "source": "focus-ete-2025",
+      "page": 17
+    },
+    "philips-serie-4050q": {
+      "brand": "Philips",
+      "model": "Série 4050Q",
+      "type": "Écrans UHD 32–86\"",
+      "family": "ecran",
+      "source": "focus-ete-2025",
+      "page": 18
+    },
+    "philips-55bdl3305x": {
+      "brand": "Philips",
+      "model": "55BDL3305X",
+      "type": "Écran mur vidéo 55\"",
+      "family": "ecran",
+      "ref": "55BDL3305X",
+      "source": "focus-ete-2025",
+      "page": 18
+    },
+    "philips-32bdl5150i": {
+      "brand": "Philips",
+      "model": "32BDL5150I",
+      "type": "Signalétique e-paper",
+      "family": "affichage-epaper",
+      "ref": "32BDL5150I",
+      "source": "focus-ete-2025",
+      "page": 19
+    },
+    "philips-serie-3751t": {
+      "brand": "Philips",
+      "model": "Série 3751T",
+      "type": "Écrans interactifs",
+      "family": "ecran-interactif",
+      "ref": "43BDL3751T/00",
+      "source": "focus-ete-2025",
+      "page": 19
+    },
+    "samsung-the-wall-serie-mmf-a": {
+      "brand": "Samsung",
+      "model": "The Wall série MMF-A",
+      "type": "Mur LED",
+      "family": "led-caisson",
+      "source": "focus-ete-2025",
+      "page": 20
+    },
+    "samsung-the-wall-serie-iab": {
+      "brand": "Samsung",
+      "model": "The Wall série IAB",
+      "type": "Mur LED",
+      "family": "led-caisson",
+      "source": "focus-ete-2025",
+      "page": 20
+    },
+    "samsung-all-in-one-serie-iac": {
+      "brand": "Samsung",
+      "model": "All-in-One série IAC",
+      "type": "Écran LED tout-en-un",
+      "family": "led-tout-en-un",
+      "source": "focus-ete-2025",
+      "page": 20
+    },
+    "samsung-serie-ifr": {
+      "brand": "Samsung",
+      "model": "Série IFR",
+      "type": "Écran LED intérieur",
+      "family": "led-caisson",
+      "source": "focus-ete-2025",
+      "page": 21
+    },
+    "absen-serie-klcob-v2": {
+      "brand": "Absen",
+      "model": "Série KLCOB V2",
+      "type": "Écran LED COB",
+      "family": "led-caisson",
+      "source": "focus-ete-2025",
+      "page": 22
+    },
+    "absen-pl-v2": {
+      "brand": "Absen",
+      "model": "PL V2",
+      "type": "Écran LED intérieur (location)",
+      "family": "led-caisson",
+      "source": "focus-ete-2025",
+      "page": 22
+    },
+    "absen-icon-x": {
+      "brand": "Absen",
+      "model": "Icon X",
+      "type": "Écran Micro LED tout-en-un",
+      "family": "led-tout-en-un",
+      "source": "focus-ete-2025",
+      "page": 23
+    },
+    "absen-serie-nx": {
+      "brand": "Absen",
+      "model": "Série NX",
+      "type": "Écran LED intérieur",
+      "family": "led-caisson",
+      "source": "focus-ete-2025",
+      "page": 23
+    },
+    "lg-magnit-laaa": {
+      "brand": "LG",
+      "model": "MAGNIT LAAA",
+      "type": "Écran Micro LED tout-en-un",
+      "family": "led-tout-en-un",
+      "source": "focus-ete-2025",
+      "page": 24
+    },
+    "lg-lapa": {
+      "brand": "LG",
+      "model": "LAPA",
+      "type": "Écran LED tout-en-un",
+      "family": "led-tout-en-un",
+      "source": "focus-ete-2025",
+      "page": 24
+    },
+    "lg-lscc": {
+      "brand": "LG",
+      "model": "LSCC",
+      "type": "Écran LED ultra-fin",
+      "family": "led-caisson",
+      "source": "focus-ete-2025",
+      "page": 25
+    },
+    "sharp-led-e015i-135": {
+      "brand": "Sharp/NEC",
+      "model": "LED-E015I-135",
+      "type": "Écran LED 135\"",
+      "family": "led-tout-en-un",
+      "source": "focus-ete-2025",
+      "page": 26
+    },
+    "sharp-led-fc015i-137": {
+      "brand": "Sharp/NEC",
+      "model": "LED-FC015I-137",
+      "type": "Écran LED 137\"",
+      "family": "led-tout-en-un",
+      "source": "focus-ete-2025",
+      "page": 26
+    },
+    "philips-unite-5000": {
+      "brand": "Philips",
+      "model": "Unite 5000",
+      "type": "Écran LED haut de gamme",
+      "family": "led-caisson",
+      "source": "focus-ete-2025",
+      "page": 26
+    },
+    "philips-public-5000": {
+      "brand": "Philips",
+      "model": "Public 5000",
+      "type": "Écran LED",
+      "family": "led-caisson",
+      "source": "focus-ete-2025",
+      "page": 26
+    },
+    "novastar-serie-coex": {
+      "brand": "Novastar",
+      "model": "Série COEX",
+      "type": "Contrôleurs LED",
+      "family": "led-controleur",
+      "source": "focus-ete-2025",
+      "page": 27
+    },
+    "novastar-mctrl4k": {
+      "brand": "Novastar",
+      "model": "MCTRL4K",
+      "type": "Contrôleur LED 4K",
+      "family": "led-controleur",
+      "ref": "MCTRL4K",
+      "source": "focus-ete-2025",
+      "page": 27
+    },
+    "novastar-serie-h": {
+      "brand": "Novastar",
+      "model": "Série H",
+      "type": "Processeur de mur d'images",
+      "family": "processeur-mur",
+      "source": "focus-ete-2025",
+      "page": 63
+    },
+    "epson-eb-l790su": {
+      "brand": "Epson",
+      "model": "EB-L790SU",
+      "type": "Vidéoprojecteur courte focale laser",
+      "family": "videoprojecteur",
+      "ref": "EPSONEBL790SU",
+      "source": "focus-ete-2025",
+      "page": 28
+    },
+    "epson-eb-l890e": {
+      "brand": "Epson",
+      "model": "EB-L890E",
+      "type": "Vidéoprojecteur laser 8 000 lm",
+      "family": "videoprojecteur",
+      "ref": "EPSONEBL890E",
+      "source": "focus-ete-2025",
+      "page": 28
+    },
+    "epson-eb-w56s": {
+      "brand": "Epson",
+      "model": "EB-W56S",
+      "type": "Vidéoprojecteur courte focale",
+      "family": "videoprojecteur",
+      "ref": "EPSONEBW56S",
+      "source": "focus-ete-2025",
+      "page": 28
+    },
+    "epson-eb-pq2010b": {
+      "brand": "Epson",
+      "model": "EB-PQ2010B",
+      "type": "Vidéoprojecteur laser 4K",
+      "family": "videoprojecteur",
+      "ref": "EPSONEBPQ2010B",
+      "source": "focus-ete-2025",
+      "page": 28
+    },
+    "barco-serie-i600": {
+      "brand": "Barco",
+      "model": "Série I600",
+      "type": "Vidéoprojecteurs laser",
+      "family": "videoprojecteur",
+      "source": "focus-ete-2025",
+      "page": 29
+    },
+    "barco-qdx": {
+      "brand": "Barco",
+      "model": "QDX",
+      "type": "Vidéoprojecteurs 3DLP laser 4K",
+      "family": "videoprojecteur",
+      "source": "focus-ete-2025",
+      "page": 29
+    },
+    "barco-g62-w9": {
+      "brand": "Barco",
+      "model": "G62-W9",
+      "type": "Vidéoprojecteur laser DLP",
+      "family": "videoprojecteur",
+      "source": "focus-ete-2025",
+      "page": 29
+    },
+    "panasonic-pt-vmz82": {
+      "brand": "Panasonic",
+      "model": "PT-VMZ82",
+      "type": "Vidéoprojecteur laser 3LCD",
+      "family": "videoprojecteur",
+      "ref": "PANASPTVMZ82",
+      "source": "focus-ete-2025",
+      "page": 30
+    },
+    "panasonic-pt-mz882": {
+      "brand": "Panasonic",
+      "model": "PT-MZ882",
+      "type": "Vidéoprojecteur laser LCD",
+      "family": "videoprojecteur",
+      "ref": "PANASPTMZ882BEJ",
+      "source": "focus-ete-2025",
+      "page": 30
+    },
+    "panasonic-pt-rq7": {
+      "brand": "Panasonic",
+      "model": "PT-RQ7",
+      "type": "Vidéoprojecteur mono DLP",
+      "family": "videoprojecteur",
+      "ref": "PT-RQ7LBEJ",
+      "source": "focus-ete-2025",
+      "page": 30
+    },
+    "panasonic-pt-req15": {
+      "brand": "Panasonic",
+      "model": "PT-REQ15",
+      "type": "Vidéoprojecteur mono DLP",
+      "family": "videoprojecteur",
+      "ref": "PANASPTREQ15BEJ",
+      "source": "focus-ete-2025",
+      "page": 30
+    },
+    "sharp-pa1004ul": {
+      "brand": "Sharp/NEC",
+      "model": "PA1004UL",
+      "type": "Vidéoprojecteur 10 000 lm",
+      "family": "videoprojecteur",
+      "ref": "SHARPPA1004ULWH",
+      "source": "focus-ete-2025",
+      "page": 31
+    },
+    "sharp-pv800ul": {
+      "brand": "Sharp/NEC",
+      "model": "PV800UL",
+      "type": "Vidéoprojecteur laser",
+      "family": "videoprojecteur",
+      "ref": "SHARPPV800ULW",
+      "source": "focus-ete-2025",
+      "page": 31
+    },
+    "sharp-pv710ul": {
+      "brand": "Sharp/NEC",
+      "model": "PV710UL",
+      "type": "Vidéoprojecteur laser LCD",
+      "family": "videoprojecteur",
+      "ref": "SHARPPV710ULW",
+      "source": "focus-ete-2025",
+      "page": 31
+    },
+    "sharp-pa1505ul": {
+      "brand": "Sharp/NEC",
+      "model": "PA1505UL",
+      "type": "Vidéoprojecteur d'installation",
+      "family": "videoprojecteur",
+      "ref": "SHARPPA1505ULW",
+      "source": "focus-ete-2025",
+      "page": 31
+    },
+    "vivitek-du5053z": {
+      "brand": "Vivitek",
+      "model": "DU5053Z",
+      "type": "Vidéoprojecteur laser 7 500 lm",
+      "family": "videoprojecteur",
+      "ref": "DU5053Z",
+      "source": "focus-ete-2025",
+      "page": 32
+    },
+    "vivitek-serie-du905x-z": {
+      "brand": "Vivitek",
+      "model": "Série DU905x-Z",
+      "type": "Vidéoprojecteurs laser",
+      "family": "videoprojecteur",
+      "source": "focus-ete-2025",
+      "page": 32
+    },
+    "barco-clickshare-c-5-c-10-gen-2": {
+      "brand": "Barco",
+      "model": "ClickShare C-5 / C-10 Gen 2",
+      "type": "Présentation sans fil",
+      "family": "presentation-sans-fil",
+      "ref": "BARCOC10GEN2",
+      "source": "focus-ete-2025",
+      "page": 42
+    },
+    "barco-clickshare-cx-20-cx-30-gen-2": {
+      "brand": "Barco",
+      "model": "ClickShare CX-20 / CX-30 Gen 2",
+      "type": "Conférence sans fil",
+      "family": "presentation-sans-fil",
+      "ref": "BARCOCX30GEN2",
+      "source": "focus-ete-2025",
+      "page": 42
+    },
+    "barco-clickshare-cx-50-gen-2": {
+      "brand": "Barco",
+      "model": "ClickShare CX-50 Gen 2",
+      "type": "Conférence sans fil",
+      "family": "presentation-sans-fil",
+      "ref": "BARCOCX50GEN2",
+      "source": "focus-ete-2025",
+      "page": 43
+    },
+    "barco-clickshare-bar-pro-core": {
+      "brand": "Barco",
+      "model": "ClickShare Bar Pro / Core",
+      "type": "Barre de conférence sans fil",
+      "family": "presentation-sans-fil",
+      "ref": "BARCOCBPRO",
+      "source": "focus-ete-2025",
+      "page": 43
+    },
+    "aver-vb370a": {
+      "brand": "AVer",
+      "model": "VB370A",
+      "type": "Barre vidéo Android 4K",
+      "family": "visio",
+      "ref": "AVERVB370A",
+      "source": "focus-ete-2025",
+      "page": 45
+    },
+    "aver-vc520-pro3": {
+      "brand": "AVer",
+      "model": "VC520 Pro3",
+      "type": "Caméra et haut-parleur de conférence",
+      "family": "camera-usb",
+      "ref": "AVERVC520PRO3",
+      "source": "focus-ete-2025",
+      "page": 45
+    },
+    "aver-fone700-cam570": {
+      "brand": "AVer",
+      "model": "FONE700 + CAM570",
+      "type": "Haut-parleur plafond et caméra",
+      "family": "visio",
+      "ref": "AVERFONE700",
+      "source": "focus-ete-2025",
+      "page": 45
+    },
+    "neat-neat-bar-byod": {
+      "brand": "Neat",
+      "model": "Neat Bar BYOD",
+      "type": "Barre de visioconférence",
+      "family": "visio",
+      "ref": "NEATBARBYOD",
+      "source": "focus-ete-2025",
+      "page": 46
+    },
+    "neat-neat-bar-2": {
+      "brand": "Neat",
+      "model": "Neat Bar 2",
+      "type": "Barre de visioconférence",
+      "family": "visio",
+      "ref": "NEATBAR2SE",
+      "source": "focus-ete-2025",
+      "page": 47
+    },
+    "neat-neat-bar-pro": {
+      "brand": "Neat",
+      "model": "Neat Bar Pro",
+      "type": "Barre de visioconférence",
+      "family": "visio",
+      "ref": "NEATBARPROSE",
+      "source": "focus-ete-2025",
+      "page": 47
+    },
+    "neat-neat-center": {
+      "brand": "Neat",
+      "model": "Neat Center",
+      "type": "Caméra 360°",
+      "family": "camera-usb",
+      "ref": "NEATCENTERSE",
+      "source": "focus-ete-2025",
+      "page": 47
+    },
+    "neat-neat-board-50": {
+      "brand": "Neat",
+      "model": "Neat Board 50",
+      "type": "Écran de collaboration",
+      "family": "visio",
+      "ref": "NEATBOARD50SE",
+      "source": "focus-ete-2025",
+      "page": 48
+    },
+    "neat-neat-board-pro": {
+      "brand": "Neat",
+      "model": "Neat Board Pro",
+      "type": "Écran de collaboration",
+      "family": "visio",
+      "ref": "NEATBOARDPRO",
+      "source": "focus-ete-2025",
+      "page": 48
+    },
+    "biamp-vidi-280": {
+      "brand": "Biamp",
+      "model": "Vidi 280",
+      "type": "Caméra ePTZ 4K",
+      "family": "camera-usb",
+      "ref": "BIAMPVIDI280",
+      "source": "focus-ete-2025",
+      "page": 50
+    },
+    "biamp-bundle-mpx250-mrb-mx400c": {
+      "brand": "Biamp",
+      "model": "Bundle MPX250 + MRB-MX400C",
+      "type": "Kit salle de réunion",
+      "family": "visio",
+      "ref": "BIAMPEASYCONNECTMPX250",
+      "source": "focus-ete-2025",
+      "page": 50
+    },
+    "biamp-parle-cbc-2500": {
+      "brand": "Biamp",
+      "model": "Parlé CBC 2500",
+      "type": "Barre de visioconférence plafond",
+      "family": "visio",
+      "ref": "BIAMPCBC2500",
+      "source": "focus-ete-2025",
+      "page": 51
+    },
+    "biamp-parle-vbc-2500a": {
+      "brand": "Biamp",
+      "model": "Parlé VBC 2500a",
+      "type": "Barre de visioconférence",
+      "family": "visio",
+      "ref": "BIAMPPARABC2500a",
+      "source": "focus-ete-2025",
+      "page": 51
+    },
+    "yealink-a40": {
+      "brand": "Yealink",
+      "model": "A40",
+      "type": "Barre de visioconférence",
+      "family": "visio",
+      "ref": "YEALIA4031",
+      "source": "focus-ete-2025",
+      "page": 52
+    },
+    "yealink-smartvision-40": {
+      "brand": "Yealink",
+      "model": "SmartVision 40",
+      "type": "Caméra de visioconférence",
+      "family": "camera-usb",
+      "ref": "YEALISMARTVISION40",
+      "source": "focus-ete-2025",
+      "page": 52
+    },
+    "yealink-meetingbar-a10": {
+      "brand": "Yealink",
+      "model": "MeetingBar A10",
+      "type": "Barre de collaboration",
+      "family": "visio",
+      "ref": "YEALIA10010",
+      "source": "focus-ete-2025",
+      "page": 52
+    },
+    "yealink-mvc-s90": {
+      "brand": "Yealink",
+      "model": "MVC S90",
+      "type": "Système Microsoft Teams Rooms",
+      "family": "visio",
+      "ref": "YEALIMVCS90C5U004",
+      "source": "focus-ete-2025",
+      "page": 53
+    },
+    "yealink-meetingboard-pro-65": {
+      "brand": "Yealink",
+      "model": "MeetingBoard Pro 65\"",
+      "type": "Écran de collaboration",
+      "family": "visio",
+      "ref": "YEALIMBFSP650T",
+      "source": "focus-ete-2025",
+      "page": 53
+    },
+    "dten-d7x-55-75": {
+      "brand": "DTEN",
+      "model": "D7X 55\" / 75\"",
+      "type": "Écran de collaboration",
+      "family": "visio",
+      "ref": "DTEND7X55A",
+      "source": "focus-ete-2025",
+      "page": 54
+    },
+    "dten-vue-pro": {
+      "brand": "DTEN",
+      "model": "Vue Pro",
+      "type": "Système de caméras 4K",
+      "family": "camera-usb",
+      "ref": "DTENVUEPRO",
+      "source": "focus-ete-2025",
+      "page": 54
+    },
+    "dten-d7x-dual": {
+      "brand": "DTEN",
+      "model": "D7X Dual",
+      "type": "Solution de collaboration",
+      "family": "visio",
+      "ref": "DTEND7X75DUAL",
+      "source": "focus-ete-2025",
+      "page": 54
+    },
+    "huddly-s1": {
+      "brand": "Huddly",
+      "model": "S1",
+      "type": "Caméra de visioconférence",
+      "family": "camera-usb",
+      "ref": "HUDDLS1",
+      "source": "focus-ete-2025",
+      "page": 55
+    },
+    "huddly-crew": {
+      "brand": "Huddly",
+      "model": "Crew",
+      "type": "Système multi-caméras",
+      "family": "camera-usb",
+      "ref": "HUDDL7090043790894",
+      "source": "focus-ete-2025",
+      "page": 55
+    },
+    "huddly-l1": {
+      "brand": "Huddly",
+      "model": "L1",
+      "type": "Caméra grande salle",
+      "family": "camera-usb",
+      "ref": "HUDDLL1USB",
+      "source": "focus-ete-2025",
+      "page": 55
+    },
+    "huddly-iq": {
+      "brand": "Huddly",
+      "model": "IQ",
+      "type": "Caméra USB",
+      "family": "camera-usb",
+      "ref": "HUDDLIQ",
+      "source": "focus-ete-2025",
+      "page": 55
+    },
+    "ochno-room-kit-o-pc-4-eu": {
+      "brand": "Ochno",
+      "model": "Room Kit O-PC-4-EU",
+      "type": "Prises USB-C de table",
+      "family": "connectique",
+      "ref": "O-PC-4-EU",
+      "source": "focus-ete-2025",
+      "page": 56
+    },
+    "ochno-o-ph-4-eu": {
+      "brand": "Ochno",
+      "model": "O-PH-4-EU",
+      "type": "Chargeur intelligent",
+      "family": "connectique",
+      "ref": "O-PH-4-EU",
+      "source": "focus-ete-2025",
+      "page": 56
+    },
+    "black-box-mediacento-ipx-4k": {
+      "brand": "Black Box",
+      "model": "MediaCento IPX 4K+",
+      "type": "Distribution vidéo sur IP",
+      "family": "av-ip",
+      "source": "focus-ete-2025",
+      "page": 57
+    },
+    "black-box-emerald": {
+      "brand": "Black Box",
+      "model": "Emerald",
+      "type": "KVM sur IP",
+      "family": "av-ip",
+      "source": "focus-ete-2025",
+      "page": 57
+    },
+    "kramer-swt3-31-hu-tr": {
+      "brand": "Kramer",
+      "model": "SWT3-31-HU-TR",
+      "type": "Auto-commutateur",
+      "family": "commutateur-video",
+      "ref": "KRAMSWT331HU",
+      "source": "focus-ete-2025",
+      "page": 58
+    },
+    "kramer-kds-en7": {
+      "brand": "Kramer",
+      "model": "KDS-EN7",
+      "type": "Encodeur AV/IP 4K",
+      "family": "av-ip",
+      "ref": "KRAMKDSEN7",
+      "source": "focus-ete-2025",
+      "page": 58
+    },
+    "kramer-kds-dec7": {
+      "brand": "Kramer",
+      "model": "KDS-DEC7",
+      "type": "Décodeur AV/IP 4K",
+      "family": "av-ip",
+      "ref": "KRAMKDSDEC7",
+      "source": "focus-ete-2025",
+      "page": 58
+    },
+    "kramer-ext3-h-t": {
+      "brand": "Kramer",
+      "model": "EXT3-H-T",
+      "type": "Émetteur HDBaseT 3.0",
+      "family": "av-ip",
+      "ref": "KRAMEEXT3-H-T",
+      "source": "focus-ete-2025",
+      "page": 58
+    },
+    "lindy-38360": {
+      "brand": "Lindy",
+      "model": "38360",
+      "type": "Extendeur fibre HDMI 8K",
+      "family": "av-ip",
+      "ref": "LINDY38360",
+      "source": "focus-ete-2025",
+      "page": 59
+    },
+    "lindy-38385": {
+      "brand": "Lindy",
+      "model": "38385",
+      "type": "Extendeur / convertisseur",
+      "family": "av-ip",
+      "ref": "LINDY38385",
+      "source": "focus-ete-2025",
+      "page": 59
+    },
+    "lindy-43406": {
+      "brand": "Lindy",
+      "model": "43406",
+      "type": "Commutateur commandé RS-232 / web",
+      "family": "commutateur-video",
+      "ref": "LINDY43406",
+      "source": "focus-ete-2025",
+      "page": 59
+    },
+    "lindy-38346": {
+      "brand": "Lindy",
+      "model": "38346",
+      "type": "Extendeur HDBaseT 3.0 70 m",
+      "family": "av-ip",
+      "ref": "LINDY38346",
+      "source": "focus-ete-2025",
+      "page": 59
+    },
+    "netgear-gsm4248px": {
+      "brand": "Netgear",
+      "model": "GSM4248PX",
+      "type": "Switch manageable 40 ports PoE+",
+      "family": "switch-reseau",
+      "ref": "NETAVGSM4248PX-100EUS",
+      "source": "focus-ete-2025",
+      "page": 60
+    },
+    "netgear-gsm4352": {
+      "brand": "Netgear",
+      "model": "GSM4352",
+      "type": "Switch AV 48 ports PoE+",
+      "family": "switch-reseau",
+      "ref": "NETAVGSM4352-100NES",
+      "source": "focus-ete-2025",
+      "page": 60
+    },
+    "netgear-xsm4340v": {
+      "brand": "Netgear",
+      "model": "XSM4340V",
+      "type": "Switch manageable 36 ports",
+      "family": "switch-reseau",
+      "ref": "NETAVXSM4340V-100NES",
+      "source": "focus-ete-2025",
+      "page": 60
+    },
+    "netgear-gsm4230px": {
+      "brand": "Netgear",
+      "model": "GSM4230PX",
+      "type": "Switch manageable 24 ports PoE+",
+      "family": "switch-reseau",
+      "ref": "NETAVGSM4230PX100EUS",
+      "source": "focus-ete-2025",
+      "page": 60
+    },
+    "visionary-e5100-d5100": {
+      "brand": "Visionary",
+      "model": "E5100 / D5100",
+      "type": "Encodeur / décodeur AV sur IP",
+      "family": "av-ip",
+      "ref": "E5100/D5100",
+      "source": "focus-ete-2025",
+      "page": 61
+    },
+    "visionary-duet5": {
+      "brand": "Visionary",
+      "model": "Duet5",
+      "type": "Encodeur / décodeur AV sur IP",
+      "family": "av-ip",
+      "ref": "DUET5",
+      "source": "focus-ete-2025",
+      "page": 61
+    },
+    "visionary-xb5": {
+      "brand": "Visionary",
+      "model": "XB5",
+      "type": "Encodeur / décodeur AV sur IP",
+      "family": "av-ip",
+      "ref": "XB5",
+      "source": "focus-ete-2025",
+      "page": 61
+    },
+    "datapath-serie-fx4": {
+      "brand": "Datapath",
+      "model": "Série FX4",
+      "type": "Contrôleur multi-écrans",
+      "family": "processeur-mur",
+      "ref": "DATAPFX4H",
+      "source": "focus-ete-2025",
+      "page": 62
+    },
+    "datapath-vsn-mini-300": {
+      "brand": "Datapath",
+      "model": "VSN Mini-300",
+      "type": "Contrôleur de mur vidéo",
+      "family": "processeur-mur",
+      "source": "focus-ete-2025",
+      "page": 62
+    },
+    "datapath-aetria": {
+      "brand": "Datapath",
+      "model": "Aetria",
+      "type": "Solution AV sur IP",
+      "family": "av-ip",
+      "source": "focus-ete-2025",
+      "page": 62
+    },
+    "vuwall-pak": {
+      "brand": "VuWall",
+      "model": "PAK",
+      "type": "Encodeurs / décodeurs réseau",
+      "family": "av-ip",
+      "source": "focus-ete-2025",
+      "page": 64
+    },
+    "roomz-display": {
+      "brand": "Roomz",
+      "model": "Display",
+      "type": "Écran de réservation de salle",
+      "family": "gestion-salle",
+      "ref": "FROOSTA002SBAS",
+      "source": "focus-ete-2025",
+      "page": 65
+    },
+    "roomz-sensors": {
+      "brand": "Roomz",
+      "model": "Sensors",
+      "type": "Capteur de présence",
+      "family": "gestion-salle",
+      "ref": "FROOSEN002ROOM",
+      "source": "focus-ete-2025",
+      "page": 65
+    },
+    "evoko-liso": {
+      "brand": "Evoko",
+      "model": "Liso",
+      "type": "Système de réservation de salle",
+      "family": "gestion-salle",
+      "ref": "BIAMPLISO",
+      "source": "focus-ete-2025",
+      "page": 66
+    },
+    "evoko-naso": {
+      "brand": "Evoko",
+      "model": "Naso",
+      "type": "Gestionnaire de salle",
+      "family": "gestion-salle",
+      "ref": "BIAMPNASO",
+      "source": "focus-ete-2025",
+      "page": 66
+    },
+    "evoko-kleeo": {
+      "brand": "Evoko",
+      "model": "Kleeo",
+      "type": "Multiviewer IP",
+      "family": "processeur-mur",
+      "ref": "BIAMPKLEEO",
+      "source": "focus-ete-2025",
+      "page": 66
+    },
+    "brightsign-xc4055-xc2055": {
+      "brand": "BrightSign",
+      "model": "XC4055 / XC2055",
+      "type": "Lecteurs d'affichage dynamique",
+      "family": "lecteur-media",
+      "ref": "BRIGHXC4055",
+      "source": "focus-ete-2025",
+      "page": 67
+    },
+    "navori-stix-3800": {
+      "brand": "Navori",
+      "model": "Stix 3800",
+      "type": "Lecteur d'affichage dynamique",
+      "family": "lecteur-media",
+      "source": "focus-ete-2025",
+      "page": 68
+    },
+    "biamp-desono-dx": {
+      "brand": "Biamp",
+      "model": "Desono DX",
+      "type": "Enceintes encastrables",
+      "family": "enceinte",
+      "source": "focus-ete-2025",
+      "page": 70
+    },
+    "biamp-serie-cm": {
+      "brand": "Biamp",
+      "model": "Série CM",
+      "type": "Haut-parleurs plafond",
+      "family": "enceinte",
+      "source": "focus-ete-2025",
+      "page": 70
+    },
+    "biamp-desono-ex": {
+      "brand": "Biamp",
+      "model": "Desono EX",
+      "type": "Haut-parleurs en surface",
+      "family": "enceinte",
+      "source": "focus-ete-2025",
+      "page": 70
+    },
+    "biamp-sdq5pir": {
+      "brand": "Biamp",
+      "model": "SDQ5PIR",
+      "type": "Ensemble stéréo d'enceintes",
+      "family": "enceinte",
+      "ref": "BIAMPSDQ5PIRW",
+      "source": "focus-ete-2025",
+      "page": 70
+    },
+    "biamp-voltera-d": {
+      "brand": "Biamp",
+      "model": "Voltera D",
+      "type": "Amplificateurs",
+      "family": "ampli",
+      "source": "focus-ete-2025",
+      "page": 71
+    },
+    "biamp-tesiraforte-x": {
+      "brand": "Biamp",
+      "model": "TesiraFORTE X",
+      "type": "DSP salle de réunion",
+      "family": "dsp",
+      "ref": "BIAMPTFX800",
+      "source": "focus-ete-2025",
+      "page": 72
+    },
+    "biamp-tesiraforte": {
+      "brand": "Biamp",
+      "model": "TesiraFORTE",
+      "type": "Processeur audio numérique",
+      "family": "dsp",
+      "source": "focus-ete-2025",
+      "page": 72
+    },
+    "biamp-devio-scx": {
+      "brand": "Biamp",
+      "model": "Devio SCX",
+      "type": "Hub de salle de réunion",
+      "family": "dsp",
+      "source": "focus-ete-2025",
+      "page": 72
+    },
+    "biamp-parle-micros": {
+      "brand": "Biamp",
+      "model": "Parlé (micros)",
+      "type": "Micros de plafond et table",
+      "family": "micro-conference",
+      "source": "focus-ete-2025",
+      "page": 72
+    },
+    "shure-mxw-next-2": {
+      "brand": "Shure",
+      "model": "MXW neXt 2",
+      "type": "Micros sans fil de conférence",
+      "family": "micro-conference",
+      "source": "focus-ete-2025",
+      "page": 73
+    },
+    "shure-mxcw640": {
+      "brand": "Shure",
+      "model": "MXCW640",
+      "type": "Poste de conférence sans fil",
+      "family": "micro-conference",
+      "ref": "SHUREMXCW640",
+      "source": "focus-ete-2025",
+      "page": 73
+    },
+    "shure-mxa920": {
+      "brand": "Shure",
+      "model": "MXA920",
+      "type": "Micro multicapsules plafond",
+      "family": "micro-conference",
+      "ref": "SHUREMXA920WS60CM",
+      "source": "focus-ete-2025",
+      "page": 74
+    },
+    "shure-mxa901": {
+      "brand": "Shure",
+      "model": "MXA901",
+      "type": "Micro multicapsules",
+      "family": "micro-conference",
+      "ref": "SHUREMXA901WR",
+      "source": "focus-ete-2025",
+      "page": 74
+    },
+    "shure-mxa902-aniusb": {
+      "brand": "Shure",
+      "model": "MXA902 + ANIUSB",
+      "type": "Kit de visioconférence",
+      "family": "micro-conference",
+      "ref": "MXA902WSUSB",
+      "source": "focus-ete-2025",
+      "page": 74
+    },
+    "shure-p300": {
+      "brand": "Shure",
+      "model": "P300",
+      "type": "Processeur audio de conférence",
+      "family": "dsp",
+      "ref": "SHUREP300",
+      "source": "focus-ete-2025",
+      "page": 74
+    },
+    "shure-aniusb-matrix": {
+      "brand": "Shure",
+      "model": "ANIUSB-Matrix",
+      "type": "Interface audio réseau USB",
+      "family": "dsp",
+      "ref": "SHUREANIUSBMATRIX",
+      "source": "focus-ete-2025",
+      "page": 75
+    },
+    "shure-slxd": {
+      "brand": "Shure",
+      "model": "SLXD",
+      "type": "Système de micros HF numériques",
+      "family": "micro-hf",
+      "source": "focus-ete-2025",
+      "page": 75
+    },
+    "shure-mxn-amp": {
+      "brand": "Shure",
+      "model": "MXN-AMP",
+      "type": "Amplificateur Dante PoE+ 4 canaux",
+      "family": "enceinte-ip",
+      "ref": "SHUREMXNAMP",
+      "source": "focus-ete-2025",
+      "page": 76
+    },
+    "shure-mxrk30-mxrk70": {
+      "brand": "Shure",
+      "model": "MXRK30 / MXRK70",
+      "type": "Packs de visioconférence",
+      "family": "micro-conference",
+      "ref": "SHUREIMXRK30-E-V",
+      "source": "focus-ete-2025",
+      "page": 76
+    },
+    "shure-mxp3": {
+      "brand": "Shure",
+      "model": "MXP3",
+      "type": "Enceinte murale passive",
+      "family": "enceinte",
+      "ref": "SHUREMXP3B",
+      "source": "focus-ete-2025",
+      "page": 76
+    },
+    "bosch-ccs-1000-d": {
+      "brand": "Bosch",
+      "model": "CCS 1000 D",
+      "type": "Système de discussion numérique",
+      "family": "micro-conference",
+      "source": "focus-ete-2025",
+      "page": 77
+    },
+    "bosch-dicentis-sans-fil": {
+      "brand": "Bosch",
+      "model": "DICENTIS sans fil",
+      "type": "Système de conférence sans fil",
+      "family": "micro-conference",
+      "source": "focus-ete-2025",
+      "page": 78
+    },
+    "bosch-dicentis-flush": {
+      "brand": "Bosch",
+      "model": "DICENTIS Flush",
+      "type": "Conférence encastrée IP",
+      "family": "micro-conference",
+      "source": "focus-ete-2025",
+      "page": 78
+    },
+    "powersoft-mezzo": {
+      "brand": "Powersoft",
+      "model": "Mezzo",
+      "type": "Amplificateurs DSP 1/2 rack",
+      "family": "ampli",
+      "source": "focus-ete-2025",
+      "page": 79
+    },
+    "powersoft-unica": {
+      "brand": "Powersoft",
+      "model": "Unica",
+      "type": "Amplificateurs",
+      "family": "ampli",
+      "source": "focus-ete-2025",
+      "page": 79
+    },
+    "powersoft-verso": {
+      "brand": "Powersoft",
+      "model": "Verso",
+      "type": "Passerelle réseau pour amplis",
+      "family": "ampli",
+      "ref": "PSOFTVERSO",
+      "source": "focus-ete-2025",
+      "page": 79
+    },
+    "powersoft-nota": {
+      "brand": "Powersoft",
+      "model": "Nota",
+      "type": "Amplificateur ultra-compact",
+      "family": "ampli",
+      "source": "focus-ete-2025",
+      "page": 79
+    },
+    "focal-gamme-100v-murale": {
+      "brand": "Focal",
+      "model": "Gamme 100V murale",
+      "type": "Enceintes 100 V",
+      "family": "enceinte",
+      "source": "focus-ete-2025",
+      "page": 80
+    },
+    "focal-littora": {
+      "brand": "Focal",
+      "model": "Littora",
+      "type": "Enceintes extérieures",
+      "family": "enceinte",
+      "source": "focus-ete-2025",
+      "page": 80
+    },
+    "focal-gamme-300": {
+      "brand": "Focal",
+      "model": "Gamme 300",
+      "type": "Enceintes encastrables",
+      "family": "enceinte",
+      "ref": "FOCAL300ICW6WH",
+      "source": "focus-ete-2025",
+      "page": 80
+    },
+    "focal-gamme-100v-encastree": {
+      "brand": "Focal",
+      "model": "Gamme 100V encastrée",
+      "type": "Enceintes encastrables",
+      "family": "enceinte",
+      "source": "focus-ete-2025",
+      "page": 80
+    },
+    "sonos-port": {
+      "brand": "Sonos",
+      "model": "Port",
+      "type": "Lecteur réseau audio",
+      "family": "diffusion-audio",
+      "ref": "SONOSPORTBK",
+      "source": "focus-ete-2025",
+      "page": 81
+    },
+    "sonos-era-100-pro": {
+      "brand": "Sonos",
+      "model": "Era 100 Pro",
+      "type": "Haut-parleur d'installation",
+      "family": "enceinte-ip",
+      "source": "focus-ete-2025",
+      "page": 81
+    },
+    "sonos-era-300": {
+      "brand": "Sonos",
+      "model": "Era 300",
+      "type": "Enceinte connectée",
+      "family": "diffusion-audio",
+      "source": "focus-ete-2025",
+      "page": 81
+    },
+    "sonos-amp": {
+      "brand": "Sonos",
+      "model": "Amp",
+      "type": "Amplificateur réseau",
+      "family": "diffusion-audio",
+      "ref": "SONOSAMPBK",
+      "source": "focus-ete-2025",
+      "page": 81
+    },
+    "soundtube-serie-fp": {
+      "brand": "SoundTube",
+      "model": "Série FP",
+      "type": "Haut-parleurs directifs",
+      "family": "enceinte",
+      "source": "focus-ete-2025",
+      "page": 82
+    },
+    "soundtube-ipd-hub2": {
+      "brand": "SoundTube",
+      "model": "IPD-HUB2",
+      "type": "Amplificateur Dante 2 canaux",
+      "family": "enceinte-ip",
+      "ref": "MSEIPDHUB2",
+      "source": "focus-ete-2025",
+      "page": 82
+    },
+    "soundtube-ipd-cm52-bgm-ii": {
+      "brand": "SoundTube",
+      "model": "IPD-CM52-BGM-II",
+      "type": "Enceinte plafond Dante",
+      "family": "enceinte-ip",
+      "ref": "MSEIPDCM52BGMII",
+      "source": "focus-ete-2025",
+      "page": 82
+    },
+    "soundtube-ipd4-cm52": {
+      "brand": "SoundTube",
+      "model": "IPD4-CM52",
+      "type": "Enceinte IP PoE",
+      "family": "enceinte-ip",
+      "ref": "MSEIPD4CM52BGMII",
+      "source": "focus-ete-2025",
+      "page": 82
+    },
+    "cloud-dcm1e": {
+      "brand": "Cloud",
+      "model": "DCM1e",
+      "type": "Mélangeur 8 zones",
+      "family": "dsp",
+      "ref": "CLOUDDCM1EEK",
+      "source": "focus-ete-2025",
+      "page": 83
+    },
+    "cloud-serie-mpa": {
+      "brand": "Cloud",
+      "model": "Série MPA",
+      "type": "Ampli-mélangeurs compacts",
+      "family": "ampli",
+      "source": "focus-ete-2025",
+      "page": 83
+    },
+    "listen-listen-wi-fi": {
+      "brand": "Listen",
+      "model": "Listen Wi-Fi",
+      "type": "Diffusion audio multicanal",
+      "family": "diffusion-audio",
+      "source": "focus-ete-2025",
+      "page": 83
+    },
+    "listen-listen-auri": {
+      "brand": "Listen",
+      "model": "Listen Auri",
+      "type": "Diffusion audio Bluetooth Auracast",
+      "family": "diffusion-audio",
+      "ref": "AURI-TX2N",
+      "source": "focus-ete-2025",
+      "page": 83
+    },
+    "aver-mt300n": {
+      "brand": "AVer",
+      "model": "MT300N",
+      "type": "Matrice vidéo et suivi",
+      "family": "regie-captation",
+      "ref": "AVERMT300N",
+      "source": "focus-ete-2025",
+      "page": 85
+    },
+    "aver-m11wb": {
+      "brand": "AVer",
+      "model": "M11WB",
+      "type": "Visualiseur sans fil",
+      "family": "camera-usb",
+      "ref": "AVERM11WB",
+      "source": "focus-ete-2025",
+      "page": 85
+    },
+    "aver-tr535": {
+      "brand": "AVer",
+      "model": "TR535",
+      "type": "Caméra PTZ double optique",
+      "family": "camera-ptz",
+      "ref": "AVERTR535",
+      "source": "focus-ete-2025",
+      "page": 85
+    },
+    "aver-ptz211": {
+      "brand": "AVer",
+      "model": "PTZ211",
+      "type": "Caméra PTZ",
+      "family": "camera-ptz",
+      "ref": "AVERPTZ211",
+      "source": "focus-ete-2025",
+      "page": 85
+    },
+    "panasonic-aw-ue50": {
+      "brand": "Panasonic",
+      "model": "AW-UE50",
+      "type": "Caméra PTZ",
+      "family": "camera-ptz",
+      "ref": "PANASAWUE50KEJ",
+      "source": "focus-ete-2025",
+      "page": 86
+    },
+    "panasonic-aw-ue20": {
+      "brand": "Panasonic",
+      "model": "AW-UE20",
+      "type": "Caméra PTZ 4K compacte",
+      "family": "camera-ptz",
+      "ref": "PANASAWUE20WE",
+      "source": "focus-ete-2025",
+      "page": 86
+    },
+    "panasonic-aw-ue30": {
+      "brand": "Panasonic",
+      "model": "AW-UE30",
+      "type": "Caméra PTZ",
+      "family": "camera-ptz",
+      "ref": "PANASAWUE30WEJ",
+      "source": "focus-ete-2025",
+      "page": 86
+    },
+    "panasonic-aw-ue4": {
+      "brand": "Panasonic",
+      "model": "AW-UE4",
+      "type": "Caméra PTZ 4K",
+      "family": "camera-ptz",
+      "ref": "PANASAWUE4WG",
+      "source": "focus-ete-2025",
+      "page": 86
+    },
+    "vaddio-primeshot-10-hdmi": {
+      "brand": "Vaddio",
+      "model": "PrimeShot 10 HDMI",
+      "type": "Caméra PTZ",
+      "family": "camera-ptz",
+      "ref": "VADDI99930410001",
+      "source": "focus-ete-2025",
+      "page": 87
+    },
+    "vaddio-av-bridge-2x1": {
+      "brand": "Vaddio",
+      "model": "AV Bridge 2x1",
+      "type": "Interface de captation",
+      "family": "regie-captation",
+      "ref": "VADDI9998250001",
+      "source": "focus-ete-2025",
+      "page": 87
+    },
+    "vaddio-easyip-tx-rx": {
+      "brand": "Vaddio",
+      "model": "EasyIP TX/RX",
+      "type": "Distribution HDMI sur IP",
+      "family": "av-ip",
+      "ref": "VADDI99960600000",
+      "source": "focus-ete-2025",
+      "page": 87
+    },
+    "vaddio-venture-videobar": {
+      "brand": "Vaddio",
+      "model": "Venture Videobar",
+      "type": "Barre de visioconférence 4K",
+      "family": "visio",
+      "ref": "VADDI99950909000",
+      "source": "focus-ete-2025",
+      "page": 87
+    },
+    "arec-ds-9cu": {
+      "brand": "AREC",
+      "model": "DS-9CU",
+      "type": "Station de suivi de l'orateur",
+      "family": "regie-captation",
+      "ref": "DS-9CU",
+      "source": "focus-ete-2025",
+      "page": 88
+    },
+    "arec-ls-410": {
+      "brand": "AREC",
+      "model": "LS-410",
+      "type": "Station multimédia 4 canaux",
+      "family": "regie-captation",
+      "ref": "LS-410",
+      "source": "focus-ete-2025",
+      "page": 88
+    },
+    "arec-ks-cc2t": {
+      "brand": "AREC",
+      "model": "KS-CC2T",
+      "type": "Traducteur vocal IA",
+      "family": "regie-captation",
+      "ref": "KS-CC2T",
+      "source": "focus-ete-2025",
+      "page": 88
+    },
+    "arec-a-pc01-panocam": {
+      "brand": "AREC",
+      "model": "A-PC01 PanoCam",
+      "type": "Caméra grand angle",
+      "family": "camera-ptz",
+      "ref": "A-PC01",
+      "source": "focus-ete-2025",
+      "page": 88
     }
   }
 }

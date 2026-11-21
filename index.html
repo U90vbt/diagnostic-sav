@@ -115,6 +115,7 @@
           <div class="diag__header">
             <p class="eyebrow mono" id="diag-category"></p>
             <h1 class="diag__title" id="diag-symptom"></h1>
+            <p class="focus-product" id="focus-product" hidden></p>
             <div class="progress" id="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
               <div class="progress__meta mono">
                 <span id="progress-step"></span>
@@ -142,12 +143,19 @@
         <aside class="diag__aside" aria-labelledby="journal-title">
           <details class="journal" id="journal" open>
             <summary class="journal__head">
-              <span class="panel__tag">LOG</span>
               <span id="journal-title">Journal du diagnostic</span>
               <span class="journal__count mono" id="journal-count">0</span>
             </summary>
             <ol class="journal__list" id="journal-list"></ol>
             <p class="journal__empty muted" id="journal-empty">Les réponses apparaîtront ici.</p>
+          </details>
+          <details class="gear" id="gear" hidden>
+            <summary class="journal__head">
+              <span>Matériel couvert</span>
+              <span class="journal__count" id="gear-count">0</span>
+            </summary>
+            <ul class="gear__list" id="gear-list"></ul>
+            <p class="gear__note muted">Références et pages : catalogue Focus, été 2025.</p>
           </details>
           <p class="kbd-help muted">
             Raccourcis : <kbd>1</kbd>–<kbd>9</kbd> répondre · <kbd>⌫</kbd> retour · <kbd>Échap</kbd> accueil

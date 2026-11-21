@@ -151,6 +151,53 @@ Chaque option contient **soit** `next` (nœud suivant), **soit** `symptom` (basc
 - `severity` : `low` (Faible), `moderate` (Modéré) ou `high` (Élevé).
 - `related` : identifiants de symptômes proposés en fin de diagnostic.
 
+### Matériel couvert : sources, familles, produits (schéma v2)
+
+Le matériel couvert vient du **catalogue Focus, été 2025** (171 produits électroniques, 40 marques ; supports, chariots, câbles et lampes exclus). Seuls la marque, le modèle, la référence et la page sont repris : ni les descriptions, ni les prix.
+
+Trois sections, toutes facultatives :
+
+```json
+"sources": {
+  "focus-ete-2025": { "title": "Catalogue Focus", "edition": "Été 2025", "publisher": "Focus (groupe Midwich)" }
+},
+"families": {
+  "led-controleur": { "label": "Contrôleurs LED", "symptoms": ["mur-led", "firmware-echec", "firmware-incompatible"] }
+},
+"products": {
+  "novastar-mctrl4k": { "brand": "Novastar", "model": "MCTRL4K", "type": "Contrôleur LED 4K",
+                        "family": "led-controleur", "ref": "MCTRL4K", "source": "focus-ete-2025", "page": 27 }
+}
+```
+
+- **Une famille** regroupe des produits qui tombent en panne de la même façon. Elle liste, **une seule fois**, les symptômes concernés. Le **premier** symptôme de la liste est le principal : c'est lui qui sort en tête quand on cherche une référence.
+- **Ajouter un produit** = ajouter une fiche dans `products` et choisir sa famille. Il apparaît automatiquement dans « Matériel couvert » des symptômes de la famille, et la recherche le trouve par marque, modèle ou référence.
+- `ref` et `page` sont facultatifs ; `page` est un nombre entier.
+
+### Étapes propres à une marque
+
+Sur un résultat, `brandSteps` ajoute un bloc repliable « Selon le matériel » :
+
+```json
+"brandSteps": [
+  { "brand": "Novastar",
+    "products": ["novastar-mctrl4k", "novastar-serie-coex"],
+    "status": "draft",
+    "actions": ["Ouvrir NovaLCT (MCTRL4K) ou VMP (série COEX)…", "…"] }
+]
+```
+
+- `"status": "draft"` affiche le badge **« À valider »** : étape rédigée sans notice constructeur, à faire relire par un technicien. Une fois relue, passer à `"validated"` (ou supprimer le champ).
+- Le même champ `status` peut être mis sur n'importe quelle question ou résultat.
+- `products` (facultatif) sur une question ou un résultat affiche une ligne « Matériel : … ».
+- Si le technicien a trouvé le diagnostic en cherchant un produit (ex. « MCTRL4K »), le bloc de sa marque s'ouvre directement et le rapport copié mentionne le produit.
+
+**État actuel** : 17 résultats ont des étapes par marque (Novastar, Shure, Biamp, Powersoft, Netgear, Kramer, Lindy, Visionary, Datapath, BrightSign, Barco ClickShare, vidéoprojecteurs). **Toutes sont en brouillon** et doivent être validées avec les notices constructeur.
+
+### Migration du schéma
+
+`meta.schemaVersion` indique la version du format (actuellement `2`). Un fichier sans ce champ est lu comme v1 et complété automatiquement au chargement (sections `sources`, `families`, `products` vides) : un ancien `decisions.json` fonctionne sans modification.
+
 ### Contrôler ses modifications
 
 1. Vérifier que le JSON est valide (VS Code le signale, ou https://jsonlint.com en local).
@@ -177,7 +224,7 @@ Sur tablette, utilisez « Ajouter à l'écran d'accueil » pour lancer l'outil c
 
 ## Utilisation
 
-- **Recherche** : tapez un symptôme (« pas de son », « écran noir », « dante »…). La touche Entrée ouvre le premier résultat.
+- **Recherche** : tapez un symptôme (« pas de son », « écran noir », « dante »…) ou une marque / référence du catalogue (« MCTRL4K », « SLXD », « Netgear »). La touche Entrée ouvre le premier résultat.
 - **Filtres** : par catégorie (alimentation, audio, vidéo, réseau, thermique, stabilité, périphériques, firmware).
 - **Fil d'Ariane** : cliquez sur une étape pour y revenir.
 - **Journal** : liste des questions et réponses. Cliquez sur une entrée pour revenir à cette question.

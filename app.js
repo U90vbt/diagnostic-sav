@@ -47,6 +47,12 @@
     symptoms: new Map(),     // id → symptôme
     categories: new Map(),   // id → catégorie
     nodes: {},               // id → nœud
+    products: new Map(),     // id → fiche produit
+    families: new Map(),     // id → famille de produits
+    sources: {},             // id → document de référence
+    productsBySymptom: new Map(), // id symptôme → [id produit]
+    searchHints: new Map(),  // id symptôme → id produit trouvé par la dernière recherche
+    focusProduct: null,      // produit choisi depuis la recherche
     severities: SEVERITY_FALLBACK,
     depthMemo: new Map(),
     searchIndex: [],
@@ -73,7 +79,7 @@
         else node.setAttribute(key, value);
       }
     }
-    for (const child of children.flat()) {
+    for (const child of children.flat(Infinity)) {
       if (child == null || child === false) continue;
       node.append(child instanceof Node ? child : document.createTextNode(String(child)));
     }
@@ -174,7 +180,39 @@
     }
   }
 
+  /**
+   * Migration du schéma : les fichiers sans meta.schemaVersion sont en version 1.
+   * v1 → v2 : ajout facultatif de sources, families, products et brandSteps.
+   * Rien n'est perdu ni renommé : on complète simplement les sections manquantes.
+   */
+  const SCHEMA_VERSION = 2;
+  function migrate(data) {
+    data.meta = data.meta || {};
+    const from = Number(data.meta.schemaVersion) || 1;
+    if (from > SCHEMA_VERSION) {
+      console.warn('[DIAG·SAV] decisions.json utilise un schéma plus récent (v' + from + ') que cette version de l\'application (v' + SCHEMA_VERSION + ').');
+    }
+    if (from < 2) {
+      data.sources = data.sources || {};
+      data.families = data.families || {};
+      data.products = data.products || {};
+    }
+    data.meta.schemaVersion = Math.max(from, SCHEMA_VERSION);
+    return data;
+  }
+
+  function productLabel(prod) {
+    return prod.brand + ' ' + prod.model;
+  }
+
+  function productSourceLabel(prod) {
+    const src = state.sources[prod.source];
+    const name = src ? src.title + (src.edition ? ' ' + src.edition.toLowerCase() : '') : '';
+    return [name, prod.page ? 'p. ' + prod.page : ''].filter(Boolean).join(', ');
+  }
+
   function ingest(data) {
+    data = migrate(data);
     state.data = data;
     state.nodes = data.nodes || {};
     state.severities = Object.assign({}, SEVERITY_FALLBACK, data.severities || {});
@@ -182,13 +220,29 @@
     state.categories = new Map((data.categories || []).map(c => [c.id, c]));
     state.depthMemo.clear();
 
+    state.sources = data.sources || {};
+    state.families = new Map(Object.entries(data.families || {}));
+    state.products = new Map(Object.entries(data.products || {}));
+    state.productsBySymptom = new Map();
+    for (const [pid, prod] of state.products) {
+      const fam = state.families.get(prod.family);
+      for (const sid of (fam && fam.symptoms) || []) {
+        if (!state.productsBySymptom.has(sid)) state.productsBySymptom.set(sid, []);
+        state.productsBySymptom.get(sid).push(pid);
+      }
+    }
+
     state.searchIndex = (data.symptoms || []).map((s, order) => ({
       symptom: s,
       order,
       title: normalize(s.title),
       keywords: (s.keywords || []).map(normalize),
       summary: normalize(s.summary),
-      category: normalize(categoryOf(s).label)
+      category: normalize(categoryOf(s).label),
+      products: (state.productsBySymptom.get(s.id) || []).map(pid => {
+        const pr = state.products.get(pid);
+        return { id: pid, text: normalize([pr.brand, pr.model, pr.ref].filter(Boolean).join(' ')) };
+      })
     }));
 
     const meta = data.meta || {};
@@ -248,6 +302,39 @@
       for (const r of n.related || []) {
         if (!symptomIds.has(r)) w.push('Résultat « ' + id + ' » : symptôme lié introuvable (' + r + ')');
       }
+    }
+
+    // Produits, familles, sources
+    const products = data.products || {};
+    const families = data.families || {};
+    const sources = data.sources || {};
+    for (const [fid, f] of Object.entries(families)) {
+      if (!f.label) w.push('Famille « ' + fid + ' » sans libellé (label)');
+      for (const sid of f.symptoms || []) {
+        if (!symptomIds.has(sid)) w.push('Famille « ' + fid + ' » : symptôme introuvable (' + sid + ')');
+      }
+    }
+    for (const [pid, pr] of Object.entries(products)) {
+      if (!pr.brand || !pr.model) w.push('Produit « ' + pid + ' » : marque (brand) ou modèle (model) manquant');
+      if (!families[pr.family]) w.push('Produit « ' + pid + ' » : famille inconnue (' + pr.family + ')');
+      if (pr.source && !sources[pr.source]) w.push('Produit « ' + pid + ' » : source inconnue (' + pr.source + ')');
+      if (pr.page != null && !(Number.isInteger(pr.page) && pr.page > 0)) w.push('Produit « ' + pid + ' » : la page doit être un nombre entier (' + pr.page + ')');
+    }
+    const STATUSES = ['draft', 'validated'];
+    for (const [id, n] of Object.entries(nodes)) {
+      if (n.status && !STATUSES.includes(n.status)) w.push('Nœud « ' + id + ' » : statut invalide (' + n.status + '), attendu draft ou validated');
+      for (const pid of n.products || []) {
+        if (!products[pid]) w.push('Nœud « ' + id + ' » : produit introuvable (' + pid + ')');
+      }
+      (n.brandSteps || []).forEach((b, i) => {
+        const where = 'Résultat « ' + id + ' », étapes ' + (b.brand || '#' + (i + 1));
+        if (!b.brand) w.push(where + ' : marque (brand) manquante');
+        if (!Array.isArray(b.actions) || !b.actions.length) w.push(where + ' : aucune action');
+        if (b.status && !STATUSES.includes(b.status)) w.push(where + ' : statut invalide (' + b.status + ')');
+        for (const pid of b.products || []) {
+          if (!products[pid]) w.push(where + ' : produit introuvable (' + pid + ')');
+        }
+      });
     }
 
     // Nœuds orphelins
@@ -415,6 +502,7 @@
     const tokens = tokenize(query);
     const phrase = normalize(query);
     const results = [];
+    state.searchHints = new Map();
 
     for (const entry of state.searchIndex) {
       if (filter !== 'all' && entry.symptom.category !== filter) continue;
@@ -428,11 +516,21 @@
         if (entry.keywords.some(k => k.includes(t))) s += 2;
         if (entry.summary.includes(t)) s += 1;
         if (entry.category.includes(t)) s += 1;
+        if (entry.products.some(pr => pr.text.includes(t))) s += 2;
         if (!s) { allMatch = false; break; }
         score += s;
       }
       if (!allMatch) continue;
       if (phrase.length > 2 && (entry.title.includes(phrase) || entry.keywords.some(k => k.includes(phrase)))) score += 6;
+      // produit le plus pertinent pour ce symptôme (tous les mots trouvés dans sa fiche)
+      const hit = entry.products.find(pr => tokens.every(t => pr.text.includes(t)));
+      if (hit) {
+        state.searchHints.set(entry.symptom.id, hit.id);
+        // le premier symptôme listé dans la famille du produit est considéré comme le principal
+        const fam = state.families.get(state.products.get(hit.id).family);
+        const rank = fam ? (fam.symptoms || []).indexOf(entry.symptom.id) : -1;
+        score += 4 + (rank === 0 ? 4 : rank > 0 ? Math.max(0, 3 - rank) : 0);
+      }
       results.push({ entry, score });
     }
     results.sort((a, b) => b.score - a.score || a.entry.order - b.entry.order);
@@ -477,14 +575,22 @@
 
   function symptomCard(s) {
     const cat = categoryOf(s);
+    const hintId = state.searchHints.get(s.id);
+    const hint = hintId && state.products.get(hintId);
+    const count = (state.productsBySymptom.get(s.id) || []).length;
     return h('li', null,
-      h('a', { class: 'card', href: diagHash(s.id, [s.start]) },
+      h('a', {
+        class: 'card', href: diagHash(s.id, [s.start]),
+        onclick: () => { state.focusProduct = hintId || null; }
+      },
         h('span', { class: 'card__top' },
           h('span', { class: 'card__cat' }, icon(cat.icon), cat.label),
           h('span', { class: 'card__id' }, s.id.toUpperCase())
         ),
         h('h3', { class: 'card__title' }, s.title),
         s.summary ? h('p', { class: 'card__summary' }, s.summary) : null,
+        hint ? h('p', { class: 'card__gear' }, h('strong', null, productLabel(hint)), ' · ' + productSourceLabel(hint))
+             : count ? h('p', { class: 'card__count' }, count + ' produit' + (count > 1 ? 's' : '') + ' du catalogue') : null,
         h('span', { class: 'card__go', 'aria-hidden': 'true' }, 'Démarrer le diagnostic →')
       )
     );
@@ -522,6 +628,7 @@
 
   function renderHome() {
     showView('home');
+    state.focusProduct = null;
     renderCrumbs([{ label: 'Accueil', href: '#/' }]);
     const input = $('#search-input');
     if (input.value !== state.query) input.value = state.query;
@@ -558,6 +665,7 @@
     $('#diag-category').textContent = cat.label +
       (active !== rootSymptom ? ' · depuis « ' + rootSymptom.title + ' »' : '');
     $('#diag-symptom').textContent = active.title;
+    renderGear(active);
 
     // Fil d'Ariane
     const crumbs = [{ label: 'Accueil', href: '#/' }];
@@ -605,6 +713,34 @@
         ts: Date.now()
       });
     }
+  }
+
+  /** Liste « Matériel couvert » du symptôme actif, regroupée par marque. */
+  function renderGear(symptom) {
+    const ids = state.productsBySymptom.get(symptom.id) || [];
+    const box = $('#gear');
+    const focus = state.focusProduct && state.products.get(state.focusProduct);
+    const chip = $('#focus-product');
+    chip.hidden = !focus;
+    if (focus) chip.replaceChildren('Matériel : ', h('strong', null, productLabel(focus)), ' · ' + productSourceLabel(focus));
+
+    box.hidden = ids.length === 0;
+    if (!ids.length) return;
+    $('#gear-count').textContent = String(ids.length);
+    const byBrand = new Map();
+    for (const pid of ids) {
+      const pr = state.products.get(pid);
+      if (!byBrand.has(pr.brand)) byBrand.set(pr.brand, []);
+      byBrand.get(pr.brand).push({ pid, pr });
+    }
+    const brands = [...byBrand.keys()].sort((a, b) => a.localeCompare(b, 'fr'));
+    $('#gear-list').replaceChildren(...brands.map(brand => h('li', { class: 'gear__brand' },
+      h('span', { class: 'gear__name' }, brand),
+      h('ul', { class: 'gear__models' }, byBrand.get(brand).map(({ pid, pr }) =>
+        h('li', { class: 'gear__model' + (pid === state.focusProduct ? ' is-focus' : ''), title: pr.type + (pr.ref ? ' · réf. ' + pr.ref : '') },
+          pr.model, h('span', { class: 'gear__page' }, pr.page ? ' p. ' + pr.page : ''))
+      ))
+    )));
   }
 
   function renderProgress(path, current) {
@@ -691,10 +827,47 @@
       ),
       h('div', { class: 'panel__body' },
         h('h2', { class: 'question__text', tabindex: '-1', 'data-focus': true }, node.text),
+        draftBadge(node.status),
         node.help ? h('p', { class: 'question__help' }, node.help) : null,
+        productChips(node.products),
         h('ul', { class: 'options', role: 'list' }, options)
       )
     );
+  }
+
+  function draftBadge(status) {
+    return status === 'draft'
+      ? h('span', { class: 'badge badge--draft', title: 'Procédure rédigée sans notice constructeur : à faire relire par un technicien.' }, 'À valider')
+      : null;
+  }
+
+  function productChips(ids) {
+    const list = (ids || []).map(pid => state.products.get(pid)).filter(Boolean);
+    if (!list.length) return null;
+    return h('p', { class: 'node-products' }, 'Matériel : ',
+      list.map((pr, i) => [i ? ', ' : '', h('span', { title: productSourceLabel(pr) }, productLabel(pr))]));
+  }
+
+  function renderBrandSteps(node) {
+    const list = node.brandSteps || [];
+    if (!list.length) return null;
+    const focus = state.focusProduct && state.products.get(state.focusProduct);
+    return [
+      h('h3', { class: 'block-title' }, 'Selon le matériel'),
+      h('div', { class: 'brandsteps' }, list.map(b => {
+        const prods = (b.products || []).map(pid => state.products.get(pid)).filter(Boolean);
+        const isFocus = focus && ((b.products || []).includes(state.focusProduct) || b.brand.includes(focus.brand));
+        return h('details', { class: 'brandstep', open: isFocus || list.length === 1 },
+          h('summary', { class: 'brandstep__head' },
+            h('span', { class: 'brandstep__brand' }, b.brand),
+            draftBadge(b.status),
+            prods.length ? h('span', { class: 'brandstep__models' }, prods.map(p => p.model).join(', ')) : null
+          ),
+          h('ul', { class: 'brandstep__actions' }, (b.actions || []).map(a => h('li', null, a))),
+          prods.length ? h('p', { class: 'brandstep__src' }, 'Références : ' + prods.map(p => productLabel(p) + (p.page ? ' (p. ' + p.page + ')' : '')).join(' · ')) : null
+        );
+      }))
+    ];
   }
 
   function renderResult(node, rootSymptom, active, steps) {
@@ -724,13 +897,17 @@
       h('div', { class: 'panel__body' },
         h('div', { class: 'result__head' },
           h('span', { class: 'badge badge--' + sev }, 'Gravité · ' + info.label),
+          draftBadge(node.status)
         ),
         h('h2', { class: 'result__title', tabindex: '-1', 'data-focus': true }, node.title),
         node.summary ? h('p', { class: 'result__summary' }, node.summary) : null,
         info.description ? h('p', { class: 'result__sevdesc' }, info.description) : null,
 
+        productChips(node.products),
         h('h3', { class: 'block-title' }, 'Actions recommandées'),
         h('ol', { class: 'actions' }, actions),
+
+        renderBrandSteps(node),
 
         node.warning ? h('p', { class: 'callout callout--warn' }, h('span', { class: 'callout__icon', 'aria-hidden': 'true' }, '⚠'), h('span', null, h('strong', null, 'Attention : '), node.warning)) : null,
         node.escalate ? h('p', { class: 'callout callout--escalate' }, h('span', { class: 'callout__icon', 'aria-hidden': 'true' }, '⇪'), h('span', null, h('strong', null, 'Escalade : '), node.escalate)) : null,
@@ -785,6 +962,8 @@
     lines.push('Date      : ' + now.toLocaleString('fr-FR'));
     lines.push('Procédure : v' + ((state.data.meta && state.data.meta.version) || '?'));
     lines.push('Symptôme  : ' + rootSymptom.title + (active !== rootSymptom ? ' → ' + active.title : ''));
+    const focus = state.focusProduct && state.products.get(state.focusProduct);
+    if (focus) lines.push('Matériel  : ' + productLabel(focus) + (focus.ref ? ' (réf. ' + focus.ref + ')' : '') + ' — ' + productSourceLabel(focus));
     lines.push('');
     lines.push('Parcours :');
     steps.forEach((s, i) => {
@@ -801,6 +980,11 @@
       const done = checks[i] && checks[i].checked;
       lines.push('  [' + (done ? 'x' : ' ') + '] ' + a);
     });
+    for (const b of node.brandSteps || []) {
+      if (focus && !((b.products || []).includes(state.focusProduct) || b.brand.includes(focus.brand))) continue;
+      lines.push('', 'Selon le matériel — ' + b.brand + (b.status === 'draft' ? ' (procédure à valider)' : '') + ' :');
+      (b.actions || []).forEach(a => lines.push('  - ' + a));
+    }
     if (node.warning) lines.push('', 'Attention : ' + node.warning);
     if (node.escalate) lines.push('Escalade  : ' + node.escalate);
     lines.push('', 'Lien : ' + location.href);
@@ -839,7 +1023,10 @@
       e.preventDefault();
       // Entrée : ouvre directement le premier résultat
       const first = search(state.query, state.filter)[0];
-      if (first && state.query.trim()) navigate(diagHash(first.id, [first.start]));
+      if (first && state.query.trim()) {
+        state.focusProduct = state.searchHints.get(first.id) || null;
+        navigate(diagHash(first.id, [first.start]));
+      }
     });
 
     document.querySelectorAll('[data-suggest]').forEach(btn => {
