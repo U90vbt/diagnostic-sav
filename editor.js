@@ -16,6 +16,10 @@
   const DRAFT_KEY = 'diagsav.editor.draft.v1';
   const SEV_LABEL = { low: 'Faible', moderate: 'Modéré', high: 'Élevé' };
 
+  // Écrans spécialisés (déclarés plus bas) et vue arborescente.
+  const screens = {};
+  let treeView = null;
+
   const E = {
     ready: false,
     dec: null, cat: null,          // données en cours d'édition
@@ -519,6 +523,232 @@
   }
 
   /* ---------------------------------------------------------------------
+     Étapes : création, références
+     --------------------------------------------------------------------- */
+  function idPrefix(id) {
+    const m = /^(.*?)-(?:q\d+|r\d+|r-.+)$/.exec(id || '');
+    if (m) return m[1];
+    const owner = ownerMap().get(id);
+    return owner ? owner.id : 'etape';
+  }
+
+  function createNode(type, fromId) {
+    const prefix = idPrefix(fromId);
+    const nums = Object.keys(E.dec.nodes)
+      .map(k => new RegExp('^' + prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '-' + (type === 'question' ? 'q' : 'r') + '(\\d+)$').exec(k))
+      .filter(Boolean).map(m => Number(m[1]));
+    const next = (nums.length ? Math.max(...nums) : 0) + 1;
+    const id = uniqueId(prefix + '-' + (type === 'question' ? 'q' : 'r') + next, k => !!E.dec.nodes[k]);
+    E.dec.nodes[id] = type === 'question'
+      ? { type: 'question', text: 'Nouvelle question', options: [{ label: 'Oui', next: '' }, { label: 'Non', next: '' }] }
+      : { type: 'result', severity: 'low', title: 'Nouveau résultat', actions: [''] };
+    return id;
+  }
+
+  /** Qui mène à cette étape ? (réponses de questions, départs de symptômes) */
+  function incoming(id) {
+    const refs = [];
+    for (const s of E.dec.symptoms) if (s.start === id) refs.push({ href: '#/editeur/symptome/' + encodeURIComponent(s.id), label: 'Départ du symptôme « ' + s.title + ' »' });
+    for (const [nid, n] of Object.entries(E.dec.nodes)) {
+      for (const o of n.options || []) if (o.next === id) refs.push({ href: '#/editeur/etape/' + encodeURIComponent(nid), label: 'Réponse « ' + (o.label || '?') + ' » de ' + nodeLabel(nid).toLowerCase() });
+    }
+    return refs;
+  }
+
+  function nodeIssues(id) {
+    return issues().filter(x => x.ref && x.ref.kind === 'node' && x.ref.id === id);
+  }
+
+  /* ---------------------------------------------------------------------
+     Écran : une question ou un résultat
+     --------------------------------------------------------------------- */
+  function screenNode(id) {
+    const n = E.dec.nodes[id];
+    if (!n) return notFound('Cette étape n\'existe pas (ou plus).', '#/editeur');
+    const owner = ownerMap().get(id);
+    const allIds = Object.keys(E.dec.nodes);
+    const own = nodeIssues(id);
+    const refs = incoming(id);
+
+    const head = h('section', { class: 'ed-card' },
+      h('div', { class: 'ed-actions' },
+        h('span', { class: 'ed-pill' + (n.type === 'result' ? '' : ' is-q') }, n.type === 'result' ? 'Résultat' : 'Question'),
+        h('span', { class: 'ed-hint' }, 'Identifiant : ' + id)),
+      own.length ? h('ul', { class: 'ed-issues' }, own.map(x => h('li', { class: 'is-warn' }, x.msg))) : null,
+      n.type === 'question' ? questionForm(id, n, allIds) : resultForm(id, n),
+      field('Statut', selectInput([{ value: '', label: 'Validée' }, { value: 'draft', label: 'À valider (badge affiché aux techniciens)' }],
+        n.status || '', v => { if (v) n.status = v; else delete n.status; changed(false); })),
+      h('div', { class: 'ed-actions' },
+        deleteButton('node:' + id, 'Supprimer cette étape', () => {
+          for (const m of Object.values(E.dec.nodes)) for (const o of m.options || []) if (o.next === id) o.next = '';
+          for (const s of E.dec.symptoms) if (s.start === id) s.start = '';
+          delete E.dec.nodes[id];
+          changed(false);
+          A.navigate(owner ? '#/editeur/symptome/' + encodeURIComponent(owner.id) : '#/editeur');
+        })));
+
+    return h('div', null,
+      h('p', { class: 'ed-actions' },
+        owner ? h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/symptome/' + encodeURIComponent(owner.id) }, '← ' + owner.title)
+              : h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur' }, '← Symptômes')),
+      head,
+      h('section', { class: 'ed-card' },
+        h('h2', { class: 'ed-h3' }, 'Mène à cette étape'),
+        refs.length ? h('ul', { class: 'ed-refs' }, refs.map(r => h('li', null, h('a', { href: r.href }, r.label))))
+                    : h('p', { class: 'ed-hint' }, 'Rien ne mène ici : cette étape n\'est jamais proposée aux techniciens.')));
+  }
+
+  function questionForm(id, n, allIds) {
+    if (!Array.isArray(n.options)) n.options = [];
+    const owner = ownerMap();
+    const box = h('div', { class: 'ed-options' });
+
+    const drawOptions = () => {
+      box.replaceChildren(...n.options.map((o, i) => {
+        const mode = 'symptom' in o ? 'symptom' : 'next';   // '' = symptôme pas encore choisi
+        const target = mode === 'symptom'
+          ? selectInput(E.dec.symptoms.map(s => ({ value: s.id, label: s.title })), o.symptom, v => { o.symptom = v; changed(false); }, { placeholder: '— choisir un symptôme —' })
+          : selectInput(groupNodes(allIds.filter(x => x !== id), owner), o.next || '', v => { o.next = v; changed(false); drawOptions(); }, { placeholder: '— choisir l\'étape suivante —' });
+        const open = mode === 'next' && o.next && E.dec.nodes[o.next]
+          ? h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/etape/' + encodeURIComponent(o.next) }, 'Ouvrir →')
+          : mode === 'symptom' && o.symptom ? h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/symptome/' + encodeURIComponent(o.symptom) }, 'Ouvrir →') : null;
+        return h('div', { class: 'ed-option' },
+          h('div', { class: 'ed-option__head' },
+            h('span', { class: 'ed-option__key' }, String(i + 1)),
+            textInput(o.label, v => { o.label = v; changed(false); }, { placeholder: 'Libellé de la réponse (ex. « Oui, la LED est allumée »)' }),
+            h('div', { class: 'ed-list__tools' },
+              h('button', { type: 'button', class: 'ed-icon', 'aria-label': 'Monter la réponse ' + (i + 1), disabled: i === 0 || null,
+                onclick: () => { [n.options[i - 1], n.options[i]] = [n.options[i], n.options[i - 1]]; changed(false); drawOptions(); } }, '↑'),
+              h('button', { type: 'button', class: 'ed-icon', 'aria-label': 'Descendre la réponse ' + (i + 1), disabled: i === n.options.length - 1 || null,
+                onclick: () => { [n.options[i + 1], n.options[i]] = [n.options[i], n.options[i + 1]]; changed(false); drawOptions(); } }, '↓'),
+              h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer la réponse ' + (i + 1),
+                onclick: () => { n.options.splice(i, 1); changed(false); drawOptions(); } }, '✕'))),
+          h('div', { class: 'ed-row' },
+            field('Mène vers', selectInput([{ value: 'next', label: 'Une étape de cet arbre' }, { value: 'symptom', label: 'Le diagnostic d\'un autre symptôme' }], mode, v => {
+              if (v === 'symptom') { delete o.next; o.symptom = ''; } else { delete o.symptom; o.next = ''; }
+              changed(false); drawOptions();
+            })),
+            field(mode === 'symptom' ? 'Symptôme' : 'Étape suivante', target)),
+          h('div', { class: 'ed-actions' },
+            open,
+            mode === 'next' ? h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { o.next = createNode('question', id); changed(false); A.navigate('#/editeur/etape/' + encodeURIComponent(o.next)); } }, '+ Créer une question') : null,
+            mode === 'next' ? h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { o.next = createNode('result', id); changed(false); A.navigate('#/editeur/etape/' + encodeURIComponent(o.next)); } }, '+ Créer un résultat') : null));
+      }),
+      h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { n.options.push({ label: '', next: '' }); changed(false); drawOptions(); } }, '+ Ajouter une réponse'));
+    };
+    drawOptions();
+
+    return h('div', { class: 'ed-sub' },
+      field('Question posée au technicien', textInput(n.text, v => { n.text = v; changed(false); }, { multiline: true, rows: 2 })),
+      field('Aide (facultatif)', textInput(n.help, v => { if (v.trim()) n.help = v; else delete n.help; changed(false); }, { multiline: true, rows: 2 }), 'Précision affichée sous la question : où regarder, comment tester.'),
+      h('h3', { class: 'ed-h3' }, 'Réponses possibles'),
+      h('p', { class: 'ed-hint' }, 'Chaque réponse mène à une autre question, à un résultat, ou au diagnostic d\'un autre symptôme. 9 réponses au maximum.'),
+      box);
+  }
+
+  function resultForm(id, n) {
+    if (!Array.isArray(n.actions)) n.actions = [];
+    const products = E.dec.products || {};
+    const brandBox = h('div', { class: 'ed-brands' });
+
+    const productPicker = (list, redraw) => {
+      const byBrand = new Map();
+      for (const [pid, pr] of Object.entries(products)) {
+        if (!byBrand.has(pr.brand)) byBrand.set(pr.brand, []);
+        byBrand.get(pr.brand).push({ value: pid, label: pr.brand + ' ' + pr.model });
+      }
+      const groups = [...byBrand.entries()].sort((a, b) => a[0].localeCompare(b[0], 'fr')).map(([group, options]) => ({ group, options }));
+      return h('div', { class: 'ed-chips' },
+        list.map((pid, i) => h('span', { class: 'chip chip--ghost' },
+          products[pid] ? products[pid].brand + ' ' + products[pid].model : '⚠ ' + pid,
+          h('button', { type: 'button', class: 'ed-chip-x', 'aria-label': 'Retirer ' + pid, onclick: () => { list.splice(i, 1); changed(false); redraw(); } }, '✕'))),
+        selectInput(groups, '', v => { if (v && !list.includes(v)) { list.push(v); changed(false); redraw(); } }, { placeholder: '+ Ajouter un produit…' }));
+    };
+
+    const drawBrands = () => {
+      brandBox.replaceChildren(...(n.brandSteps || []).map((b, i) => {
+        if (!b.products) b.products = [];   // champs manquants seulement (fichier saisi à la main)
+        if (!b.actions) b.actions = [];
+        return h('div', { class: 'ed-option' },
+          h('div', { class: 'ed-row' },
+            field('Marque ou matériel', textInput(b.brand, v => { b.brand = v; changed(false); }, { placeholder: 'ex. Novastar' })),
+            field('Statut', selectInput([{ value: 'draft', label: 'À valider' }, { value: 'validated', label: 'Validées' }], b.status || 'validated', v => { b.status = v; changed(false); }))),
+          field('Produits concernés', productPicker(b.products, drawBrands)),
+          field('Étapes spécifiques', listEditor(b.actions, () => changed(false), { multiline: true, addLabel: 'Ajouter une étape' })),
+          h('div', { class: 'ed-actions' },
+            h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { n.brandSteps.splice(i, 1); if (!n.brandSteps.length) delete n.brandSteps; changed(false); drawBrands(); } }, 'Retirer ce bloc')));
+      }),
+      h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { n.brandSteps = n.brandSteps || []; n.brandSteps.push({ brand: '', products: [], status: 'draft', actions: [''] }); changed(false); drawBrands(); } }, '+ Ajouter des étapes pour une marque'));
+    };
+    drawBrands();
+
+    const related = new Set(n.related || []);
+    const relatedBox = h('div', { class: 'ed-checks' }, E.dec.symptoms.map(s => {
+      const cb = h('input', { type: 'checkbox' });
+      cb.checked = related.has(s.id);
+      cb.addEventListener('change', () => {
+        if (cb.checked) related.add(s.id); else related.delete(s.id);
+        if (related.size) n.related = E.dec.symptoms.map(x => x.id).filter(x => related.has(x)); else delete n.related;
+        changed(false);
+      });
+      return h('label', { class: 'ed-check' }, cb, ' ', s.title);
+    }));
+
+    const opt = (key, label, hint) => field(label, textInput(n[key], v => { if (v.trim()) n[key] = v; else delete n[key]; changed(false); }, { multiline: true, rows: 2 }), hint);
+
+    return h('div', { class: 'ed-sub' },
+      field('Titre du résultat', textInput(n.title, v => { n.title = v; changed(false); })),
+      field('Gravité', selectInput(['low', 'moderate', 'high'].map(k => ({ value: k, label: SEV_LABEL[k] })), n.severity, v => { n.severity = v; changed(false); })),
+      opt('summary', 'Résumé (facultatif)', 'Une phrase qui explique la cause probable.'),
+      h('h3', { class: 'ed-h3' }, 'Actions recommandées'),
+      listEditor(n.actions, () => changed(false), { multiline: true, addLabel: 'Ajouter une action', placeholder: 'Une action concrète, dans l\'ordre' }),
+      opt('warning', 'Mise en garde (facultatif)', 'Affichée en rouge : risque électrique, matériel à ne pas réarmer…'),
+      opt('escalate', 'Escalade (facultatif)', 'À qui transmettre si l\'action ne suffit pas (un rôle, jamais un nom ou un numéro).'),
+      h('details', { class: 'ed-details' }, h('summary', null, 'Diagnostics liés (' + related.size + ')'), relatedBox),
+      h('h3', { class: 'ed-h3' }, 'Étapes selon le matériel'),
+      h('p', { class: 'ed-hint' }, 'Bloc repliable « Selon le matériel » : étapes propres à une marque. Laissez « À valider » tant qu\'un technicien ne les a pas relues avec la notice.'),
+      brandBox);
+  }
+
+  /* ---------------------------------------------------------------------
+     Vue arborescente d'un symptôme
+     --------------------------------------------------------------------- */
+  function buildTree(s) {
+    const seen = new Set();
+    const iss = issues();
+    const bad = new Set(iss.filter(x => x.ref && x.ref.kind === 'node').map(x => x.ref.id));
+    const link = id => h('a', { class: 'ed-tree__node' + (bad.has(id) ? ' is-bad' : ''), href: '#/editeur/etape/' + encodeURIComponent(id) },
+      h('span', { class: 'ed-pill' + (E.dec.nodes[id].type === 'result' ? ' is-sev-' + E.dec.nodes[id].severity : ' is-q') },
+        E.dec.nodes[id].type === 'result' ? SEV_LABEL[E.dec.nodes[id].severity] || '?' : 'Q'),
+      ' ', E.dec.nodes[id].type === 'result' ? (E.dec.nodes[id].title || '(sans titre)') : (E.dec.nodes[id].text || '(sans texte)'),
+      E.dec.nodes[id].status === 'draft' ? h('span', { class: 'ed-pill is-warn' }, 'À valider') : null);
+
+    const branch = (id, depth) => {
+      if (!id) return h('span', { class: 'ed-tree__err' }, 'aucune étape choisie');
+      if (!E.dec.nodes[id]) return h('span', { class: 'ed-tree__err' }, 'étape introuvable (' + id + ')');
+      if (seen.has(id)) return h('span', { class: 'ed-tree__again' }, '↺ ', h('a', { href: '#/editeur/etape/' + encodeURIComponent(id) }, nodeLabel(id)), ' (déjà affichée plus haut)');
+      seen.add(id);
+      const n = E.dec.nodes[id];
+      if (n.type !== 'question' || depth > 40) return link(id);
+      return h('div', null, link(id),
+        h('ul', { class: 'ed-tree__opts' }, (n.options || []).map(o => h('li', null,
+          h('span', { class: 'ed-tree__ans' }, '« ' + (o.label || '?') + ' »'), ' → ',
+          o.symptom
+            ? (symptomById(o.symptom) ? h('a', { href: '#/editeur/symptome/' + encodeURIComponent(o.symptom) }, '↪ diagnostic « ' + symptomById(o.symptom).title + ' »')
+                                      : h('span', { class: 'ed-tree__err' }, 'symptôme introuvable (' + o.symptom + ')'))
+            : branch(o.next, depth + 1)))));
+    };
+
+    return h('section', { class: 'ed-card' },
+      h('h2', { class: 'ed-h3' }, 'Arbre de décision'),
+      h('p', { class: 'ed-hint' }, 'Cliquez sur une étape pour la modifier. En rouge : à corriger.'),
+      h('div', { class: 'ed-tree' }, s.start ? branch(s.start, 0) : h('span', { class: 'ed-tree__err' }, 'aucune question de départ')));
+  }
+
+  screens.node = screenNode;
+  treeView = buildTree;
+
+  /* ---------------------------------------------------------------------
      Initialisation et routage interne
      --------------------------------------------------------------------- */
   async function init() {
@@ -539,9 +769,6 @@
     E.ready = true;
   }
 
-  // Écrans ajoutés par les sous-étapes suivantes (questions/résultats, produits).
-  const screens = {};
-  let treeView = null;
 
   async function render(route, root) {
     E.route = route; E.root = root;
