@@ -1,0 +1,1297 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "updated": "2026-11-21",
+    "source": "focus-ete-2025",
+    "note": "Caractéristiques reformulées depuis le catalogue (aucun texte commercial, aucun prix). L'identité des produits (marque, modèle, page, famille) est dans decisions.json."
+  },
+  "synonyms": {
+    "lm": "lumens",
+    "lumen": "lumens",
+    "nit": "nits",
+    "cd": "nits",
+    "vp": "videoprojecteur",
+    "projecteur": "videoprojecteur",
+    "projo": "videoprojecteur",
+    "proj": "videoprojecteur",
+    "moniteur": "ecran",
+    "afficheur": "ecran",
+    "tele": "ecran",
+    "tv": "ecran",
+    "dalle": "ecran",
+    "switch": "switch",
+    "commutateur": "switch",
+    "alimentation reseau": "poe",
+    "poe+": "poe",
+    "poe++": "poe",
+    "sans fil": "sans-fil",
+    "wireless": "sans-fil",
+    "hf": "sans-fil",
+    "micro": "micro",
+    "microphone": "micro",
+    "micros": "micro",
+    "enceinte": "enceinte",
+    "haut-parleur": "enceinte",
+    "hp": "enceinte",
+    "ampli": "amplificateur",
+    "amp": "amplificateur",
+    "camera": "camera",
+    "cam": "camera",
+    "webcam": "camera",
+    "visio": "visioconference",
+    "visioconference": "visioconference",
+    "conf": "conference",
+    "mur d'images": "mur",
+    "videowall": "mur",
+    "mur video": "mur",
+    "led": "led",
+    "microled": "led",
+    "cob": "led",
+    "fibre": "fibre",
+    "optique": "fibre",
+    "uhd": "4k",
+    "2160p": "4k",
+    "fhd": "full hd",
+    "1080p": "full hd",
+    "wuxga": "1920 x 1200",
+    "teams": "teams",
+    "zoom": "zoom"
+  },
+  "products": {
+    "samsung-qp105dx-5k": {
+      "facts": [
+        "Écran 5K ultra-large 105\"",
+        "Format 21:9",
+        "Dalle anti-reflet, contraste 4000:1",
+        "USB-C et Smartview+",
+        "Épaisseur 48,1 mm"
+      ]
+    },
+    "samsung-em32dx": {
+      "facts": [
+        "E-paper couleur 32\"",
+        "Résolution 2560 x 1440",
+        "Batterie rechargeable 5000 mAh",
+        "2 ports USB-C (charge et données)",
+        "Wi-Fi et Bluetooth",
+        "Gestion via application mobile et Samsung VXT"
+      ]
+    },
+    "samsung-serie-qhc": {
+      "facts": [
+        "UHD 3840 x 2160",
+        "Luminosité 700 cd/m²",
+        "Tailles 43\", 50\", 55\", 65\", 75\"",
+        "Fonctionnement 24/7",
+        "Paysage ou portrait",
+        "Contraste 4000:1"
+      ]
+    },
+    "lg-serie-xs4p": {
+      "facts": [
+        "Haute luminosité 4000 / 3200 nits (vitrine)",
+        "FHD en 49\" et 55\", UHD en 75\"",
+        "webOS intégré"
+      ]
+    },
+    "lg-86bh5f": {
+      "facts": [
+        "86\" au format 58:9",
+        "Résolution 3840 x 600",
+        "Luminosité 500 cd/m²",
+        "webOS intégré",
+        "Fonctionnement 24/7"
+      ]
+    },
+    "lg-serie-tr3dq": {
+      "facts": [
+        "Écran interactif UHD 4K",
+        "Tailles 55\", 65\", 75\", 86\"",
+        "Tactile infrarouge 20 points",
+        "Android intégré",
+        "Haut-parleurs intégrés",
+        "Partage d'écran sans fil"
+      ]
+    },
+    "lg-serie-un640s": {
+      "facts": [
+        "UHD 4K",
+        "Tailles 43\" à 86\"",
+        "Luminosité 300 à 400 cd/m²",
+        "Fonctionnement 16 h/7 j",
+        "webOS 22, lecteur multimédia intégré"
+      ]
+    },
+    "iiyama-te7513a-te8613a": {
+      "facts": [
+        "Écran interactif 4K UHD",
+        "Android 14 (EDLA), Wi-Fi 6",
+        "Capteur de présence, NFC",
+        "Luminosité 450 cd/m²",
+        "Tailles 75\" et 86\" (aussi 55\", 65\", 98\")"
+      ]
+    },
+    "iiyama-lh4375uhs-b1ag": {
+      "facts": [
+        "Moniteur professionnel 43\" (32\" à 98\")",
+        "Android 11 et iiSignage² intégrés",
+        "Luminosité 500 cd/m²"
+      ]
+    },
+    "iiyama-le9864uhs-b1ag": {
+      "facts": [
+        "Écran 98\" 4K UHD",
+        "Wi-Fi",
+        "Fonctionnement 24/7",
+        "Luminosité 500 cd/m²"
+      ]
+    },
+    "sharp-serie-m": {
+      "facts": [
+        "Écrans 4K",
+        "Tailles 32\" à 98\"",
+        "Luminosité jusqu'à 500 cd/m²",
+        "Usage commercial 24/7",
+        "Dalle antireflet"
+      ]
+    },
+    "sharp-serie-me2": {
+      "facts": [
+        "UHD 3840 x 2160",
+        "Tailles 43\" à 98\"",
+        "Luminosité 400 à 450 cd/m²",
+        "Android 13 embarqué"
+      ]
+    },
+    "sharp-serie-e": {
+      "facts": [
+        "Tailles 32\" (FHD) à 98\"",
+        "Luminosité 400 cd/m²",
+        "USB-C 5 V / 3 A",
+        "Lecteur média intégré UHD et HDR"
+      ]
+    },
+    "sharp-ep-c251": {
+      "facts": [
+        "Écran e-paper couleur 25,3\"",
+        "Consommation uniquement au changement de contenu"
+      ]
+    },
+    "philips-serie-4050q": {
+      "facts": [
+        "UHD jusqu'à 3840 x 2160",
+        "Tailles 32\" à 86\"",
+        "Luminosité jusqu'à 500 cd/m²",
+        "Android 10, compatible Wave (gestion à distance)"
+      ]
+    },
+    "philips-55bdl3305x": {
+      "facts": [
+        "Écran mur vidéo 55\" Full HD",
+        "Bordure < 3 mm",
+        "Luminosité 500 cd/m²",
+        "Fonctionnement 24/7, portrait ou paysage",
+        "Compatible OPS, FailOver"
+      ]
+    },
+    "philips-32bdl5150i": {
+      "facts": [
+        "E-paper 13\", 25\" et 32\"",
+        "Entrée vidéo USB, micro-USB",
+        "Pilotable en réseau (RJ45)",
+        "Batteries 4 x 18650 (non incluses)",
+        "Android embarqué, compatible Wave"
+      ]
+    },
+    "philips-serie-3751t": {
+      "facts": [
+        "Écran interactif 24\" à 55\"",
+        "UHD",
+        "Luminosité 250 à 500 cd/m²",
+        "Android 13, Wi-Fi",
+        "Tactile PCAP 10 à 40 points"
+      ]
+    },
+    "samsung-the-wall-serie-mmf-a": {
+      "facts": [
+        "Mur LED tout-en-un",
+        "Contrôleur intégré préconfiguré",
+        "HDR10 / HDR10+"
+      ]
+    },
+    "samsung-the-wall-serie-iab": {
+      "facts": [
+        "Mur MicroLED tout-en-un",
+        "Technologies Black Seal et Ultra Chroma"
+      ]
+    },
+    "samsung-all-in-one-serie-iac": {
+      "facts": [
+        "Écran LED tout-en-un livré complet",
+        "Boîtier sous Tizen compatible MagicInfo et VXT",
+        "Installation Quick Build"
+      ]
+    },
+    "samsung-serie-ifr": {
+      "facts": [
+        "Pitch 1,5 / 2 / 2,5 / 4 mm",
+        "Luminosité 800 à 1000 nits",
+        "LED SMD, HDR",
+        "Maintenance par l'avant",
+        "Redondance du système",
+        "Portrait, angle 90° ou incurvé"
+      ]
+    },
+    "absen-serie-klcob-v2": {
+      "facts": [
+        "MicroLED (COB)",
+        "Pitch 0,9 / 1,2 / 1,5 mm",
+        "Panneau 600 x 337,5 x 39,3 mm",
+        "Résolutions FHD, 4K, 8K"
+      ]
+    },
+    "absen-pl-v2": {
+      "facts": [
+        "LED intérieur et extérieur (location)",
+        "Pitch 1,9 / 2,5 / 2,9 / 3,9 / 4,8 mm",
+        "Luminosité 1000 à 4500 cd/m²",
+        "HDR, 14 à 16 bits, 3840 à 7680 Hz",
+        "Courbes de -7,5° à +10°",
+        "Protection des coins, verrouillage automatique"
+      ]
+    },
+    "absen-icon-x": {
+      "facts": [
+        "Micro LED tout-en-un",
+        "Tailles 108\", 136\", 163\"",
+        "Résolution FHD",
+        "Kit complet : contrôleur, audio, alimentation"
+      ]
+    },
+    "absen-serie-nx": {
+      "facts": [
+        "Ratio 16:9",
+        "Pitch 1,5 / 1,8 / 2,5 mm",
+        "Luminosité 800 ou 1500 cd/m²",
+        "Maintenance avant et arrière",
+        "HDR10 en option, calibration A5C+"
+      ]
+    },
+    "lg-magnit-laaa": {
+      "facts": [
+        "MicroLED tout-en-un 136\"",
+        "Pitch 1,56 mm, Full HD",
+        "Luminosité 500 nits (1000 en pic)",
+        "Angle de vision 160°",
+        "Haut-parleurs 2 x 10 W",
+        "Contrôleur webOS intégré"
+      ]
+    },
+    "lg-lapa": {
+      "facts": [
+        "LED tout-en-un 136\" ou 163\"",
+        "Pitch 1,56 mm ou 1,88 mm, Full HD",
+        "Luminosité 500 nits",
+        "Angle de vision 150°",
+        "Haut-parleurs 2 x 9 W",
+        "Contrôleur webOS intégré"
+      ]
+    },
+    "lg-lscc": {
+      "facts": [
+        "LED ultra-fin intérieur",
+        "Pitch 1,25 / 1,56 / 1,88 / 2,5 mm",
+        "Module 192 x 108 pixels, 300 x 168,75 mm",
+        "Luminosité 800 nits",
+        "Angle à 90° possible"
+      ]
+    },
+    "sharp-led-e015i-135": {
+      "facts": [
+        "Bundle LED 135\" pitch 1,5 mm",
+        "Full HD",
+        "Luminosité 600 cd/m²",
+        "Contraste 4000:1",
+        "Maintenance par l'avant"
+      ]
+    },
+    "sharp-led-fc015i-137": {
+      "facts": [
+        "Bundle LED 137\" pitch 1,5 mm",
+        "Full HD",
+        "Luminosité 800 cd/m²",
+        "Contraste 20000:1",
+        "Technologie flip-chip COB"
+      ]
+    },
+    "philips-unite-5000": {
+      "facts": [
+        "Panneaux LED COB flip-chip",
+        "Pitch 0,78 / 0,93 / 1,2 / 1,5 / 1,8 mm",
+        "Cabinet 27\" 16:9",
+        "600 nits, FHD",
+        "Couleurs 12 bits, HDR10+",
+        "Alimentation et chaînage data pré-câblés"
+      ]
+    },
+    "philips-public-5000": {
+      "facts": [
+        "Écrans LED"
+      ]
+    },
+    "novastar-serie-coex": {
+      "facts": [
+        "Contrôleurs LED avec logiciel VMP",
+        "Modèles MX20, MX30, MX40 Pro, KU20",
+        "Entrée HDMI 2.0",
+        "Jusqu'à 8192 x 1080 à 60 Hz (8 bits) ou 4096 x 2160 à 60 Hz (10/12 bits)",
+        "Fréquence jusqu'à 240 Hz"
+      ]
+    },
+    "novastar-mctrl4k": {
+      "facts": [
+        "Contrôleur LED 4K",
+        "HDR10 et HLG",
+        "Gamma RVB réglable (sources 10 et 12 bits)",
+        "Latence inférieure à 1 ms"
+      ]
+    },
+    "novastar-serie-h": {
+      "facts": [
+        "Processeur de mur d'images LCD, LED et projection",
+        "Châssis 2U, 5U, 9U, 15U",
+        "4K 60 Hz RVB 4:4:4 10 bits, HDR",
+        "Entrées HDMI, SDI, DVI, IP ; sorties LED Novastar, HDMI, SDI",
+        "Jusqu'à 16 couches par sortie",
+        "Pilotage par page web"
+      ]
+    },
+    "epson-eb-l790su": {
+      "facts": [
+        "Courte focale laser",
+        "Luminosité 7000 lumens",
+        "WUXGA 1920 x 1200",
+        "Ratio 0,79 à 1,36:1",
+        "Image de 60\" à 400\"",
+        "20 000 h (30 000 h en mode étendu)"
+      ]
+    },
+    "epson-eb-l890e": {
+      "facts": [
+        "3LCD laser",
+        "Luminosité 8000 lumens",
+        "WUXGA avec amélioration 4K",
+        "Ratio 1,35 à 2,20:1",
+        "Image de 50\" à 500\"",
+        "20 000 h (30 000 h en mode étendu)"
+      ]
+    },
+    "epson-eb-w56s": {
+      "facts": [
+        "Courte focale 3LCD",
+        "Luminosité 3700 lumens",
+        "WXGA 1280 x 800",
+        "Ratio 0,6:1 (100\" à 1,3 m)",
+        "Haut-parleur 16 W",
+        "6500 h (17 000 h en mode éco)"
+      ]
+    },
+    "epson-eb-pq2010b": {
+      "facts": [
+        "3LCD laser, optique interchangeable",
+        "1080p avec amélioration 4K",
+        "Contraste jusqu'à 5 000 000:1"
+      ]
+    },
+    "barco-serie-i600": {
+      "facts": [
+        "Laser phosphore monopuce 4K",
+        "Luminosité 8000, 10 000 ou 15 000 lumens",
+        "Durée de vie 20 000 h"
+      ]
+    },
+    "barco-qdx": {
+      "facts": [
+        "3DLP laser phosphore 4K"
+      ]
+    },
+    "barco-g62-w9": {
+      "facts": [
+        "DLP laser phosphore",
+        "WUXGA 1920 x 1200",
+        "Luminosité 8000 lumens ANSI"
+      ]
+    },
+    "panasonic-pt-vmz82": {
+      "facts": [
+        "3LCD laser compact",
+        "5200 à 8200 lumens",
+        "WUXGA",
+        "Châssis noir ou blanc"
+      ]
+    },
+    "panasonic-pt-mz882": {
+      "facts": [
+        "LCD laser",
+        "6500 à 8200 lumens",
+        "WUXGA",
+        "Châssis noir ou blanc"
+      ]
+    },
+    "panasonic-pt-rq7": {
+      "facts": [
+        "Mono DLP",
+        "6500 ou 7500 lumens",
+        "4K 3840 x 2160 et WUXGA"
+      ]
+    },
+    "panasonic-pt-req15": {
+      "facts": [
+        "Mono DLP",
+        "8000 à 15 000 lumens",
+        "4K 3840 x 2160 et WUXGA"
+      ]
+    },
+    "sharp-pa1004ul": {
+      "facts": [
+        "LCD laser silencieux",
+        "Luminosité 10 000 lumens",
+        "WUXGA 1920 x 1200",
+        "Sans filtre, jusqu'à 20 000 h"
+      ]
+    },
+    "sharp-pv800ul": {
+      "facts": [
+        "3LCD laser, objectifs interchangeables",
+        "Luminosité 8000 lumens",
+        "WUXGA 1920 x 1200",
+        "Source lumineuse 20 000 h"
+      ]
+    },
+    "sharp-pv710ul": {
+      "facts": [
+        "LCD laser, objectifs interchangeables",
+        "Luminosité 7100 lumens",
+        "WUXGA 1920 x 1200, format 16:10"
+      ]
+    },
+    "sharp-pa1505ul": {
+      "facts": [
+        "Projecteur laser d'installation avec support 4K",
+        "Entrée HDBaseT et répéteur HDBaseT",
+        "Objectifs motorisés en option"
+      ]
+    },
+    "vivitek-du5053z": {
+      "facts": [
+        "Laser de conférence",
+        "Luminosité 7500 lumens",
+        "WUXGA 1920 x 1200"
+      ]
+    },
+    "vivitek-serie-du905x-z": {
+      "facts": [
+        "DLP laser monopuce",
+        "21 000, 24 000 ou 27 000 lumens",
+        "WUXGA 1920 x 1200",
+        "7 objectifs en option (ratio 0,38 à 10,3:1)"
+      ]
+    },
+    "barco-clickshare-c-5-c-10-gen-2": {
+      "facts": [
+        "Présentation sans fil, petites et moyennes salles",
+        "BYOD : AirPlay, Miracast, Google Cast, application Barco",
+        "Garantie 5 ans après enregistrement"
+      ]
+    },
+    "barco-clickshare-cx-20-cx-30-gen-2": {
+      "facts": [
+        "Conférence sans fil, petites et moyennes salles",
+        "BYOD : AirPlay, Miracast, Google Cast, application Barco"
+      ]
+    },
+    "barco-clickshare-cx-50-gen-2": {
+      "facts": [
+        "Conférence sans fil, dernière génération"
+      ]
+    },
+    "barco-clickshare-bar-pro-core": {
+      "facts": [
+        "Barre de visioconférence tout-en-un",
+        "ClickShare intégré",
+        "Versions Core ou Pro"
+      ]
+    },
+    "aver-vb370a": {
+      "facts": [
+        "Barre vidéo Android 4K",
+        "Double optique, suivi vocal",
+        "Double écran",
+        "Extension haut-parleur, micros, tablette CP10 G2"
+      ]
+    },
+    "aver-vc520-pro3": {
+      "facts": [
+        "Caméra et haut-parleur de conférence"
+      ]
+    },
+    "aver-fone700-cam570": {
+      "facts": [
+        "Haut-parleur de plafond avec hub de connectivité",
+        "Caméra USB 4K CAM570 : double objectif, zoom x36, suivi audio"
+      ]
+    },
+    "neat-neat-bar-byod": {
+      "facts": [
+        "Barre de visioconférence BYOD",
+        "Neat Pad en option"
+      ]
+    },
+    "neat-neat-bar-2": {
+      "facts": [
+        "Barre de visioconférence, petites et moyennes salles",
+        "Certifiée Zoom et Teams"
+      ]
+    },
+    "neat-neat-bar-pro": {
+      "facts": [
+        "Barre de visioconférence, moyennes et grandes salles",
+        "2 écrans (Zoom et Teams)"
+      ]
+    },
+    "neat-neat-center": {
+      "facts": [
+        "Caméra 360° d'appoint pour système Neat",
+        "16 micros omnidirectionnels"
+      ]
+    },
+    "neat-neat-board-50": {
+      "facts": [
+        "Écran de collaboration tout-en-un 50\"",
+        "Stylet Neat Active Marker fourni"
+      ]
+    },
+    "neat-neat-board-pro": {
+      "facts": [
+        "Écran de collaboration tout-en-un, grandes salles",
+        "Teams et Zoom, mode BYOD",
+        "Partage par USB-C et HDMI",
+        "Stylet fourni"
+      ]
+    },
+    "biamp-vidi-280": {
+      "facts": [
+        "Caméra ePTZ 4K",
+        "USB-C",
+        "Cadrage automatique",
+        "Certification Microsoft"
+      ]
+    },
+    "biamp-bundle-mpx250-mrb-mx400c": {
+      "facts": [
+        "Kit audio pour salles jusqu'à 6 x 6 m",
+        "DSP TesiraFORTÉ X 400, micros Parlé, enceintes Desono C-IC6",
+        "Déploiement Biamp Launch"
+      ]
+    },
+    "biamp-parle-cbc-2500": {
+      "facts": [
+        "Barre de visioconférence plafond (ABC 2500 + support)",
+        "Deux points de fixation"
+      ]
+    },
+    "biamp-parle-vbc-2500a": {
+      "facts": [
+        "Barres audio / vidéo de conférence tout-en-un",
+        "VBC 2800 avec caméra 4K",
+        "Teams et Zoom, configuration Biamp Launch"
+      ]
+    },
+    "yealink-a40": {
+      "facts": [
+        "Barre de visioconférence double optique",
+        "Android 13"
+      ]
+    },
+    "yealink-smartvision-40": {
+      "facts": [
+        "Caméra de visioconférence tout-en-un",
+        "Certifiée Microsoft Teams"
+      ]
+    },
+    "yealink-meetingbar-a10": {
+      "facts": [
+        "Barre de collaboration Android tout-en-un",
+        "Micros MEMS et haut-parleurs intégrés",
+        "Wi-Fi et Bluetooth",
+        "Option CTP18 et WPP30"
+      ]
+    },
+    "yealink-mvc-s90": {
+      "facts": [
+        "Système Microsoft Teams Rooms",
+        "Caméra 4K UVC86",
+        "Console tactile 11,6\"",
+        "Mini-PC Core i5 11e gén., 8 Go",
+        "Capteur de salle (occupation, température)"
+      ]
+    },
+    "yealink-meetingboard-pro-65": {
+      "facts": [
+        "Écran tout-en-un 65\"",
+        "Garantie 2 ans"
+      ]
+    },
+    "dten-d7x-55-75": {
+      "facts": [
+        "Écran tactile 55\" ou 75\" Android",
+        "Certifié Teams et Zoom",
+        "Caméra 4K 129°",
+        "15 microphones",
+        "BYOD"
+      ]
+    },
+    "dten-vue-pro": {
+      "facts": [
+        "Système de caméras 4K 12 MP",
+        "Couverture 160°",
+        "Cadrage intelligent",
+        "Compatible DTEN D7X"
+      ]
+    },
+    "dten-d7x-dual": {
+      "facts": [
+        "Double écran tactile 4K 75\"",
+        "5 caméras 4K",
+        "Cadrage intelligent"
+      ]
+    },
+    "huddly-s1": {
+      "facts": [
+        "Caméra 4K, PTZ numérique",
+        "USB-C via injecteur PoE (jusqu'à 100 m)",
+        "Certifiée Teams Rooms"
+      ]
+    },
+    "huddly-crew": {
+      "facts": [
+        "Système de 3 caméras réseau 6K",
+        "Réalisation automatique (Director)",
+        "Jusqu'à 2 caméras supplémentaires",
+        "Certifié Teams"
+      ]
+    },
+    "huddly-l1": {
+      "facts": [
+        "Caméra 6K grand angle, grandes salles",
+        "USB-C via injecteur PoE (jusqu'à 100 m)",
+        "Certifiée Teams et Zoom"
+      ]
+    },
+    "huddly-iq": {
+      "facts": [
+        "Caméra USB 4K",
+        "Cadrage intelligent",
+        "Plug and Play"
+      ]
+    },
+    "ochno-room-kit-o-pc-4-eu": {
+      "facts": [
+        "Kit de prises USB-C de table",
+        "Double écran et Ethernet",
+        "Jusqu'à 4 prises : USB-C, HDMI, USB-A"
+      ]
+    },
+    "ochno-o-ph-4-eu": {
+      "facts": [
+        "Chargeur intelligent avec gestion cloud"
+      ]
+    },
+    "black-box-mediacento-ipx-4k": {
+      "facts": [
+        "Distribution vidéo sur IP",
+        "4K 4096 x 2160 à 30 Hz, 1920 x 1200 à 60 Hz",
+        "Alimentation PoE"
+      ]
+    },
+    "black-box-emerald": {
+      "facts": [
+        "KVM sur IP",
+        "Vidéo 4K/60, DVI HD, USB 2.0, audio",
+        "Serveur web intégré"
+      ]
+    },
+    "kramer-swt3-31-hu-tr": {
+      "facts": [
+        "Auto-commutateur",
+        "PoE",
+        "Contrôle à distance sécurisé"
+      ]
+    },
+    "kramer-kds-en7": {
+      "facts": [
+        "Encodeur AV sur IP 4K",
+        "Réseau 1 Gbit/s, câble cuivre"
+      ]
+    },
+    "kramer-kds-dec7": {
+      "facts": [
+        "Décodeur AV sur IP 4K, sortie HDMI",
+        "Réseau 1 Gbit/s",
+        "USB, IR, KVM",
+        "Mur vidéo jusqu'à 16 x 16",
+        "Commutation en 1 s"
+      ]
+    },
+    "kramer-ext3-h-t": {
+      "facts": [
+        "Émetteur HDBaseT 3.0 longue portée",
+        "HDMI 4K60 4:4:4"
+      ]
+    },
+    "lindy-38360": {
+      "facts": [
+        "Extendeur fibre HDMI 8K60",
+        "Jusqu'à 100 m",
+        "Fibre multimode MPO OM3 type A"
+      ]
+    },
+    "lindy-38385": {
+      "facts": [
+        "Splitter extendeur Cat.6 HDMI 4K60, 2 ports",
+        "Jusqu'à 70 m, IR",
+        "HDR"
+      ]
+    },
+    "lindy-43406": {
+      "facts": [
+        "Commutateur matriciel USB 3.2 4x4",
+        "Pilotage boutons, web (TCP/IP) ou RS-232"
+      ]
+    },
+    "lindy-38346": {
+      "facts": [
+        "Extendeur KVM HDBaseT 3.0 Cat.6A",
+        "70 m",
+        "HDMI 4K60 4:4:4, HDR",
+        "Entrée USB-C (DisplayPort, USB 2.0, charge 60 W)"
+      ]
+    },
+    "netgear-gsm4248px": {
+      "facts": [
+        "Switch manageable 40 ports Gigabit PoE+",
+        "Budget PoE 960 W",
+        "8 slots SFP+",
+        "Connexion automatique avec les M4250"
+      ]
+    },
+    "netgear-gsm4352": {
+      "facts": [
+        "Switch AV 48 ports Gigabit PoE+",
+        "4 ports SFP+ 10 Gbit/s",
+        "Budget PoE jusqu'à 1440 W",
+        "Alimentation modulaire redondante"
+      ]
+    },
+    "netgear-xsm4340v": {
+      "facts": [
+        "Switch manageable 10 Gbit/s",
+        "24 ports PoE++",
+        "4 ports SFP28, 4 ports 10G SFP+"
+      ]
+    },
+    "netgear-gsm4230px": {
+      "facts": [
+        "Switch manageable 24 ports Gigabit PoE+",
+        "4 slots SFP+",
+        "Budget PoE 480 W",
+        "Connexion automatique avec les M4250"
+      ]
+    },
+    "visionary-e5100-d5100": {
+      "facts": [
+        "Encodeur / décodeur 4K UHD sur réseau 1 Gbit/s"
+      ]
+    },
+    "visionary-duet5": {
+      "facts": [
+        "Encodeur / décodeur 4K UHD sur réseau 1 Gbit/s",
+        "Port LAN secondaire (marquage VLAN)"
+      ]
+    },
+    "visionary-xb5": {
+      "facts": [
+        "Encodeur / décodeur AV sur IP 4K60 4:4:4",
+        "USB-C (UVC/UAC)",
+        "Audio AES67 et Dante"
+      ]
+    },
+    "datapath-serie-fx4": {
+      "facts": [
+        "Contrôleur multi-écrans",
+        "Versions HDMI, DisplayPort, HDR, SDI",
+        "Configuration Wall Designer (gratuit)"
+      ]
+    },
+    "datapath-vsn-mini-300": {
+      "facts": [
+        "Contrôleur de mur vidéo multi-entrées / sorties",
+        "Processeur Intel 12e gén. (i5, i7, i9)",
+        "Silencieux, vertical ou horizontal"
+      ]
+    },
+    "datapath-aetria": {
+      "facts": [
+        "Solution AV sur IP complète"
+      ]
+    },
+    "vuwall-pak": {
+      "facts": [
+        "Encodeurs VuStream 150/350 : PoE, 4K, faible latence",
+        "HDMI, KVM, multicast",
+        "Gestion via TRx, tablette Control-Vu"
+      ]
+    },
+    "roomz-display": {
+      "facts": [
+        "Écran de réservation de salle sans câblage",
+        "Wi-Fi, basse consommation",
+        "Cloud ou sur site"
+      ]
+    },
+    "roomz-sensors": {
+      "facts": [
+        "Capteur de présence pour salles de réunion",
+        "Données d'occupation"
+      ]
+    },
+    "evoko-liso": {
+      "facts": [
+        "Système de réservation de salle"
+      ]
+    },
+    "evoko-naso": {
+      "facts": [
+        "Gestionnaire de salle",
+        "Licence 1 an",
+        "Compatible Biamp Workplace"
+      ]
+    },
+    "evoko-kleeo": {
+      "facts": [
+        "Multiviewer IP",
+        "Compatible Biamp Workplace"
+      ]
+    },
+    "brightsign-xc4055-xc2055": {
+      "facts": [
+        "Lecteurs d'affichage dynamique série XC5",
+        "Sortie 8K60 ; XC2055 : 2 sorties 4K60, XC4055 : 4 sorties 4K60",
+        "BrightSignOS ou Windows IoT",
+        "Garantie 5 ans"
+      ]
+    },
+    "navori-stix-3800": {
+      "facts": [
+        "Lecteur compact PoE",
+        "Pack avec licence Navori et caméra (présence, audience)"
+      ]
+    },
+    "biamp-desono-dx": {
+      "facts": [
+        "Enceintes encastrables coaxiales 4\", 6\", 8\", caisson 10\"",
+        "Basse impédance et ligne 100 V",
+        "Vendues par paire"
+      ]
+    },
+    "biamp-serie-cm": {
+      "facts": [
+        "Haut-parleurs de plafond",
+        "Grille magnétique amovible",
+        "Connecteur Euroblock"
+      ]
+    },
+    "biamp-desono-ex": {
+      "facts": [
+        "Haut-parleurs en surface",
+        "Fixation Clickmount ou lyre",
+        "Noir ou blanc"
+      ]
+    },
+    "biamp-sdq5pir": {
+      "facts": [
+        "Paire d'enceintes murales (1 active, 1 passive)",
+        "Contrôle IR et RS-232",
+        "Câble HP 3 m fourni"
+      ]
+    },
+    "biamp-voltera-d": {
+      "facts": [
+        "Amplificateurs",
+        "Configuration par Tesira ou VenueTune"
+      ]
+    },
+    "biamp-tesiraforte-x": {
+      "facts": [
+        "DSP de salle de réunion",
+        "4 à 16 canaux d'AEC",
+        "5 ports Ethernet dont 4 PoE+",
+        "AVB et Dante",
+        "Configuration Biamp Launch"
+      ]
+    },
+    "biamp-tesiraforte": {
+      "facts": [
+        "Processeur audio numérique",
+        "Versions AVB (128x128) ou Dante (32x32)",
+        "Analogique 4x4 à 12x8",
+        "AEC selon modèle (4 ou 12 canaux)"
+      ]
+    },
+    "biamp-devio-scx": {
+      "facts": [
+        "Hub de salle de réunion",
+        "4 à 8 micros Parlé",
+        "Configuration Biamp Launch, supervision SageVue",
+        "Certifié Teams"
+      ]
+    },
+    "biamp-parle-micros": {
+      "facts": [
+        "Micros de plafond et de table Parlé",
+        "Configuration simplifiée"
+      ]
+    },
+    "shure-mxw-next-2": {
+      "facts": [
+        "Système de micros sans fil de conférence tout-en-un",
+        "DSP intégré (AEC, réduction de bruit)",
+        "Connexion USB, base de charge",
+        "2 micros (versions 4 et 8)"
+      ]
+    },
+    "shure-mxcw640": {
+      "facts": [
+        "Poste de conférence sans fil",
+        "Rôle président, délégué, auditeur ou ambiant",
+        "Écran tactile, touches parole et mute",
+        "Lecteur NFC, batterie incluse"
+      ]
+    },
+    "shure-mxa920": {
+      "facts": [
+        "Micro multicapsules de plafond",
+        "8 lobes de captation, 8 sorties audio"
+      ]
+    },
+    "shure-mxa901": {
+      "facts": [
+        "Micro multicapsules de plafond",
+        "Couvre 6 x 6 m",
+        "Alimenté en PoE"
+      ]
+    },
+    "shure-mxa902-aniusb": {
+      "facts": [
+        "Kit visioconférence : MXA902 (micro plafond + enceinte) et ANIUSB-MATRIX",
+        "Préconfiguré",
+        "Teams, Zoom Rooms, Google Meet"
+      ]
+    },
+    "shure-p300": {
+      "facts": [
+        "Processeur audio de conférence avec DSP",
+        "Alimentation PoE",
+        "Format compact, sans rack"
+      ]
+    },
+    "shure-aniusb-matrix": {
+      "facts": [
+        "Interface audio réseau Dante 4 entrées / 2 sorties",
+        "Matrice de mixage, USB",
+        "Euroblock, alimentation PoE"
+      ]
+    },
+    "shure-slxd": {
+      "facts": [
+        "Système de micros HF numériques",
+        "Micros main, cravate ou serre-tête"
+      ]
+    },
+    "shure-mxn-amp": {
+      "facts": [
+        "Amplificateur Dante PoE+ 4 canaux",
+        "14,5 W au total",
+        "4 entrées Dante, entrée analogique",
+        "DSP et presets pour enceintes MXP"
+      ]
+    },
+    "shure-mxrk30-mxrk70": {
+      "facts": [
+        "Packs Microsoft Teams Rooms",
+        "MXRK30 : 1 MXA902 + caméra Huddly IQ ; MXRK70 : 2 MXA902 + Huddly L1",
+        "DSP IntelliMix sur PC, tablette et switch inclus"
+      ]
+    },
+    "shure-mxp3": {
+      "facts": [
+        "Enceinte murale passive Microflex"
+      ]
+    },
+    "bosch-ccs-1000-d": {
+      "facts": [
+        "Système de discussion numérique",
+        "Jusqu'à 80 postes",
+        "Contrôle par navigateur",
+        "Enregistreur MP3 (mémoire ou USB)",
+        "Anti-larsen intégré",
+        "Pilotage jusqu'à 6 caméras HD"
+      ]
+    },
+    "bosch-dicentis-sans-fil": {
+      "facts": [
+        "Système de conférence sans fil",
+        "Réunions hybrides"
+      ]
+    },
+    "bosch-dicentis-flush": {
+      "facts": [
+        "Conférence encastrée en IP",
+        "Modulaire"
+      ]
+    },
+    "powersoft-mezzo": {
+      "facts": [
+        "Amplificateurs DSP demi-rack",
+        "100 V / basse impédance",
+        "Versions Dante"
+      ]
+    },
+    "powersoft-unica": {
+      "facts": [
+        "Amplificateurs d'installation 4 ou 8 canaux",
+        "3 ports Ethernet, alimentation PoE, GPIO",
+        "70/100 V et basse impédance",
+        "Supervision Universo"
+      ]
+    },
+    "powersoft-verso": {
+      "facts": [
+        "Passerelle réseau pour amplis Powersoft",
+        "Jusqu'à 200 appareils",
+        "Gestion via Armonía Plus"
+      ]
+    },
+    "powersoft-nota": {
+      "facts": [
+        "Amplificateur ultra-compact",
+        "USB et AES67 (compatible source Dante)"
+      ]
+    },
+    "focal-gamme-100v-murale": {
+      "facts": [
+        "Enceinte murale 100 V intérieur / extérieur",
+        "IP66",
+        "100 V / 70 V / 8 Ω par commutateur"
+      ]
+    },
+    "focal-littora": {
+      "facts": [
+        "Pack extérieur : 4 satellites 5\" et caisson 12\" enterré"
+      ]
+    },
+    "focal-gamme-300": {
+      "facts": [
+        "Enceintes encastrables mur / plafond"
+      ]
+    },
+    "focal-gamme-100v-encastree": {
+      "facts": [
+        "Enceinte encastrée",
+        "100 V / 70 V par commutateur",
+        "Faible profondeur d'encastrement"
+      ]
+    },
+    "sonos-port": {
+      "facts": [
+        "Lecteur réseau audio",
+        "Ethernet, HDMI ARC, sortie coaxiale",
+        "Wi-Fi, application Sonos"
+      ]
+    },
+    "sonos-era-100-pro": {
+      "facts": [
+        "Haut-parleur d'installation (vendu par paire)",
+        "Création de zones"
+      ]
+    },
+    "sonos-era-300": {
+      "facts": [
+        "Enceinte connectée",
+        "USB-C"
+      ]
+    },
+    "sonos-amp": {
+      "facts": [
+        "Amplificateur numérique réseau"
+      ]
+    },
+    "soundtube-serie-fp": {
+      "facts": [
+        "Haut-parleurs paraboliques directifs",
+        "Filtre passe-haut commutable",
+        "Options détecteur de mouvement et éclairage LED"
+      ]
+    },
+    "soundtube-ipd-hub2": {
+      "facts": [
+        "Amplificateur Dante 2 canaux, DSP",
+        "12 W / 8 Ω par canal",
+        "Alimentation PoE / PoE+"
+      ]
+    },
+    "soundtube-ipd-cm52-bgm-ii": {
+      "facts": [
+        "Enceinte de plafond coaxiale Dante",
+        "PoE / PoE+",
+        "Zonage par logiciel"
+      ]
+    },
+    "soundtube-ipd4-cm52": {
+      "facts": [
+        "Enceinte IP maître Dante, alimente 3 enceintes CM52",
+        "20 W / 16 Ω / 100 V",
+        "Alimentation PoE"
+      ]
+    },
+    "cloud-dcm1e": {
+      "facts": [
+        "Mélangeur 8 zones"
+      ]
+    },
+    "cloud-serie-mpa": {
+      "facts": [
+        "Ampli-mélangeurs compacts"
+      ]
+    },
+    "listen-listen-wi-fi": {
+      "facts": [
+        "Diffusion audio multicanal en Wi-Fi",
+        "Serveurs 2, 4, 8 ou 16 canaux",
+        "Récepteurs LWR-1050"
+      ]
+    },
+    "listen-listen-auri": {
+      "facts": [
+        "Diffusion audio Bluetooth Auracast",
+        "Sans appairage"
+      ]
+    },
+    "aver-mt300n": {
+      "facts": [
+        "Matrice vidéo avec suivi à la voix",
+        "USB, HDMI, NDI HX, RTSP, IP",
+        "Sortie 4K 60 i/s",
+        "Alimentation PoE+"
+      ]
+    },
+    "aver-m11wb": {
+      "facts": [
+        "Visualiseur sans fil",
+        "Batterie en option"
+      ]
+    },
+    "aver-tr535": {
+      "facts": [
+        "Caméra PTZ double optique",
+        "Sorties 3G-SDI, IP, HDMI, USB simultanées",
+        "Détection de plusieurs présentateurs"
+      ]
+    },
+    "aver-ptz211": {
+      "facts": [
+        "Caméra PTZ Full HD 1080p60",
+        "Zoom optique 12x",
+        "Sorties USB, IP, HDMI, 3G-SDI"
+      ]
+    },
+    "panasonic-aw-ue50": {
+      "facts": [
+        "Caméra PTZ 4K"
+      ]
+    },
+    "panasonic-aw-ue20": {
+      "facts": [
+        "Caméra PTZ 4K compacte",
+        "PoE++ (alimentation, contrôle et vidéo sur un câble)"
+      ]
+    },
+    "panasonic-aw-ue30": {
+      "facts": [
+        "Caméra PTZ silencieuse"
+      ]
+    },
+    "panasonic-aw-ue4": {
+      "facts": [
+        "Caméra PTZ 4K/30p grand angle 111°",
+        "HDMI, LAN, USB",
+        "PTZ numérique",
+        "Certifiée Zoom Rooms et Teams Rooms"
+      ]
+    },
+    "vaddio-primeshot-10-hdmi": {
+      "facts": [
+        "Caméra PTZ HD"
+      ]
+    },
+    "vaddio-av-bridge-2x1": {
+      "facts": [
+        "Pont AV deux entrées HDMI pour visioconférence"
+      ]
+    },
+    "vaddio-easyip-tx-rx": {
+      "facts": [
+        "Conversion HDMI vers EasyIP et inversement",
+        "Audio Dante, analogique, EasyIP",
+        "Interface web, commutation automatique"
+      ]
+    },
+    "vaddio-venture-videobar": {
+      "facts": [
+        "Barre de visioconférence 4K",
+        "Sorties USB et HDMI",
+        "Suivi, gestion à distance"
+      ]
+    },
+    "arec-ds-9cu": {
+      "facts": [
+        "Station de suivi de l'orateur, 9 sources",
+        "Jusqu'à 4 entrées 2160p",
+        "Diffusion RTMP(S), RTP, RTSP, NDI HX, SRT"
+      ]
+    },
+    "arec-ls-410": {
+      "facts": [
+        "Station multimédia 4 canaux",
+        "Licences NDI HX et Dante",
+        "Disque 2 To",
+        "Contrôle RS-232 / TCP, USB, API"
+      ]
+    },
+    "arec-ks-cc2t": {
+      "facts": [
+        "Traducteur vocal IA avec transcription",
+        "Sorties HDMI, VGA, DisplayPort",
+        "2 micros USB inclus"
+      ]
+    },
+    "arec-a-pc01-panocam": {
+      "facts": [
+        "Caméra fixe grand angle",
+        "RTMP et RTSP",
+        "ONVIF S, VISCA sur IP",
+        "PoE"
+      ]
+    }
+  }
+}
