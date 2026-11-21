@@ -823,8 +823,9 @@
     $('#gear-list').replaceChildren(...brands.map(brand => h('li', { class: 'gear__brand' },
       h('span', { class: 'gear__name' }, brand),
       h('ul', { class: 'gear__models' }, byBrand.get(brand).map(({ pid, pr }) =>
-        h('li', { class: 'gear__model' + (pid === state.focusProduct ? ' is-focus' : ''), title: pr.type + (pr.ref ? ' · réf. ' + pr.ref : '') },
-          pr.model, h('span', { class: 'gear__page' }, pr.page ? ' p. ' + pr.page : ''))
+        h('li', null, h('a', { class: 'gear__model' + (pid === state.focusProduct ? ' is-focus' : ''), href: '#/produits/' + encodeURIComponent(pid),
+          title: pr.type + (pr.ref ? ' · réf. ' + pr.ref : '') + ' — voir la fiche' },
+          pr.model, h('span', { class: 'gear__page' }, pr.page ? ' p. ' + pr.page : '')))
       ))
     )));
   }
@@ -1244,9 +1245,116 @@
       return;
     }
     const input = $('#psearch-input');
+    if (route.productId) {
+      renderProductDetail(route.productId);
+      return;
+    }
+    $('#view-products').classList.remove('is-detail');
     if (route.query !== undefined && input.value !== route.query) input.value = route.query;
+    state.lastPQuery = input.value;
     $('#product-detail').replaceChildren();
     renderProductResults(input.value);
+  }
+
+  /** Chemin le plus court (en suivant « next ») du départ d'un symptôme jusqu'à un nœud. */
+  function findPath(symptom, targetId) {
+    const queue = [[symptom.start]];
+    const seen = new Set([symptom.start]);
+    while (queue.length) {
+      const path = queue.shift();
+      const last = path[path.length - 1];
+      if (last === targetId) return path;
+      for (const o of (state.nodes[last] && state.nodes[last].options) || []) {
+        if (o.next && !seen.has(o.next)) { seen.add(o.next); queue.push([...path, o.next]); }
+      }
+    }
+    return null;
+  }
+
+  /** Résultats d'arbre ayant des étapes spécifiques pour ce produit (ou sa marque). */
+  function brandStepLinks(pid, pr, symptomIds) {
+    const links = [];
+    for (const [nid, n] of Object.entries(state.nodes)) {
+      const b = (n.brandSteps || []).find(x => (x.products || []).includes(pid));
+      if (!b) continue;
+      for (const sid of [...symptomIds, ...state.symptoms.keys()]) {
+        const sym = state.symptoms.get(sid);
+        const path = sym && findPath(sym, nid);
+        if (path) { links.push({ sym, node: n, path, status: b.status }); break; }
+      }
+    }
+    return links;
+  }
+
+  function renderProductDetail(pid) {
+    const pr = state.products.get(pid);
+    const box = $('#product-detail');
+    $('#products-results').replaceChildren();
+    $('#view-products').classList.add('is-detail');
+    const back = h('a', { class: 'btn btn--small btn--ghost', href: '#/produits' + (state.lastPQuery ? '?q=' + encodeURIComponent(state.lastPQuery) : '') },
+      '← ' + (state.lastPQuery ? 'Résultats pour « ' + state.lastPQuery + ' »' : 'Recherche'));
+    if (!pr) {
+      $('#products-status').textContent = '';
+      box.replaceChildren(h('div', { class: 'empty' }, 'Ce produit n\'existe pas dans le catalogue. ', back));
+      return;
+    }
+    renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Assistant produit', href: '#/produits' }, { label: productLabel(pr) }]);
+    $('#products-status').textContent = '';
+    const fam = state.families.get(pr.family);
+    const entry = state.catalogue.products[pid];
+    const symptomIds = ((fam && fam.symptoms) || []).filter(id => state.symptoms.has(id));
+    const steps = brandStepLinks(pid, pr, symptomIds);
+    const siblings = [...state.products.entries()].filter(([id, p]) => p.family === pr.family && id !== pid);
+
+    const diagCard = (sid, i) => {
+      const sym = state.symptoms.get(sid);
+      const cat = categoryOf(sym);
+      return h('li', null, h('a', {
+        class: 'card card--compact', href: diagHash(sym.id, [sym.start]),
+        onclick: () => { state.focusProduct = pid; }
+      },
+        h('span', { class: 'card__top' }, h('span', { class: 'card__cat' }, icon(cat.icon), cat.label),
+          i === 0 ? h('span', { class: 'badge badge--low' }, 'Symptôme principal') : null),
+        h('h3', { class: 'card__title' }, sym.title),
+        h('span', { class: 'card__go', 'aria-hidden': 'true' }, 'Démarrer le diagnostic →')));
+    };
+
+    box.replaceChildren(h('article', { class: 'pdetail' },
+      h('div', { class: 'pdetail__nav' }, back),
+      h('header', { class: 'pdetail__head' },
+        h('p', { class: 'eyebrow' }, pr.type),
+        h('h2', { class: 'pdetail__title', tabindex: '-1', 'data-focus': true }, productLabel(pr)),
+        h('dl', { class: 'pdetail__meta' },
+          h('dt', null, 'Famille'), h('dd', null, fam ? fam.label : '—'),
+          pr.ref ? [h('dt', null, 'Référence'), h('dd', null, pr.ref)] : null,
+          h('dt', null, 'Source'), h('dd', null, productSourceLabel(pr) || '—'))
+      ),
+      h('section', { class: 'panel pdetail__block' },
+        h('div', { class: 'panel__body' },
+          h('h3', { class: 'block-title' }, 'Caractéristiques'),
+          entry && entry.facts && entry.facts.length
+            ? h('ul', { class: 'pcard__facts' }, entry.facts.map(f => h('li', null, f)))
+            : h('p', { class: 'muted' }, 'Aucune caractéristique saisie pour ce produit.'),
+          h('p', { class: 'pcard__src' }, 'Source : ' + productSourceLabel(pr) + (pr.ref ? ' · réf. ' + pr.ref : '')))),
+      h('section', { class: 'pdetail__block' },
+        h('h3', { class: 'section-title' }, 'Diagnostiquer ce produit'),
+        symptomIds.length
+          ? h('ul', { class: 'grid' }, symptomIds.map(diagCard))
+          : h('p', { class: 'muted' }, 'Aucun arbre de décision n\'est encore rattaché à cette famille.')),
+      steps.length ? h('section', { class: 'pdetail__block' },
+        h('h3', { class: 'block-title' }, 'Étapes spécifiques à ce produit'),
+        h('ul', { class: 'pdetail__steps' }, steps.map(st => h('li', null,
+          h('a', { href: diagHash(st.sym.id, st.path), onclick: () => { state.focusProduct = pid; } },
+            st.node.title, h('span', { class: 'muted' }, ' — ' + st.sym.title)),
+          st.status === 'draft' ? [' ', h('span', { class: 'badge badge--draft' }, 'À valider')] : null)))) : null,
+      siblings.length ? h('section', { class: 'pdetail__block' },
+        h('h3', { class: 'block-title' }, 'Même famille (' + siblings.length + ')'),
+        h('div', { class: 'related' }, siblings.map(([id, p]) =>
+          h('a', { class: 'chip', href: '#/produits/' + encodeURIComponent(id) }, productLabel(p))))) : null
+    ));
+    const heading = box.querySelector('[data-focus]');
+    if (heading) heading.focus({ preventScroll: true });
+    window.scrollTo({ top: 0 });
   }
 
   let pTimer = null;
@@ -1255,7 +1363,8 @@
     pTimer = setTimeout(() => {
       const q = $('#psearch-input').value;
       history.replaceState(null, '', '#/produits' + (q.trim() ? '?q=' + encodeURIComponent(q.trim()) : ''));
-      if (state.pIndex) renderProductResults(q);
+      if ($('#view-products').classList.contains('is-detail')) onRoute();   // on quitte la fiche pour les résultats
+      else if (state.pIndex) { state.lastPQuery = q; renderProductResults(q); }
     }, 120);
   }
 
