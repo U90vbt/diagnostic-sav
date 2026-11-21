@@ -728,6 +728,10 @@ body.is-home .crumbs { display: none; }
   .ed-list__tools { justify-content: flex-end; }
 }
 
+.chip.is-main { border-color: var(--green); color: #dcefc4; }
+.ed-actions--end { align-self: end; }
+.ed-option.is-target { box-shadow: 0 0 0 2px var(--sev-moderate); }
+
 /* ---------- Pied de page ---------- */
 .footer {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px;

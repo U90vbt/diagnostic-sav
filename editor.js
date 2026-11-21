@@ -166,7 +166,7 @@
     if (ref.kind === 'symptom') return '#/editeur/symptome/' + encodeURIComponent(ref.id);
     if (ref.kind === 'node') return '#/editeur/etape/' + encodeURIComponent(ref.id);
     if (ref.kind === 'product') return '#/editeur/produit/' + encodeURIComponent(ref.id);
-    if (ref.kind === 'family') return '#/editeur/produits#famille-' + encodeURIComponent(ref.id);
+    if (ref.kind === 'family') return '#/editeur/famille/' + encodeURIComponent(ref.id);
     return null;
   }
 
@@ -747,6 +747,163 @@
 
   screens.node = screenNode;
   treeView = buildTree;
+  /* ---------------------------------------------------------------------
+     Produits et familles
+     --------------------------------------------------------------------- */
+  let productFilter = '';
+
+  function screenProducts() {
+    E.dec.products = E.dec.products || {};
+    E.dec.families = E.dec.families || {};
+    const fams = Object.entries(E.dec.families);
+    const iss = issues();
+    const bad = new Set(iss.filter(x => x.ref && x.ref.kind === 'product').map(x => x.ref.id));
+    const listBox = h('ul', { class: 'ed-items' });
+
+    const drawList = () => {
+      const q = normalize(productFilter);
+      const all = Object.entries(E.dec.products)
+        .filter(([pid, pr]) => !q || normalize([pr.brand, pr.model, pr.ref, pr.type, pid].join(' ')).includes(q))
+        .sort((a, b) => (a[1].brand + a[1].model).localeCompare(b[1].brand + b[1].model, 'fr'));
+      listBox.replaceChildren(...all.slice(0, 80).map(([pid, pr]) => {
+        const fam = E.dec.families[pr.family];
+        const nf = ((E.cat.products[pid] || {}).facts || []).length;
+        return h('li', null, h('a', { class: 'ed-item', href: '#/editeur/produit/' + encodeURIComponent(pid) },
+          h('span', { class: 'ed-item__main' },
+            h('span', { class: 'ed-item__title' }, pr.brand + ' ' + pr.model),
+            h('span', { class: 'ed-item__sub' }, [pr.type, fam ? fam.label : 'famille inconnue', pr.page ? 'p. ' + pr.page : null, nf + ' caractéristique' + (nf > 1 ? 's' : '')].filter(Boolean).join(' · '))),
+          bad.has(pid) ? h('span', { class: 'ed-pill is-warn' }, 'à corriger') : null));
+      }), all.length > 80 ? h('li', { class: 'ed-hint' }, (all.length - 80) + ' autres produits : affinez la recherche.') : '');
+      if (!all.length) listBox.replaceChildren(h('li', { class: 'ed-hint' }, 'Aucun produit ne correspond.'));
+    };
+    drawList();
+
+    let nb = '', nm = '', nfam = fams[0] ? fams[0][0] : '';
+    const create = () => {
+      if (!nb.trim() || !nm.trim()) { toast('Indiquez la marque et le modèle'); return; }
+      const id = uniqueId(slug(nb.split('/')[0] + ' ' + nm), k => !!E.dec.products[k]);
+      const firstSource = Object.keys(E.dec.sources || {})[0];
+      E.dec.products[id] = { brand: nb.trim(), model: nm.trim(), type: '', family: nfam };
+      if (firstSource) E.dec.products[id].source = firstSource;
+      changed(false);
+      A.navigate('#/editeur/produit/' + encodeURIComponent(id));
+    };
+    const filterIn = textInput(productFilter, v => { productFilter = v; drawList(); }, { placeholder: 'Rechercher : marque, modèle, référence…', type: 'search' });
+
+    return h('div', null,
+      h('section', { class: 'ed-card ed-new' },
+        h('h2', { class: 'ed-h2' }, 'Nouveau produit'),
+        h('div', { class: 'ed-row' },
+          field('Marque', textInput('', v => { nb = v; }, { placeholder: 'ex. Shure' })),
+          field('Modèle', textInput('', v => { nm = v; }, { placeholder: 'ex. ULX-D' })),
+          field('Famille', selectInput(fams.map(([fid, f]) => ({ value: fid, label: f.label })), nfam, v => { nfam = v; }))),
+        h('button', { type: 'button', class: 'btn btn--light', onclick: create }, 'Créer le produit')),
+      h('section', { class: 'ed-card' },
+        h('h2', { class: 'ed-h2' }, 'Produits (' + Object.keys(E.dec.products).length + ')'),
+        field('Filtrer', filterIn),
+        listBox),
+      screenFamilies());
+  }
+
+  function screenFamilies() {
+    const fams = E.dec.families;
+    let newLabel = '';
+    const symptomChips = (f, redraw) => {
+      f.symptoms = f.symptoms || [];
+      return h('div', { class: 'ed-chips' },
+        f.symptoms.map((sid, i) => h('span', { class: 'chip chip--ghost' + (i === 0 ? ' is-main' : '') },
+          (i === 0 ? '★ ' : '') + (symptomById(sid) ? symptomById(sid).title : '⚠ ' + sid),
+          i > 0 ? h('button', { type: 'button', class: 'ed-chip-x', title: 'Mettre en premier (symptôme principal)', 'aria-label': 'Mettre en premier',
+            onclick: () => { f.symptoms.unshift(f.symptoms.splice(i, 1)[0]); changed(false); redraw(); } }, '↑') : null,
+          h('button', { type: 'button', class: 'ed-chip-x', 'aria-label': 'Retirer', onclick: () => { f.symptoms.splice(i, 1); changed(false); redraw(); } }, '✕'))),
+        selectInput(E.dec.symptoms.filter(sy => !f.symptoms.includes(sy.id)).map(sy => ({ value: sy.id, label: sy.title })), '',
+          v => { if (v) { f.symptoms.push(v); changed(false); redraw(); } }, { placeholder: '+ Relier un symptôme…' }));
+    };
+    const box = h('div', { class: 'ed-options' });
+    const draw = () => {
+      box.replaceChildren(...Object.entries(fams).map(([fid, f]) => {
+        const holder = h('div');
+        const redraw = () => holder.replaceChildren(symptomChips(f, redraw));
+        redraw();
+        const used = Object.values(E.dec.products).filter(p => p.family === fid).length;
+        return h('div', { class: 'ed-option', id: 'famille-' + fid },
+          h('div', { class: 'ed-row' },
+            field('Nom de la famille', textInput(f.label, v => { f.label = v; changed(false); })),
+            h('p', { class: 'ed-hint' }, used + ' produit' + (used > 1 ? 's' : '') + ' · identifiant ' + fid)),
+          field('Symptômes concernés', holder, 'Le premier (★) est le symptôme principal : il sort en tête quand on cherche un produit de cette famille.'),
+          used ? null : h('div', { class: 'ed-actions' }, deleteButton('fam:' + fid, 'Supprimer cette famille (aucun produit)', () => { delete fams[fid]; changed(true); })));
+      }));
+    };
+    draw();
+    return h('section', { class: 'ed-card' },
+      h('h2', { class: 'ed-h2' }, 'Familles de produits'),
+      h('p', { class: 'ed-hint' }, 'Une famille regroupe des produits qui tombent en panne de la même façon. Elle indique une seule fois les symptômes concernés.'),
+      box,
+      h('div', { class: 'ed-row' },
+        field('Nouvelle famille', textInput('', v => { newLabel = v; }, { placeholder: 'ex. Consoles de mixage' })),
+        h('div', { class: 'ed-actions ed-actions--end' }, h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => {
+          if (!newLabel.trim()) { toast('Donnez un nom à la famille'); return; }
+          const id = uniqueId(slug(newLabel), k => !!fams[k]);
+          fams[id] = { label: newLabel.trim(), symptoms: [] };
+          changed(true);
+        } }, 'Créer la famille'))));
+  }
+
+  function screenProduct(pid) {
+    const pr = (E.dec.products || {})[pid];
+    if (!pr) return notFound('Ce produit n\'existe pas (ou plus).', '#/editeur/produits');
+    const fams = Object.entries(E.dec.families || {});
+    const sources = Object.entries(E.dec.sources || {});
+    const entry = E.cat.products[pid] || { facts: [] };
+    if (!Array.isArray(entry.facts)) entry.facts = [];
+    const own = issues().filter(x => x.ref && x.ref.kind === 'product' && x.ref.id === pid);
+    const setOpt = (key, v, num) => {
+      const val = num ? (v.trim() === '' ? null : Number(v)) : v.trim();
+      if (val === null || val === '' || (num && Number.isNaN(val))) delete pr[key]; else pr[key] = num ? val : v;
+      changed(false);
+    };
+    const usedIn = Object.entries(E.dec.nodes).filter(([, n]) => (n.brandSteps || []).some(b => (b.products || []).includes(pid)) || (n.products || []).includes(pid));
+
+    return h('div', null,
+      h('p', null, h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/produits' }, '← Tous les produits')),
+      h('section', { class: 'ed-card' },
+        h('h2', { class: 'ed-h2' }, pr.brand + ' ' + pr.model),
+        own.length ? h('ul', { class: 'ed-issues' }, own.map(x => h('li', { class: 'is-warn' }, x.msg))) : null,
+        h('div', { class: 'ed-row' },
+          field('Marque', textInput(pr.brand, v => { pr.brand = v; changed(false); })),
+          field('Modèle', textInput(pr.model, v => { pr.model = v; changed(false); }))),
+        h('div', { class: 'ed-row' },
+          field('Type', textInput(pr.type, v => { pr.type = v; changed(false); }, { placeholder: 'ex. Contrôleur LED 4K' })),
+          field('Famille', selectInput(fams.map(([fid, f]) => ({ value: fid, label: f.label })), pr.family, v => { pr.family = v; changed(false); }))),
+        h('div', { class: 'ed-row' },
+          field('Référence (facultatif)', textInput(pr.ref, v => setOpt('ref', v))),
+          field('Page du catalogue', textInput(pr.page, v => setOpt('page', v, true), { type: 'number', inputmode: 'numeric' })),
+          field('Source', selectInput(sources.map(([sid, src]) => ({ value: sid, label: src.title + (src.edition ? ' — ' + src.edition : '') })), pr.source || '',
+            v => { if (v) pr.source = v; else delete pr.source; changed(false); }, { placeholder: '— aucune —' }))),
+        field('Identifiant', textInput(pid, () => {}, { readonly: true }), 'Fixé à la création (il figure dans les liens de l\'Assistant produit).')),
+      h('section', { class: 'ed-card' },
+        h('h2', { class: 'ed-h3' }, 'Caractéristiques (Assistant produit)'),
+        h('p', { class: 'ed-hint' }, 'Courtes et factuelles, reformulées : « Luminosité 8000 lumens », « 48 ports PoE+ ». Pas de texte commercial ni de prix. Enregistrées dans catalogue.json.'),
+        listEditor(entry.facts, () => { E.cat.products[pid] = entry; changed(false); }, { addLabel: 'Ajouter une caractéristique', placeholder: 'ex. Budget PoE 960 W' })),
+      h('section', { class: 'ed-card' },
+        h('h2', { class: 'ed-h3' }, 'Utilisé dans les procédures'),
+        usedIn.length ? h('ul', { class: 'ed-refs' }, usedIn.map(([nid]) => h('li', null, h('a', { href: '#/editeur/etape/' + encodeURIComponent(nid) }, nodeLabel(nid)))))
+                      : h('p', { class: 'ed-hint' }, 'Aucune étape spécifique ne cite ce produit. Il apparaît quand même dans « Matériel couvert » des symptômes de sa famille.'),
+        h('div', { class: 'ed-actions' }, deleteButton('prod:' + pid, 'Supprimer ce produit', () => {
+          delete E.dec.products[pid];
+          delete E.cat.products[pid];
+          for (const n of Object.values(E.dec.nodes)) {
+            if (n.products) n.products = n.products.filter(x => x !== pid);
+            for (const b of n.brandSteps || []) b.products = (b.products || []).filter(x => x !== pid);
+          }
+          changed(false);
+          toast('Produit supprimé (et retiré des étapes qui le citaient)');
+          A.navigate('#/editeur/produits');
+        }))));
+  }
+
+  screens.products = screenProducts;
+  screens.product = screenProduct;
 
   /* ---------------------------------------------------------------------
      Initialisation et routage interne
@@ -783,10 +940,15 @@
     else if (section === 'etape' && screens.node) content = screens.node(id);
     else if (section === 'produits' && screens.products) { active = 'products'; content = screens.products(); }
     else if (section === 'produit' && screens.product) { active = 'products'; content = screens.product(id); }
+    else if (section === 'famille' && screens.products) { active = 'products'; content = screens.products(); }
     else if (section === 'verif') { active = 'verif'; content = screenVerif(); }
     else if (section === 'export') { active = 'export'; content = screenExport(); }
     else content = notFound('Cette page de l\'éditeur n\'existe pas.', '#/editeur');
     root.replaceChildren(chrome(active, content));
+    if (section === 'famille') {
+      const el = document.getElementById('famille-' + id);
+      if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('is-target'); }
+    }
   }
 
   window.DIAGSAV_EDITOR = { render };
