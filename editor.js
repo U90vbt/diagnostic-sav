@@ -77,6 +77,20 @@
     return out;
   }
 
+  /** Chemin le plus court du départ d'un symptôme jusqu'à une étape (pour « Tester à partir d'ici »). */
+  function pathTo(sym, target) {
+    const queue = [[sym.start]], seen = new Set([sym.start]);
+    while (queue.length) {
+      const path = queue.shift(), last = path[path.length - 1];
+      if (last === target) return path;
+      for (const o of (E.dec.nodes[last] && E.dec.nodes[last].options) || []) {
+        if (o.next && E.dec.nodes[o.next] && !seen.has(o.next)) { seen.add(o.next); queue.push([...path, o.next]); }
+      }
+    }
+    return null;
+  }
+  const diagHref = (symId, path) => '#/d/' + [symId, ...path].map(encodeURIComponent).join('/');
+
   /** Symptôme « propriétaire » de chaque étape (le premier qui l'atteint). */
   function ownerMap() {
     const map = new Map();
@@ -369,6 +383,8 @@
           s.start, v => { s.start = v; changed(true); }, { placeholder: '— choisir —' })),
         h('div', { class: 'ed-actions' },
           h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/etape/' + encodeURIComponent(s.start) }, 'Modifier la question de départ'),
+          s.start && E.dec.nodes[s.start] ? h('button', { type: 'button', class: 'btn btn--small btn--ghost',
+            onclick: () => A.startPreview(E.dec, E.cat, diagHref(s.id, [s.start])) }, 'Tester ce symptôme') : null,
           deleteButton('sym:' + s.id, 'Supprimer ce symptôme', () => {
             E.dec.symptoms = E.dec.symptoms.filter(x => x !== s);
             changed(false);
@@ -579,6 +595,12 @@
       field('Statut', selectInput([{ value: '', label: 'Validée' }, { value: 'draft', label: 'À valider (badge affiché aux techniciens)' }],
         n.status || '', v => { if (v) n.status = v; else delete n.status; changed(false); })),
       h('div', { class: 'ed-actions' },
+        (() => {
+          const path = owner && pathTo(owner, id);
+          return path ? h('button', { type: 'button', class: 'btn btn--small btn--ghost',
+            title: 'Ouvre le diagnostic sur cette étape, avec vos modifications',
+            onclick: () => A.startPreview(E.dec, E.cat, diagHref(owner.id, path)) }, 'Tester à partir d\'ici') : null;
+        })(),
         deleteButton('node:' + id, 'Supprimer cette étape', () => {
           for (const m of Object.values(E.dec.nodes)) for (const o of m.options || []) if (o.next === id) o.next = '';
           for (const s of E.dec.symptoms) if (s.start === id) s.start = '';

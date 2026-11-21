@@ -17,6 +17,7 @@ Site web statique qui remplace les procédures papier par un arbre de décision 
 ├── index.html             Structure de la page
 ├── styles.css             Thème sombre épuré
 ├── app.js                 Navigation, recherche, diagnostic, assistant produit
+├── editor.js              Éditeur des procédures (chargé seulement à l'ouverture de l'onglet)
 ├── sw.js                  Service worker (mode hors ligne)
 ├── manifest.webmanifest   Installation sur l'écran d'accueil (tablette)
 ├── icon.svg               Icône de l'application
@@ -84,7 +85,43 @@ Un **dépôt** privé ne rend **pas** automatiquement le **site** privé.
 
 ---
 
-## Modifier les procédures (équipes SAV)
+## Éditeur des procédures (sans toucher au code)
+
+L'onglet **Éditeur** (ou le lien « Éditer les procédures » en pied de page, `#/editeur`) permet à l'équipe SAV de modifier les procédures **par formulaires**, sans écrire de JSON. Il fonctionne dans le navigateur, hors ligne, et n'envoie rien nulle part.
+
+**Pourquoi un éditeur plutôt qu'un fichier par symptôme ?** Fusionner plusieurs fichiers demanderait de lancer un script (Python, Node) ou une GitHub Action avant chaque publication : c'est une étape de build, que l'équipe SAV n'a pas à gérer. Et la difficulté n'est pas la taille du fichier mais les virgules, guillemets et identifiants à recopier : les formulaires suppriment ces erreurs à la source.
+
+### Ce qu'on peut faire
+
+| Écran | Contenu |
+|---|---|
+| **Symptômes** | Créer un symptôme (sa question de départ est créée automatiquement), modifier titre, catégorie, résumé, mots-clés ; **arbre de décision** du symptôme, étapes à corriger en rouge ; **Tester ce symptôme** |
+| **Étape (question)** | Texte, aide, réponses : chacune mène à une étape choisie **dans une liste** ou au diagnostic d'un autre symptôme ; **+ Créer une question / un résultat** pour construire la suite ; **Tester à partir d'ici** |
+| **Étape (résultat)** | Titre, gravité, résumé, actions dans l'ordre, mise en garde, escalade, diagnostics liés, **étapes selon le matériel** (marque, produits, statut « À valider ») |
+| **Produits** | Fiche produit et ses caractéristiques (Assistant produit) sur le même écran ; familles et symptôme principal (★) |
+| **Vérification** | Tous les points à corriger, en français courant, avec un bouton **Corriger** qui ouvre le bon formulaire |
+| **Exporter** | Résumé des modifications, numéro de version, téléchargement de `decisions.json` et `catalogue.json` |
+
+- **Brouillon automatique** : chaque modification est enregistrée sur l'appareil (stockage local du navigateur). On peut fermer la page et reprendre plus tard, sur le même appareil et le même navigateur. Si le fichier publié a changé entre-temps (un collègue a publié), un avertissement s'affiche.
+- **Tester mes modifications** : le site passe en **mode test** (bandeau orange) et fonctionne avec vos modifications, Assistant produit compris, sans rien publier. « Revenir à l'éditeur » rétablit les données publiées.
+- **Importer un fichier JSON** : pour reprendre un fichier envoyé par un collègue.
+- Un fichier exporté **sans modification est identique** au fichier publié : seules vos modifications apparaissent dans l'historique GitHub.
+
+### Publier les modifications
+
+1. Dans l'éditeur, onglet **Exporter** : téléchargez `decisions.json` (et `catalogue.json` si des produits ou caractéristiques ont changé).
+2. Sur GitHub, ouvrez le dossier `data` du dépôt.
+3. **Add file → Upload files**, déposez le fichier : il remplace l'ancien (le nom doit rester exactement le même).
+4. Décrivez la modification (ex. « Ajout du symptôme intercom ») puis **Commit changes**.
+5. Le site est à jour en 1 à 2 minutes : vérifiez la version affichée en haut à droite. Une fois la publication faite, cliquez sur **Abandonner le brouillon** dans l'éditeur pour repartir du fichier publié.
+
+> Pour deux personnes qui éditent en même temps : chacune a son propre brouillon. Publiez l'une après l'autre, et la seconde importe d'abord le fichier publié par la première (ou refait ses modifications) avant d'exporter, pour ne pas écraser le travail de l'autre.
+
+---
+
+## Modifier les procédures à la main (format JSON de référence)
+
+L'éditeur suffit pour l'usage courant. Le format est décrit ci-dessous pour les cas particuliers.
 
 Tout le contenu métier se trouve dans `data/decisions.json`. Le code n'a pas besoin d'être modifié.
 
