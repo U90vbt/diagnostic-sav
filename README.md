@@ -194,6 +194,22 @@ Sur tablette, utilisez « Ajouter à l'écran d'accueil » pour lancer l'outil c
 
 ---
 
+## Polices
+
+Le design utilise **Space Grotesk** (titres) et **Rubik** (texte) si elles sont installées sur l'appareil, sinon la police système. Pour les embarquer sans appel externe :
+
+1. Télécharger les fichiers `.woff2` (Google Fonts, licence libre OFL) dans un dossier `fonts/`.
+2. Ajouter en haut de `styles.css` :
+
+```css
+@font-face { font-family: "Space Grotesk"; src: url("fonts/SpaceGrotesk.woff2") format("woff2"); font-weight: 300 700; font-display: swap; }
+@font-face { font-family: "Rubik"; src: url("fonts/Rubik.woff2") format("woff2"); font-weight: 300 700; font-display: swap; }
+```
+
+3. Ajouter les deux fichiers à la liste `SHELL` de `sw.js` et incrémenter `CACHE_VERSION`.
+
+---
+
 ## Compatibilité
 
 Navigateurs récents : Chrome / Edge 90+, Safari 15+ (iPad, iPhone), Firefox 90+.

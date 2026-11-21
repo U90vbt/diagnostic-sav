@@ -29,6 +29,10 @@
     thermal:   '<path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 9v7"/>',
     stability: '<path d="M3 12h4l2-6 4 12 2-6h6"/>',
     usb:       '<path d="M12 3v14"/><path d="m9 6 3-3 3 3"/><path d="M12 13 7 10V8M12 15l5-3v-2"/><circle cx="12" cy="19" r="2"/><rect x="5.5" y="6" width="3" height="2"/><circle cx="17" cy="9" r="1.2"/>',
+    mic:       '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/>',
+    headset:   '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/><path d="M19 20c0 1.5-2 2-5 2"/>',
+    ledwall:   '<rect x="3" y="4" width="18" height="13" rx="1"/><path d="M9 4v13M15 4v13M3 10.5h18M8 21h8M12 17v4"/>',
+    switcher:  '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="7" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><path d="M16 10h3M16 14h3"/>',
     chip:      '<rect x="6" y="6" width="12" height="12" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
     default:   '<circle cx="12" cy="12" r="8"/><path d="M12 8v5M12 16h.01"/>'
   };
@@ -381,6 +385,7 @@
       const el = $('#view-' + v);
       if (el) el.hidden = v !== name;
     }
+    document.body.classList.toggle('is-home', name === 'home');
   }
 
   /* ---------------------------------------------------------------------
@@ -480,7 +485,7 @@
         ),
         h('h3', { class: 'card__title' }, s.title),
         s.summary ? h('p', { class: 'card__summary' }, s.summary) : null,
-        h('span', { class: 'card__go', 'aria-hidden': 'true' }, 'DÉMARRER →')
+        h('span', { class: 'card__go', 'aria-hidden': 'true' }, 'Démarrer le diagnostic →')
       )
     );
   }
@@ -550,8 +555,8 @@
 
     // En-tête
     const cat = categoryOf(active);
-    $('#diag-category').textContent = cat.label.toUpperCase() +
-      (active !== rootSymptom ? ' · DEPUIS « ' + rootSymptom.title.toUpperCase() + ' »' : '');
+    $('#diag-category').textContent = cat.label +
+      (active !== rootSymptom ? ' · depuis « ' + rootSymptom.title + ' »' : '');
     $('#diag-symptom').textContent = active.title;
 
     // Fil d'Ariane
@@ -624,11 +629,11 @@
       : 'Étape ' + path.length + ', au plus ' + remaining + ' étape(s) restante(s)');
 
     $('#progress-step').textContent = current.type === 'result'
-      ? 'DIAGNOSTIC TERMINÉ · ' + done + ' RÉPONSE' + (done > 1 ? 'S' : '')
-      : 'ÉTAPE ' + String(path.length).padStart(2, '0');
+      ? 'Diagnostic terminé · ' + done + ' réponse' + (done > 1 ? 's' : '')
+      : 'Étape ' + path.length;
     $('#progress-remaining').textContent = current.type === 'result'
       ? ''
-      : remaining === 0 ? 'DERNIÈRE QUESTION' : '≤ ' + remaining + ' RESTANTE' + (remaining > 1 ? 'S' : '');
+      : remaining === 0 ? 'Dernière question' : 'au plus ' + remaining + ' restante' + (remaining > 1 ? 's' : '');
   }
 
   function renderJournal(rootSymptom, path, steps, current) {
@@ -713,7 +718,7 @@
 
     return h('article', { class: 'panel result result--' + sev },
       h('header', { class: 'panel__head' },
-        h('span', { class: 'panel__tag' }, 'RÉSULTAT'),
+        h('span', { class: 'panel__tag' }, 'Résultat'),
         h('span', null, 'Recommandation')
       ),
       h('div', { class: 'panel__body' },
@@ -846,6 +851,15 @@
       });
     });
 
+    // reflet qui suit le pointeur sur les cartes
+    $('#symptom-grid').addEventListener('pointermove', (e) => {
+      const card = e.target.closest('.card');
+      if (!card) return;
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+
     $('#btn-back').addEventListener('click', goBack);
     $('#btn-restart').addEventListener('click', restart);
     $('#btn-retry').addEventListener('click', loadData);
@@ -886,7 +900,7 @@
     const updateNet = () => {
       const online = navigator.onLine;
       $('#net-led').classList.toggle('is-offline', !online);
-      $('#net-label').textContent = online ? 'EN LIGNE' : 'HORS LIGNE';
+      $('#net-label').textContent = online ? 'En ligne' : 'Hors ligne';
     };
     window.addEventListener('online', updateNet);
     window.addEventListener('offline', updateNet);
