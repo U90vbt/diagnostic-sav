@@ -1,12 +1,14 @@
 /* DIAG·SAV — service worker : fonctionnement hors ligne après le premier chargement.
    - Fichiers de l'application : servis depuis le cache, mis à jour en arrière-plan.
-   - Procédures (data/decisions.json) : réseau d'abord, cache en secours,
+   - Données (data/decisions.json, data/catalogue.json) : réseau d'abord, cache en secours,
      pour que les modifications SAV soient visibles dès que le réseau est disponible.
    Incrémenter CACHE_VERSION à chaque modification de index.html / styles.css / app.js. */
 
-const CACHE_VERSION = 'diagsav-v1.2.1';
+const CACHE_VERSION = 'diagsav-v1.3.0';
 const DATA_PATH = 'data/decisions.json';
+const CATALOGUE_PATH = 'data/catalogue.json';
 const SHELL = [
+  CATALOGUE_PATH,
   './',
   'index.html',
   'styles.css',
@@ -38,7 +40,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // aucune ressource externe
 
-  if (url.pathname.endsWith('/' + DATA_PATH)) {
+  // Données (procédures, catalogue) : réseau d'abord, cache en secours
+  if (url.pathname.includes('/data/') && url.pathname.endsWith('.json')) {
     event.respondWith(networkFirst(req));
   } else if (req.mode === 'navigate') {
     event.respondWith(networkFirst(req, 'index.html'));

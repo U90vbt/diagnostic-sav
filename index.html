@@ -43,6 +43,11 @@
         </span>
       </a>
 
+      <nav class="tabs" aria-label="Sections">
+        <a class="tabs__tab" href="#/" data-tab="diag">Diagnostic</a>
+        <a class="tabs__tab" href="#/produits" data-tab="products"><span class="tabs__long">Assistant </span>produit</a>
+      </nav>
+
       <div class="status" aria-label="État du système">
         <span class="status__item" title="État de la connexion">
           <span class="led" id="net-led" aria-hidden="true"></span>
@@ -123,6 +128,31 @@
         </div>
         <ul class="recents__list" id="recents-list"></ul>
       </section>
+    </section>
+
+    <!-- Assistant produit -->
+    <section id="view-products" class="view" hidden aria-labelledby="products-title">
+      <div class="phead">
+        <p class="eyebrow">Catalogue Focus · été 2025</p>
+        <h1 id="products-title" class="phead__title">Assistant produit</h1>
+        <p class="phead__lead">Posez votre question sur le matériel : chaque réponse cite le produit et la page du catalogue.</p>
+        <form class="search" role="search" id="psearch-form" autocomplete="off">
+          <label for="psearch-input" class="visually-hidden">Rechercher un produit ou une caractéristique</label>
+          <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="psearch-input" class="search__input" type="search" inputmode="search" enterkeyhint="search"
+                 placeholder="ex. switch PoE 48 ports, projecteur 8000 lumens, MCTRL4K…">
+        </form>
+        <p class="search__hint">
+          Exemples :
+          <button type="button" class="chip chip--ghost" data-psuggest="switch PoE 48 ports">switch PoE 48 ports</button>
+          <button type="button" class="chip chip--ghost" data-psuggest="vidéoprojecteur 8000 lumens">projecteur 8000 lumens</button>
+          <button type="button" class="chip chip--ghost" data-psuggest="micro Dante PoE">micro Dante PoE</button>
+          <button type="button" class="chip chip--ghost" data-psuggest="contrôleur LED 4K">contrôleur LED 4K</button>
+        </p>
+      </div>
+      <div id="products-status" class="pstatus" aria-live="polite"></div>
+      <div id="products-results"></div>
+      <div id="product-detail"></div>
     </section>
 
     <!-- Diagnostic -->

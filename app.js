@@ -476,6 +476,13 @@
     if (parts[0] === 'd' && parts[1]) {
       return { view: 'diag', symptomId: parts[1], path: parts.slice(2) };
     }
+    if (parts[0] && parts[0].split('?')[0] === 'produits') {
+      const q = (raw.split('?')[1] || '').match(/(?:^|&)q=([^&]*)/);
+      let query = '';
+      if (q) { try { query = decodeURIComponent(q[1].replace(/\+/g, ' ')); } catch { query = q[1]; } }
+      const id = parts[1] ? parts[1].split('?')[0] : null;
+      return { view: 'products', productId: id, query };
+    }
     return { view: 'home' };
   }
 
@@ -512,6 +519,12 @@
     if (!state.data) return;
     const route = parseHash();
 
+    setActiveTab(route.view === 'products' ? 'products' : 'diag');
+    if (route.view === 'products') {
+      trackNav();
+      renderProducts(route);
+      return;
+    }
     if (route.view === 'diag') {
       const symptom = state.symptoms.get(route.symptomId);
       if (!symptom || !state.nodes[symptom.start]) {
@@ -532,8 +545,15 @@
     }
   }
 
+  function setActiveTab(tab) {
+    for (const a of document.querySelectorAll('.tabs__tab')) {
+      if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    }
+  }
+
   function showView(name) {
-    for (const v of ['loading', 'error', 'home', 'diag']) {
+    for (const v of ['loading', 'error', 'home', 'diag', 'products']) {
       const el = $('#view-' + v);
       if (el) el.hidden = v !== name;
     }
@@ -700,6 +720,7 @@
     renderGrid();
     renderRecents();
     state.lastRenderedHash = null;
+    setActiveTab('diag');
   }
 
   /* ---------------------------------------------------------------------
@@ -1015,6 +1036,51 @@
     const route = parseHash();
     const symptom = route.view === 'diag' && state.symptoms.get(route.symptomId);
     if (symptom) navigate(diagHash(symptom.id, [symptom.start]));
+  }
+
+  /* ---------------------------------------------------------------------
+     Assistant produit
+     --------------------------------------------------------------------- */
+  const CATALOGUE_URL = new URL('data/catalogue.json', SCRIPT_URL).href;
+  let cataloguePromise = null;
+
+  /** Charge data/catalogue.json une seule fois ; l'erreur précise (statut HTTP) est conservée. */
+  function loadCatalogue() {
+    if (!cataloguePromise) {
+      cataloguePromise = (async () => {
+        let res;
+        try { res = await fetch(CATALOGUE_URL, { cache: 'no-cache' }); }
+        catch (err) { throw new Error('Téléchargement impossible (' + (err && err.message || err) + ') — adresse : ' + CATALOGUE_URL); }
+        if (!res.ok) throw new Error('HTTP ' + res.status + (res.statusText ? ' ' + res.statusText : '') + ' — adresse : ' + CATALOGUE_URL);
+        let cat;
+        try { cat = await res.json(); }
+        catch (err) { throw new Error('Erreur de syntaxe dans data/catalogue.json : ' + err.message); }
+        buildCatalogueIndex(cat);
+        return cat;
+      })();
+      cataloguePromise.catch(() => { cataloguePromise = null; }); // nouvelle tentative possible
+    }
+    return cataloguePromise;
+  }
+
+  function buildCatalogueIndex(cat) {
+    state.catalogue = cat;
+  }
+
+  async function renderProducts(route) {
+    showView('products');
+    const crumbs = [{ label: 'Accueil', href: '#/' }, { label: 'Assistant produit', href: '#/produits' }];
+    renderCrumbs(crumbs);
+    const statusEl = $('#products-status');
+    statusEl.textContent = 'Chargement du catalogue…';
+    try {
+      await loadCatalogue();
+    } catch (err) {
+      console.error('[DIAG·SAV] Catalogue :', err);
+      statusEl.replaceChildren(h('p', { class: 'pstatus__error' }, 'Le catalogue produit n\'a pas pu être chargé. ', h('code', null, err.message)));
+      return;
+    }
+    statusEl.textContent = Object.keys(state.catalogue.products || {}).length + ' produits indexés.';
   }
 
   /* ---------------------------------------------------------------------

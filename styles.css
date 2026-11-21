@@ -149,6 +149,28 @@ kbd {
 .led.is-offline { background: var(--sev-moderate); box-shadow: 0 0 10px rgba(240, 181, 74, .7); }
 @keyframes led-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 
+/* Onglets */
+.tabs { display: flex; gap: 4px; padding: 4px; border-radius: var(--r-pill); background: var(--bg-deep); }
+.tabs__tab {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 6px 14px; border-radius: var(--r-pill);
+  color: var(--text-2); text-decoration: none; font-size: .88rem; font-weight: 500; white-space: nowrap;
+  transition: background .2s, color .2s;
+}
+.tabs__tab:hover { color: var(--text); }
+.tabs__tab[aria-current="page"] { background: var(--surface-3); color: var(--text); }
+@media (max-width: 640px) {
+  .tabs__long { display: none; }
+  .tabs__tab { padding: 6px 12px; text-transform: capitalize; }
+}
+
+/* Assistant produit */
+.phead { text-align: center; padding: clamp(24px, 6vw, 56px) 0 18px; }
+.phead__title { font-size: clamp(2.2rem, 7vw, 3.6rem); letter-spacing: -.035em; margin-bottom: 12px; }
+.phead__lead { margin: 0 auto 28px; max-width: 52ch; color: var(--text-2); }
+.pstatus { text-align: center; color: var(--muted); font-size: .9rem; margin: 6px 0 18px; }
+.pstatus__error { color: var(--sev-high); }
+.pstatus__error code { display: block; margin-top: 8px; color: var(--text-2); white-space: pre-wrap; word-break: break-all; }
+
 /* ---------- Fil d'Ariane ---------- */
 .crumbs { max-width: var(--maxw); width: 100%; margin: 14px auto 0; padding: 0 var(--gap); }
 .crumbs__list {
@@ -584,6 +606,9 @@ body.is-home .crumbs { display: none; }
 @media (max-width: 640px) {
   body { font-size: 16px; }
   .status__item--data, .status .btn { display: none; }
+  #net-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .status__item { padding: 10px; }
+  .brand__name { font-size: 1rem; }
   .topbar__inner { padding: 6px 6px 6px 14px; border-radius: 16px; }
   .hero { margin-top: calc(var(--gap) * -1 - 64px); }
   .option { grid-template-columns: 38px 1fr; padding-right: 14px; }
