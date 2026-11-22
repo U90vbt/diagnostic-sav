@@ -330,6 +330,7 @@
       keywords: (s.keywords || []).map(normalize),
       summary: normalize(s.summary),
       category: normalize(categoryOf(s).label),
+      words: [...new Set(normalize([s.title, ...(s.keywords || []), s.summary].join(' ')).split(' ').filter(w => w.length >= 3))],
       products: (state.productsBySymptom.get(s.id) || []).map(pid => {
         const pr = state.products.get(pid);
         return { id: pid, text: normalize([pr.brand, pr.model, pr.ref].filter(Boolean).join(' ')) };
@@ -535,6 +536,7 @@
       const f = (raw.split('?')[1] || '').match(/(?:^|&)f=([^&]*)/);
       return { view: 'news', filter: f ? decodeURIComponent(f[1]) : 'all' };
     }
+    if (parts[0] === 'journal') return { view: 'journal' };
     if (parts[0] === 'recommander') {
       return { view: 'reco', path: parts.slice(1) };
     }
@@ -595,6 +597,11 @@
       renderNews(route);
       return;
     }
+    if (route.view === 'journal') {
+      trackNav();
+      renderJournalPage();
+      return;
+    }
     if (route.view === 'reco') {
       trackNav();
       renderReco(route);
@@ -638,7 +645,7 @@
   }
 
   function showView(name) {
-    for (const v of ['loading', 'error', 'hub', 'home', 'diag', 'products', 'editor', 'reco', 'news']) {
+    for (const v of ['loading', 'error', 'hub', 'home', 'diag', 'products', 'editor', 'reco', 'news', 'journal']) {
       const el = $('#view-' + v);
       if (el) el.hidden = v !== name;
     }
@@ -687,6 +694,7 @@
         if (entry.summary.includes(t)) s += 1;
         if (entry.category.includes(t)) s += 1;
         if (entry.products.some(pr => pr.text.includes(t))) s += 2;
+        if (!s && t.length >= 4 && entry.words.some(w => closeEnough(t, w))) s += 1;   // faute de frappe
         if (!s) { allMatch = false; break; }
         score += s;
       }
@@ -705,6 +713,26 @@
     }
     results.sort((a, b) => b.score - a.score || a.entry.order - b.entry.order);
     return results.map(r => r.entry.symptom);
+  }
+
+  /** Vrai si a et b ne diffèrent que d'une faute (deux pour les mots longs) : lettre en trop, en moins, remplacée ou inversée. */
+  function closeEnough(a, b) {
+    const max = a.length >= 7 ? 2 : 1;
+    if (Math.abs(a.length - b.length) > max) return false;
+    // le début d'un mot plus long compte aussi (« alimenta » → « alimentation »)
+    if (b.length > a.length) b = b.slice(0, a.length + max);
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+    let best = Infinity;
+    for (let j = Math.max(0, a.length - max); j <= b.length; j++) best = Math.min(best, d[a.length][j]);
+    return best <= max;
   }
 
   function renderFilters() {
@@ -804,6 +832,7 @@
     if (input.value !== state.query) input.value = state.query;
     renderGrid();
     renderRecents();
+    renderQuickLinks();
     state.lastRenderedHash = null;
     setActiveTab('diag');
   }
@@ -814,7 +843,9 @@
   function renderHub() {
     showView('hub');
     renderCrumbs([{ label: 'Accueil' }]);
+    renderQuickLinks();
     state.lastRenderedHash = null;
+    if (state.focusSearch) { state.focusSearch = false; $('#gsearch-input').focus(); $('#gsearch-input').select(); }
     const q = $('#gsearch-input').value;
     if (q.trim()) runGlobalSearch(q);
   }
@@ -824,6 +855,7 @@
     const box = $('#gsearch-results');
     const q = query.trim();
     const seq = ++gSeq;
+    $('#hub-quick').hidden = !!q;
     if (!q) { box.replaceChildren(); return; }
     const groups = [];
     // symptômes (déjà en mémoire)
@@ -991,11 +1023,11 @@
     bar.setAttribute('aria-valuenow', String(pct));
     bar.setAttribute('aria-valuetext', current.type === 'result'
       ? 'Diagnostic terminé'
-      : 'Étape ' + path.length + ', au plus ' + remaining + ' étape(s) restante(s)');
+      : 'Étape ' + path.length + ' sur ' + total + ' au plus');
 
     $('#progress-step').textContent = current.type === 'result'
-      ? 'Diagnostic terminé · ' + done + ' réponse' + (done > 1 ? 's' : '')
-      : 'Étape ' + path.length;
+      ? 'Résultat · ' + done + ' réponse' + (done > 1 ? 's' : '')
+      : 'Étape ' + path.length + '/' + total;
     $('#progress-remaining').textContent = current.type === 'result'
       ? ''
       : remaining === 0 ? 'Dernière question' : 'au plus ' + remaining + ' restante' + (remaining > 1 ? 's' : '');
@@ -1136,10 +1168,10 @@
   }
 
   function productChips(ids) {
-    const list = (ids || []).map(pid => state.products.get(pid)).filter(Boolean);
+    const list = (ids || []).filter(pid => state.products.has(pid)).map(pid => Object.assign({ id: pid }, state.products.get(pid)));
     if (!list.length) return null;
     return h('p', { class: 'node-products' }, 'Matériel : ',
-      list.map((pr, i) => [i ? ', ' : '', h('span', { title: productSourceLabel(pr) }, productLabel(pr))]));
+      list.map((pr, i) => [i ? ', ' : '', h('a', { class: 'node-products__link', href: '#/produits/' + encodeURIComponent(pr.id), title: productSourceLabel(pr) + ' — voir la fiche' }, productLabel(pr))]));
   }
 
   function renderBrandSteps(node) {
@@ -1158,7 +1190,10 @@
             prods.length ? h('span', { class: 'brandstep__models' }, prods.map(p => p.model).join(', ')) : null
           ),
           h('ul', { class: 'brandstep__actions' }, (b.actions || []).map(a => h('li', null, a))),
-          prods.length ? h('p', { class: 'brandstep__src' }, 'Références : ' + prods.map(p => productLabel(p) + (p.page ? ' (p. ' + p.page + ')' : '')).join(' · ')) : null
+          prods.length ? h('p', { class: 'brandstep__src' }, 'Fiches : ', (b.products || []).filter(pid => state.products.has(pid)).map((pid, i) => {
+            const p = state.products.get(pid);
+            return [i ? ' · ' : '', h('a', { href: '#/produits/' + encodeURIComponent(pid) }, productLabel(p) + (p.page ? ' (p. ' + p.page + ')' : ''))];
+          })) : null
         );
       }))
     ];
@@ -1210,6 +1245,8 @@
         related.length ? h('h3', { class: 'block-title' }, 'Diagnostics liés') : null,
         related.length ? h('div', { class: 'related' }, related) : null,
 
+        renderOutcome(node, rootSymptom, active),
+
         h('div', { class: 'result__footer' },
           h('button', { type: 'button', class: 'btn btn--success', onclick: () => copyReport(node, rootSymptom, active, steps) }, 'Copier le rapport'),
           h('button', { type: 'button', class: 'btn', onclick: () => exportPdf(node, rootSymptom, active, steps) }, 'Télécharger le PDF'),
@@ -1218,6 +1255,149 @@
         )
       )
     );
+  }
+
+  /* ---------------------------------------------------------------------
+     Journal des diagnostics : sur cet appareil uniquement, rien n'est envoyé.
+     Le technicien indique « Résolu » ou « Pas résolu » ; le responsable SAV
+     regroupe les fichiers exportés pour repérer les procédures qui échouent.
+     --------------------------------------------------------------------- */
+  const LOG_KEY = 'diagsav.journal.v1';
+  const LOG_MAX = 500;
+  const LOG_MAX_AGE = 180 * 24 * 3600 * 1000;
+  const journal = {
+    all() {
+      try {
+        const list = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+        const limit = Date.now() - LOG_MAX_AGE;
+        return Array.isArray(list) ? list.filter(e => e && e.ts > limit) : [];
+      } catch { return []; }
+    },
+    save(list) {
+      try { localStorage.setItem(LOG_KEY, JSON.stringify(list.slice(-LOG_MAX))); return true; } catch { return false; }
+    },
+    /** Une seule entrée par diagnostic (même chemin, moins de 2 h) : un nouveau clic la corrige. */
+    record(entry) {
+      const list = this.all();
+      const prev = list.findIndex(e => e.hash === entry.hash && entry.ts - e.ts < 2 * 3600 * 1000);
+      if (prev >= 0) list.splice(prev, 1);
+      list.push(entry);
+      return this.save(list);
+    },
+    find(hash) {
+      const now = Date.now();
+      return this.all().reverse().find(e => e.hash === hash && now - e.ts < 2 * 3600 * 1000) || null;
+    },
+    clear() { try { localStorage.removeItem(LOG_KEY); } catch { /* ignoré */ } }
+  };
+
+  function renderOutcome(node, rootSymptom, active) {
+    if (state.preview) return null;
+    const hash = location.hash;
+    const box = h('section', { class: 'outcome', 'aria-labelledby': 'outcome-title' });
+    const draw = () => {
+      const entry = journal.find(hash);
+      const pick = (outcome) => {
+        const ok = journal.record({
+          ts: Date.now(), hash, outcome,
+          symptom: rootSymptom.id, symptomTitle: rootSymptom.title,
+          active: active.id !== rootSymptom.id ? active.id : undefined,
+          result: parseHash().path.slice(-1)[0], resultTitle: node.title, severity: node.severity,
+          product: state.focusProduct || undefined,
+          version: (state.data.meta && state.data.meta.version) || ''
+        });
+        if (!ok) toast('Journal non enregistré : stockage indisponible sur cet appareil');
+        draw();
+        $('#outcome-live').textContent = outcome === 'resolu' ? 'Noté : problème résolu.' : 'Noté : problème non résolu.';
+      };
+      const btn = (outcome, label, cls) => h('button', {
+        type: 'button', class: 'btn outcome__btn ' + cls, 'aria-pressed': String(!!entry && entry.outcome === outcome), onclick: () => pick(outcome)
+      }, label);
+      const unresolved = entry && entry.outcome === 'non-resolu';
+      box.replaceChildren(...[
+        h('h3', { class: 'block-title', id: 'outcome-title' }, 'Le problème est-il résolu ?'),
+        h('div', { class: 'outcome__btns' }, btn('resolu', 'Résolu', 'outcome__btn--ok'), btn('non-resolu', 'Pas résolu', 'outcome__btn--ko')),
+        unresolved ? h('div', { class: 'outcome__next' },
+          h('p', null, h('strong', null, 'Suite : '), node.escalate || 'Escalader au support de niveau 2 avec le rapport (bouton « Copier le rapport » ci-dessous).'),
+          (node.related || []).length ? h('p', { class: 'muted' }, 'Essayez aussi un diagnostic lié ci-dessus.') : null) : null,
+        h('p', { class: 'outcome__note muted' }, 'Noté dans ', h('a', { href: '#/journal' }, 'votre journal'), ', sur cet appareil uniquement.'),
+        h('p', { class: 'visually-hidden', id: 'outcome-live', 'aria-live': 'polite' })
+      ].filter(Boolean));
+    };
+    draw();
+    return box;
+  }
+
+  function renderJournalPage() {
+    showView('journal');
+    renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Mon journal' }]);
+    const box = $('#journal-root');
+    const list = journal.all().reverse();
+    const ok = list.filter(e => e.outcome === 'resolu').length;
+    // procédures qui échouent le plus
+    const bySym = new Map();
+    for (const e of list) {
+      const k = e.symptomTitle || e.symptom;
+      const s = bySym.get(k) || { total: 0, ko: 0 };
+      s.total++; if (e.outcome !== 'resolu') s.ko++;
+      bySym.set(k, s);
+    }
+    const worst = [...bySym.entries()].filter(([, s]) => s.ko).sort((a, b) => b[1].ko - a[1].ko).slice(0, 5);
+    const fmt = ts => new Date(ts).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    box.replaceChildren(...[
+      h('div', { class: 'phead' },
+        h('p', { class: 'eyebrow' }, 'Sur cet appareil'),
+        h('h1', { class: 'phead__title' }, 'Mon journal'),
+        h('p', { class: 'phead__lead' }, 'Les diagnostics que vous avez marqués « Résolu » ou « Pas résolu ». Rien n\'est envoyé : exportez le fichier et transmettez-le à votre responsable SAV si besoin. Conservé ' + Math.round(LOG_MAX_AGE / 86400000) + ' jours.')),
+      list.length ? h('dl', { class: 'jstats' },
+        h('div', null, h('dt', null, 'Diagnostics'), h('dd', null, String(list.length))),
+        h('div', null, h('dt', null, 'Résolus'), h('dd', null, Math.round(ok / list.length * 100) + ' %')),
+        h('div', null, h('dt', null, 'Non résolus'), h('dd', null, String(list.length - ok)))) : null,
+      worst.length ? h('section', { class: 'pdetail__block' },
+        h('h2', { class: 'block-title' }, 'Procédures les plus souvent sans solution'),
+        h('ul', { class: 'plinks' }, worst.map(([k, s]) => h('li', null, k, h('span', { class: 'muted' }, ' · ' + s.ko + ' sur ' + s.total))))) : null,
+      list.length ? h('div', { class: 'result__footer' },
+        h('button', { type: 'button', class: 'btn btn--primary', onclick: () => downloadFile('journal-diagnostics-' + localDate() + '.csv', journalCsv(list), 'text/csv;charset=utf-8') }, 'Exporter (tableur CSV)'),
+        h('button', { type: 'button', class: 'btn', onclick: () => downloadFile('journal-diagnostics-' + localDate() + '.json', JSON.stringify(list, null, 2), 'application/json') }, 'Exporter (JSON)'),
+        h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => {
+          if (!confirmClear()) return;
+          journal.clear(); toast('Journal effacé'); renderJournalPage();
+        } }, 'Effacer le journal')) : null,
+      list.length
+        ? h('ol', { class: 'jlist' }, list.map(e => h('li', { class: 'jitem' },
+            h('span', { class: 'jitem__badge ' + (e.outcome === 'resolu' ? 'is-ok' : 'is-ko') }, e.outcome === 'resolu' ? 'Résolu' : 'Pas résolu'),
+            h('a', { class: 'jitem__title', href: e.hash }, e.symptomTitle + ' → ' + e.resultTitle),
+            h('span', { class: 'jitem__meta muted' }, fmt(e.ts) + (e.product && state.products.get(e.product) ? ' · ' + productLabel(state.products.get(e.product)) : '') + (e.version ? ' · procédures v' + e.version : '')))))
+        : h('div', { class: 'empty' }, 'Aucun diagnostic noté pour l\'instant. À la fin d\'un diagnostic, indiquez « Résolu » ou « Pas résolu ».', h('br'), h('a', { href: '#/diagnostic' }, 'Commencer un diagnostic →'))
+    ].filter(Boolean));
+  }
+
+  /* Effacement en deux clics (pas de boîte de dialogue bloquante) */
+  let clearArmed = 0;
+  function confirmClear() {
+    if (Date.now() - clearArmed < 4000) { clearArmed = 0; return true; }
+    clearArmed = Date.now();
+    toast('Cliquez à nouveau pour effacer définitivement le journal');
+    return false;
+  }
+
+  function journalCsv(list) {
+    const cols = [['Date', e => { const d = new Date(e.ts); const z = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + ' ' + z(d.getHours()) + ':' + z(d.getMinutes()); }], ['Résultat', e => e.outcome === 'resolu' ? 'Résolu' : 'Pas résolu'],
+      ['Symptôme', e => e.symptomTitle], ['Recommandation', e => e.resultTitle], ['Gravité', e => severityInfo(e.severity).label || e.severity],
+      ['Produit', e => (e.product && state.products.get(e.product)) ? productLabel(state.products.get(e.product)) : ''],
+      ['Procédures', e => e.version], ['Lien', e => location.origin + location.pathname + e.hash]];
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    // BOM + point-virgule : ouverture directe dans Excel en français
+    return '\ufeff' + [cols.map(c => q(c[0])).join(';'), ...list.map(e => cols.map(c => q(c[1](e))).join(';'))].join('\r\n');
+  }
+
+  function downloadFile(name, content, type) {
+    const url = URL.createObjectURL(new Blob([content], { type }));
+    const a = h('a', { href: url, download: name });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('Fichier « ' + name + ' » téléchargé');
   }
 
   function choose(rootSymptom, path, index) {
@@ -1498,6 +1678,7 @@
   function renderProductDetail(pid) {
     const pr = state.products.get(pid);
     const box = $('#product-detail');
+    box.dataset.pid = pid;
     $('#products-results').replaceChildren();
     $('#view-products').classList.add('is-detail');
     const back = h('a', { class: 'btn btn--small btn--ghost', href: '#/produits' + (state.lastPQuery ? '?q=' + encodeURIComponent(state.lastPQuery) : '') },
@@ -1556,6 +1737,7 @@
           h('a', { href: diagHash(st.sym.id, st.path), onclick: () => { state.focusProduct = pid; } },
             st.node.title, h('span', { class: 'muted' }, ' — ' + st.sym.title)),
           st.status === 'draft' ? [' ', h('span', { class: 'badge badge--draft' }, 'À valider')] : null)))) : null,
+      h('div', { id: 'pdetail-links' }),
       siblings.length ? h('section', { class: 'pdetail__block' },
         h('h3', { class: 'block-title' }, 'Même famille (' + siblings.length + ')'),
         h('div', { class: 'related' }, siblings.map(([id, p]) =>
@@ -1564,6 +1746,43 @@
     const heading = box.querySelector('[data-focus]');
     if (heading) heading.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
+    renderProductLinks(pid);
+  }
+
+  /** Fiche produit : recommandations et actualités qui citent ce produit (fichiers facultatifs). */
+  async function renderProductLinks(pid) {
+    const [reco, news] = await Promise.all([
+      loadJson('data/reco.json').catch(() => null),
+      loadJson('data/news.json').catch(() => null)]);
+    const slot = $('#pdetail-links');
+    if (!slot || $('#product-detail').dataset.pid !== pid) return;
+    const recos = reco ? Object.entries(reco.nodes || {}).filter(([, n]) => n.type === 'result' && (n.items || []).some(it => it.product === pid)) : [];
+    const recoPaths = recos.map(([id, n]) => ({ n, path: recoPathTo(reco, id) })).filter(x => x.path);
+    const items = news ? (news.items || []).filter(it => (it.products || []).includes(pid)).sort((a, b) => String(b.date).localeCompare(String(a.date))) : [];
+    slot.replaceChildren(...[
+      items.length ? h('section', { class: 'pdetail__block' },
+        h('h3', { class: 'block-title' }, 'Dans la veille (' + items.length + ')'),
+        h('ul', { class: 'plinks' }, items.map(it => h('li', null,
+          h('a', { href: '#/veille?f=' + encodeURIComponent(it.category) }, it.title),
+          h('span', { class: 'muted' }, ' · ' + fmtDate(it.date) + ' · impact ' + String(((news.impacts || {})[it.impact] || {}).label || it.impact || '?').toLowerCase()))))) : null,
+      recoPaths.length ? h('section', { class: 'pdetail__block' },
+        h('h3', { class: 'block-title' }, 'Recommandé pour'),
+        h('ul', { class: 'plinks' }, recoPaths.map(({ n, path }) => h('li', null, h('a', { href: recoHash(path) }, n.title))))) : null].filter(Boolean));
+  }
+
+  /** Chemin (sans le départ) qui mène du départ de reco.json au nœud id. */
+  function recoPathTo(data, target) {
+    const nodes = data.nodes || {};
+    const queue = [[data.start, []]];
+    const seen = new Set();
+    while (queue.length) {
+      const [id, path] = queue.shift();
+      if (id === target) return path;
+      if (seen.has(id) || !nodes[id] || nodes[id].type !== 'question') continue;
+      seen.add(id);
+      for (const o of nodes[id].options || []) queue.push([o.next, [...path, o.next]]);
+    }
+    return null;
   }
 
   let pTimer = null;
@@ -1717,6 +1936,28 @@
 
   function recoHash(path) { return '#/recommander' + (path.length ? '/' + path.map(encodeURIComponent).join('/') : ''); }
 
+  /** Nombre maximal de questions restantes, question courante comprise (protégé contre les cycles). */
+  function recoDepth(nodes, id, seen = new Set()) {
+    const n = nodes[id];
+    if (!n || n.type !== 'question' || seen.has(id)) return 0;
+    seen.add(id);
+    const best = Math.max(0, ...(n.options || []).map(o => recoDepth(nodes, o.next, seen)));
+    seen.delete(id);
+    return 1 + best;
+  }
+
+  /** Liens directs vers les symptômes fréquents (champ « frequent » de decisions.json). */
+  function renderQuickLinks() {
+    const all = [...state.symptoms.values()];
+    let list = all.filter(s => s.frequent);
+    if (!list.length) list = all.slice(0, 4);
+    for (const box of [$('#hub-quick'), $('#search-hint')]) {
+      if (!box) continue;
+      box.replaceChildren(h('span', { class: 'quick__label' }, 'Fréquents :'),
+        ...list.map(s => h('a', { class: 'slink', href: diagHash(s.id, [s.start]) }, s.title)));
+    }
+  }
+
   async function renderReco(route) {
     showView('reco');
     const box = $('#reco-root');
@@ -1762,7 +2003,7 @@
     let stage;
     if (current.type === 'question') {
       stage = h('article', { class: 'panel question' },
-        h('header', { class: 'panel__head' }, h('span', { class: 'panel__tag' }, 'Étape ' + path.length), h('span', null, current.label || 'Question')),
+        h('header', { class: 'panel__head' }, h('span', { class: 'panel__tag' }, 'Étape ' + path.length + '/' + (path.length - 1 + recoDepth(nodes, path[path.length - 1]))), h('span', null, current.label || 'Question')),
         h('div', { class: 'panel__body' },
           h('h2', { class: 'question__text', tabindex: '-1', 'data-focus': true }, current.text),
           current.help ? h('p', { class: 'question__help' }, current.help) : null,
@@ -2091,14 +2332,6 @@
       }
     });
 
-    document.querySelectorAll('[data-suggest]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        state.query = btn.dataset.suggest;
-        input.value = state.query;
-        renderGrid();
-        input.focus();
-      });
-    });
 
     // reflet qui suit le pointeur sur les cartes
     $('#symptom-grid').addEventListener('pointermove', (e) => {
@@ -2160,10 +2393,41 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && closeLightbox()) { e.preventDefault(); return; }
       if (!$('#lightbox').hidden) return;
+      const route = parseHash();
+      // Ctrl+K / Cmd+K : recherche, depuis n'importe quelle page (sauf l'éditeur)
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'k') {
+        if (route.view === 'editor') return;
+        e.preventDefault();
+        const target = route.view === 'home' ? '#search-input' : route.view === 'products' ? '#psearch-input' : '#gsearch-input';
+        if (target === '#gsearch-input' && route.view !== 'hub') { state.focusSearch = true; navigate('#/'); return; }
+        const el = $(target); if (el) { el.focus(); el.select(); }
+        return;
+      }
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       const t = e.target;
       const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
-      const route = parseHash();
+
+      // Flèches : parcourir les résultats, cartes et réponses de la page
+      if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && t.tagName !== 'TEXTAREA' && t.tagName !== 'SELECT') {
+        const sel = {
+          hub: '#gsearch-results .gresults__item, #hub-quick .slink, .hcard',
+          home: '#search-hint .slink, #symptom-grid .card',
+          diag: '#diag-stage .option, #diag-stage .outcome__btn',
+          reco: '#reco-root .option:not([disabled])',
+          products: '#products-results a.pcard__title, #products-results .pcard a',
+          news: '#news-root .ftext, #news-root .ncard a'
+        }[route.view];
+        if (sel) {
+          const items = [...document.querySelectorAll(sel)].filter(el => el.offsetParent !== null);
+          const i = items.indexOf(t);
+          const searchInput = { hub: '#gsearch-input', home: '#search-input', products: '#psearch-input' }[route.view];
+          let next = null;
+          if (i === -1) { if (e.key === 'ArrowDown' && (!typing || t.matches(searchInput || 'x'))) next = items[0]; }
+          else if (e.key === 'ArrowDown') next = items[i + 1] || null;
+          else next = items[i - 1] || (searchInput ? $(searchInput) : null);
+          if (next) { e.preventDefault(); next.focus(); next.scrollIntoView({ block: 'nearest' }); return; }
+        }
+      }
 
       if (typing) {
         if (e.key === 'Escape' && t.id === 'search-input') {
@@ -2233,7 +2497,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.12.0';
+  const APP_VERSION = '1.14.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

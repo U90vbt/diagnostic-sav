@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#171b20">
-  <meta name="diagsav-version" content="1.12.0">
+  <meta name="diagsav-version" content="1.14.0">
   <meta name="description" content="Assistant de diagnostic SAV de premier niveau — usage interne.">
   <title>DIAG·SAV — Assistant de diagnostic N1</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -94,8 +94,9 @@
           <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <input id="gsearch-input" class="search__input" type="search" inputmode="search" enterkeyhint="search"
                  placeholder="Un symptôme, un produit, une actualité…">
-          <kbd class="search__kbd" aria-hidden="true">/</kbd>
+          <kbd class="search__kbd" aria-hidden="true">Ctrl K</kbd>
         </form>
+        <p class="search__hint quick" id="hub-quick" aria-label="Symptômes fréquents"></p>
         <div id="gsearch-results" class="gresults" aria-live="polite"></div>
       </div>
       <ol class="hub__grid" aria-label="Sections">
@@ -137,15 +138,9 @@
           <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <input id="search-input" class="search__input" type="search" inputmode="search"
                  placeholder="ex. pas de son, écran noir, surchauffe…" aria-describedby="search-hint" enterkeyhint="search">
-          <kbd class="search__kbd" aria-hidden="true">/</kbd>
+          <kbd class="search__kbd" aria-hidden="true">Ctrl K</kbd>
         </form>
-        <p id="search-hint" class="search__hint">
-          Suggestions :
-          <button type="button" class="slink" data-suggest="pas de son">pas de son</button>
-          <button type="button" class="slink" data-suggest="écran noir">écran noir</button>
-          <button type="button" class="slink" data-suggest="surchauffe">surchauffe</button>
-          <button type="button" class="slink" data-suggest="dante">dante</button>
-        </p>
+        <p id="search-hint" class="search__hint quick" aria-label="Symptômes fréquents"></p>
       </div>
 
       <div class="filters filters--text" role="group" aria-label="Filtrer par catégorie" id="filters"></div>
@@ -201,6 +196,11 @@
     <!-- Veille technologique -->
     <section id="view-news" class="view" hidden aria-label="Veille technologique">
       <div id="news-root"><p class="pstatus">Chargement…</p></div>
+    </section>
+
+    <!-- Journal des diagnostics (sur cet appareil uniquement) -->
+    <section id="view-journal" class="view" hidden aria-label="Journal des diagnostics">
+      <div id="journal-root"></div>
     </section>
 
     <!-- Éditeur des procédures (editor.js) -->
@@ -288,6 +288,8 @@
 <button type="button" class="footer__link" id="btn-prepare-offline">Préparer le hors-ligne</button>
     <span class="footer__sep" aria-hidden="true">|</span>
     <a href="#/produits">Assistant produit</a>
+    <span class="footer__sep" aria-hidden="true">|</span>
+    <a href="#/journal">Mon journal</a>
     <span class="footer__sep" aria-hidden="true">|</span>
         <a href="#/editeur">Éditer les procédures</a>
     <span id="data-warnings" class="footer__warn" hidden></span>

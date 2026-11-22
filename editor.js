@@ -394,6 +394,8 @@
         field('Mots-clés de recherche', textInput((s.keywords || []).join(', '), v => {
           s.keywords = v.split(',').map(x => x.trim()).filter(Boolean); changed(false);
         }, { multiline: true, rows: 2 }), 'Séparés par des virgules : les mots que les techniciens tapent vraiment (« pas de son », « muet »…).'),
+        h('label', { class: 'ed-check' }, h('input', { type: 'checkbox', checked: !!s.frequent, onchange: (e) => { if (e.target.checked) s.frequent = true; else delete s.frequent; changed(false); } }),
+          ' Symptôme fréquent : lien direct sous les champs de recherche'),
         field('Question de départ', selectInput(
           groupNodes(questions.map(([qid]) => qid), owner),
           s.start, v => { s.start = v; changed(true); }, { placeholder: '— choisir —' })),

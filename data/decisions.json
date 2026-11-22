@@ -100,9 +100,14 @@
         "alimentation",
         "secteur",
         "fusible",
-        "power"
+        "power",
+        "rien",
+        "ne s'allume pas",
+        "plus de jus",
+        "hs"
       ],
-      "start": "alim-q1"
+      "start": "alim-q1",
+      "frequent": true
     },
     {
       "id": "redemarrages",
@@ -118,7 +123,11 @@
         "relance",
         "poe",
         "onduleur",
-        "micro-coupure"
+        "micro-coupure",
+        "reboote",
+        "boucle",
+        "redémarre tout seul",
+        "se coupe"
       ],
       "start": "reboot-q1"
     },
@@ -137,9 +146,14 @@
         "haut-parleur",
         "ampli",
         "sortie audio",
-        "dsp"
+        "dsp",
+        "plus de son",
+        "rien ne sort",
+        "ça sort pas",
+        "plus rien"
       ],
-      "start": "audio-q1"
+      "start": "audio-q1",
+      "frequent": true
     },
     {
       "id": "son-degrade",
@@ -159,7 +173,14 @@
         "souffle",
         "parasite",
         "masse",
-        "clip"
+        "clip",
+        "ça crache",
+        "crache",
+        "crachote",
+        "ronfle",
+        "ça grésille",
+        "ça souffle",
+        "sature"
       ],
       "start": "bruit-q1"
     },
@@ -179,9 +200,15 @@
         "moniteur",
         "vidéoprojecteur",
         "edid",
-        "hdcp"
+        "hdcp",
+        "écran bleu",
+        "no input",
+        "pas d'entrée",
+        "plus d'image",
+        "noir"
       ],
-      "start": "video-q1"
+      "start": "video-q1",
+      "frequent": true
     },
     {
       "id": "image-instable",
@@ -200,7 +227,12 @@
         "vert",
         "décroche",
         "4k",
-        "hdr"
+        "hdr",
+        "ça clignote",
+        "ça saute",
+        "image qui saute",
+        "flicker",
+        "snow"
       ],
       "start": "img-q1"
     },
@@ -222,7 +254,11 @@
         "switch",
         "rj45",
         "vlan",
-        "169.254"
+        "169.254",
+        "plus de réseau",
+        "pas de lien",
+        "led réseau éteinte",
+        "pas d'ip"
       ],
       "start": "net-q1"
     },
@@ -244,7 +280,11 @@
         "ptp",
         "multicast",
         "qos",
-        "eee"
+        "eee",
+        "ça décroche",
+        "clics",
+        "dante décroche",
+        "perte de paquets"
       ],
       "start": "lat-q1"
     },
@@ -263,7 +303,10 @@
         "thermique",
         "protection",
         "rack",
-        "poussière"
+        "poussière",
+        "ça chauffe",
+        "brûlant",
+        "ventilo à fond"
       ],
       "start": "th-q1"
     },
@@ -282,7 +325,9 @@
         "crash",
         "bug",
         "lent",
-        "erratique"
+        "erratique",
+        "ça rame",
+        "planté"
       ],
       "start": "gel-q1"
     },
@@ -302,7 +347,10 @@
         "hub",
         "extendeur",
         "i/o",
-        "découverte"
+        "découverte",
+        "pas vu",
+        "pas détecté",
+        "invisible"
       ],
       "start": "per-q1"
     },
@@ -320,7 +368,10 @@
         "brické",
         "bootloader",
         "recovery",
-        "version"
+        "version",
+        "maj ratée",
+        "mise à jour plantée",
+        "brick"
       ],
       "start": "fw-q1"
     },
@@ -363,9 +414,15 @@
         "antenne",
         "rf",
         "shure",
-        "sennheiser"
+        "sennheiser",
+        "plus de hf",
+        "hf décroche",
+        "micro coupe",
+        "ça coupe",
+        "trous"
       ],
-      "start": "hf-q1"
+      "start": "hf-q1",
+      "frequent": true
     },
     {
       "id": "larsen",
@@ -380,7 +437,10 @@
         "siffle",
         "retour",
         "micro",
-        "enceinte"
+        "enceinte",
+        "ça siffle",
+        "ça accroche",
+        "accrochage"
       ],
       "start": "lars-q1"
     },
@@ -401,7 +461,11 @@
         "clear-com",
         "riedel",
         "green-go",
-        "sans fil"
+        "sans fil",
+        "plus d'inter",
+        "inter",
+        "ordres",
+        "pas d'ordre"
       ],
       "start": "ic-q1"
     },
@@ -423,7 +487,11 @@
         "mapping",
         "pixel",
         "scintillement",
-        "ligne noire"
+        "ligne noire",
+        "dalle noire",
+        "caisson éteint",
+        "ligne morte",
+        "bande noire"
       ],
       "start": "led-q1"
     },
@@ -447,7 +515,10 @@
         "e2",
         "roland",
         "caméra",
-        "convertisseur"
+        "convertisseur",
+        "pas de pgm",
+        "plus de sortie",
+        "retour plateau"
       ],
       "start": "rg-q1"
     }

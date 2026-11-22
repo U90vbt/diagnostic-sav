@@ -893,3 +893,54 @@ button.ftext { background: none; border-top: 0; border-left: 0; border-right: 0;
   .panel, .journal { box-shadow: none; border-color: #bbb; }
   .journal__list { max-height: none; }
 }
+
+/* Liens directs vers les symptômes fréquents */
+.quick { gap: 6px 14px; }
+.quick__label { color: var(--muted); }
+.quick .slink { display: inline-flex; align-items: center; min-height: 44px; }
+.ed-check { display: flex; align-items: center; gap: 10px; min-height: 44px; color: var(--text-2); cursor: pointer; }
+.ed-check input { width: 20px; height: 20px; accent-color: var(--blue); }
+
+/* Fil d'Ariane sur mobile : seulement « ← étape précédente » et la page courante */
+@media (max-width: 640px) {
+  .crumbs__item:not(:nth-last-child(-n+2)) { display: none; }
+  .crumbs__item:nth-last-child(2) .crumbs__link::before { content: "← "; }
+  .crumbs__item + .crumbs__item::before { content: none; }
+  .crumbs__list { gap: 6px; overflow: hidden; }
+  .crumbs__item { flex: 0 1 auto; min-width: 0; }
+  .crumbs__link, .crumbs__current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw; display: block; }
+  .crumbs__item:nth-last-child(2) .crumbs__link { min-height: 44px; display: flex; align-items: center; }
+}
+.quick[hidden] { display: none; }
+.plinks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.plinks a { color: var(--text); text-underline-offset: 4px; text-decoration-color: var(--line-strong); }
+.plinks a:hover { text-decoration-color: var(--blue); }
+.brandstep__src a { color: inherit; text-underline-offset: 3px; }
+
+/* Résolu / Pas résolu */
+.outcome { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line); }
+.outcome__btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.outcome__btn { min-height: var(--tap); justify-content: center; font-size: 1rem; }
+.outcome__btn--ok[aria-pressed="true"] { background: var(--sev-low, #4caf7a); border-color: transparent; color: #0b1a10; }
+.outcome__btn--ko[aria-pressed="true"] { background: var(--sev-high, #e5484d); border-color: transparent; color: #1f0a0a; }
+.outcome__next { margin-top: 14px; padding: 14px 16px; border-radius: var(--r); background: var(--surface-2); }
+.outcome__next p { margin: 0 0 6px; }
+.outcome__note { margin: 12px 0 0; font-size: .85rem; }
+.outcome__note a { color: inherit; }
+
+/* Page journal */
+.jstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 0 24px; }
+.jstats div { padding: 18px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--line); }
+.jstats dt { color: var(--muted); font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; }
+.jstats dd { margin: 6px 0 0; font-family: var(--font-display); font-size: 1.8rem; font-weight: 300; }
+.jlist { list-style: none; margin: 24px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.jitem { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; padding: 14px 2px; border-bottom: 1px solid var(--line); }
+.jitem__badge { grid-row: span 2; font-size: .78rem; padding: 4px 10px; border-radius: var(--r-pill); white-space: nowrap; }
+.jitem__badge.is-ok { background: rgba(76, 175, 122, .15); color: #9fdcb8; }
+.jitem__badge.is-ko { background: rgba(229, 72, 77, .15); color: #f2a7a9; }
+.jitem__title { color: var(--text); text-decoration: none; min-width: 0; overflow-wrap: anywhere; }
+.jitem__title:hover { text-decoration: underline; }
+.jitem__meta { font-size: .82rem; }
+
+.node-products__link { color: inherit; text-underline-offset: 3px; text-decoration-color: var(--line-strong); }
+.node-products__link:hover { text-decoration-color: var(--blue); }
