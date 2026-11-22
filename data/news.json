@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.1.0",
+    "version": "0.2.0",
     "updated": "2026-11-22",
     "title": "Veille technologique",
     "note": "Saisie manuelle : le site ne va chercher aucune information sur Internet."
@@ -39,19 +39,109 @@
   },
   "items": [
     {
-      "id": "exemple-firmware-controleur-led",
-      "category": "firmware",
-      "title": "[EXEMPLE] Nouvelle version de firmware pour un contrôleur LED",
-      "date": "2026-11-15",
-      "impact": "moyen",
-      "summary": "[EXEMPLE] Entrée fictive montrant le format d'une actualité. Remplacez-la par une information réelle, avec sa source.",
-      "action": "[EXEMPLE] Mettre à jour le parc après validation sur un appareil de test.",
+      "id": "clickshare-php-2026",
+      "category": "securite",
+      "title": "ClickShare : failles PHP dans le configurateur web, correctif obligatoire",
+      "date": "2026-10-29",
+      "impact": "eleve",
+      "summary": "Deux vulnérabilités PHP touchent le configurateur web des bases ClickShare des séries C, CX et Bar Core / Bar Pro (ainsi que les anciennes CS(E), CSC-1, CSM-1 et wePresent). Barco publie le correctif v2.27.01.0009 pour les modèles encore supportés ; les anciens modèles ne seront pas corrigés.",
+      "action": "Installer le correctif v2.27.01.0009 (XMS Cloud ou site Barco). Changer le mot de passe Wi-Fi par défaut, limiter l'accès au configurateur (pare-feu, réseau séparé, accès via le Wi-Fi ClickShare désactivé). Prévoir le remplacement des CS(E), CSC-1, CSM-1 et wePresent.",
       "products": [
-        "novastar-mctrl4k"
+        "barco-clickshare-c-5-c-10-gen-2",
+        "barco-clickshare-cx-20-cx-30-gen-2",
+        "barco-clickshare-cx-50-gen-2",
+        "barco-clickshare-bar-pro-core"
       ],
       "source": {
-        "name": "[EXEMPLE] Notes de version du constructeur",
-        "url": "https://example.com/"
+        "name": "Barco, base de connaissances, article 16242",
+        "url": "https://www.barco.com/en/support/knowledge-base/16242-clickshare-base-affected-by-php-vulnerabilities-cve-2026-109618-and-cve-2026-109619"
+      }
+    },
+    {
+      "id": "clickshare-cve-2024-53919",
+      "category": "securite",
+      "title": "ClickShare : faille CVE-2024-53919 corrigée par firmware",
+      "date": "2026-06-12",
+      "impact": "moyen",
+      "summary": "Une faille du firmware des bases ClickShare permet à un administrateur ou à une personne ayant un accès physique d'exécuter des commandes. Concernés : C-5, C-10, CX-20, CX-30, Bar Pro et Bar Core. Les CX-50 ne sont pas concernées.",
+      "action": "Mettre à jour le firmware des bases concernées (ClickShare Configurator ou clé USB) lors de la prochaine intervention.",
+      "products": [
+        "barco-clickshare-c-5-c-10-gen-2",
+        "barco-clickshare-cx-20-cx-30-gen-2",
+        "barco-clickshare-bar-pro-core"
+      ],
+      "source": {
+        "name": "Barco, avis de sécurité CVE-2024-53919",
+        "url": "https://www.barco.com/support/knowledge-base/15008-clickshare-cve-2024-53919"
+      }
+    },
+    {
+      "id": "teams-android-10-fin-certification",
+      "category": "fin-de-vie",
+      "title": "Teams Rooms sur Android 10 et 11 : fin de certification, support jusqu'en septembre 2027",
+      "date": "2026-09-03",
+      "impact": "moyen",
+      "summary": "Microsoft ne certifie plus les appareils Teams sous Android 10 et 11 depuis le 3 septembre 2026 et les supporte jusqu'au 3 septembre 2027. La fin de certification d'Android 12 est repoussée au 15 août 2027. La gestion des appareils Android quitte le centre d'administration Teams pour le portail Teams Rooms Pro fin septembre 2026 ; les appareils en fin de support peuvent ne plus être gérables.",
+      "action": "Relever la version d'Android des barres et écrans de visio du parc, et planifier le remplacement de ceux restés sous Android 10 ou 11. Vérifier qu'ils apparaissent dans le portail Teams Rooms Pro.",
+      "products": [
+        "yealink-a40",
+        "yealink-meetingbar-a10",
+        "aver-vb370a",
+        "neat-neat-bar-2",
+        "neat-neat-bar-pro"
+      ],
+      "source": {
+        "name": "Microsoft Learn, versions d'Android prises en charge sur les appareils Teams",
+        "url": "https://learn.microsoft.com/en-us/microsoftteams/devices/android-version-support"
+      }
+    },
+    {
+      "id": "netgear-m4350-14-0-6-17",
+      "category": "firmware",
+      "title": "Switchs NETGEAR M4350 : firmware 14.0.6.17, HTTPS par défaut",
+      "date": "2026-02-12",
+      "impact": "moyen",
+      "summary": "Depuis la version 14.0.6.10, l'interface web passe en HTTPS par défaut, avec un certificat auto-signé (avertissement du navigateur). La version 14.0.6.17 ajuste les profils AV (IGMP, Dante) et corrige 11 bugs. Problème connu : un appareil Dante à deux ports reliés tous les deux au switch peut créer une boucle.",
+      "action": "Prévenir les équipes de l'avertissement HTTPS à la connexion. Ne pas couper le switch pendant la mise à jour (environ 3 minutes). Sur les appareils Dante à deux ports : ne relier qu'un port, ou séparer les réseaux primaire et secondaire en VLAN.",
+      "products": [
+        "netgear-gsm4352",
+        "netgear-xsm4340v"
+      ],
+      "source": {
+        "name": "NETGEAR, notes de version M4350 14.0.6.17",
+        "url": "https://kb.netgear.com/000070543/M4350-Firmware-Version-14-0-6-17"
+      }
+    },
+    {
+      "id": "shure-mxa920-6-9-0",
+      "category": "firmware",
+      "title": "Shure MXA920 : firmware 6.9.0 disponible",
+      "date": "2026-06-01",
+      "impact": "faible",
+      "summary": "Shure publie la version 6.9.0 du firmware du micro plafond MXA920, après les versions 6.7.0 (février 2026) et 6.8.0 (avril 2026).",
+      "action": "Lire les notes de version et les versions compatibles (Designer, Shure Update Utility) avant de mettre à jour une salle en service.",
+      "products": [
+        "shure-mxa920"
+      ],
+      "source": {
+        "name": "Shure, archives logiciels et firmware MXA920",
+        "url": "https://www.shure.com/en-US/support/downloads/software-firmware-archive/mxa920-s"
+      }
+    },
+    {
+      "id": "shure-slx-d-plus",
+      "category": "nouveaute",
+      "title": "Shure SLX-D+ : nouvelle génération de micros HF",
+      "date": "2026-01-21",
+      "impact": "faible",
+      "summary": "Shure présente le SLX-D+, évolution du SLX-D : accord large (jusqu'à 138 MHz) pour utiliser un même système dans plusieurs bandes, contrôle à distance, chiffrement AES-256 et suppression automatique du larsen.",
+      "action": "Pour information. Vérifier la compatibilité avec les SLX-D du parc avant de mélanger les deux gammes.",
+      "products": [
+        "shure-slxd"
+      ],
+      "source": {
+        "name": "Shure, communiqué de presse du 21 janvier 2026",
+        "url": "https://www.shure.com/en-us/newsroom/shure-introduces-slx-d-plus-wireless-microphone-system"
       }
     }
   ]

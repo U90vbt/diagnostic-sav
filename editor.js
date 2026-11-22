@@ -1258,7 +1258,9 @@
         field('Titre de la recommandation', textInput(n.title, v => { n.title = v; changed(false); })),
         field('Résumé (facultatif)', textInput(n.summary, v => { if (v.trim()) n.summary = v; else delete n.summary; changed(false); }, { multiline: true, rows: 2 })),
         h('h3', { class: 'ed-h3' }, 'Matériel recommandé'), box,
-        field('Remarques (facultatif)', textInput(n.notes, v => { if (v.trim()) n.notes = v; else delete n.notes; changed(false); }, { multiline: true, rows: 2 }))];
+        field('Remarques (facultatif)', textInput(n.notes, v => { if (v.trim()) n.notes = v; else delete n.notes; changed(false); }, { multiline: true, rows: 2 })),
+        field('Statut', selectInput([{ value: '', label: 'Validée' }, { value: 'draft', label: 'À valider (badge affiché)' }],
+          n.status || '', v => { if (v) n.status = v; else delete n.status; changed(false); }))];
     }
     const incomingRefs = Object.entries(E.reco.nodes).filter(([, m]) => (m.options || []).some(o => o.next === id));
     return h('div', null,

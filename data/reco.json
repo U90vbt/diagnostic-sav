@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.1.0",
+    "version": "0.2.0",
     "updated": "2026-11-22",
     "title": "Recommandation avant-vente",
     "disclaimer": "Recommandation indicative, à valider par un technicien avant tout engagement."
@@ -13,12 +13,16 @@
       "text": "Quel type d'événement préparez-vous ?",
       "options": [
         {
-          "label": "[EXEMPLE À REMPLACER] Conférence ou plénière",
+          "label": "Conférence, plénière ou séminaire",
           "next": "conf-jauge"
         },
         {
-          "label": "[EXEMPLE À REMPLACER] Stand de salon",
+          "label": "Stand d'exposition",
           "next": "stand-jauge"
+        },
+        {
+          "label": "Salle de réunion hybride (visio)",
+          "next": "reunion-jauge"
         }
       ]
     },
@@ -28,116 +32,1033 @@
       "text": "Combien de personnes dans la salle ?",
       "options": [
         {
-          "label": "[EXEMPLE] 100 à 300 personnes",
-          "next": "conf-budget"
+          "label": "Jusqu'à 100 personnes",
+          "next": "conf-petite-budget"
+        },
+        {
+          "label": "100 à 500 personnes",
+          "next": "conf-grande-budget"
         }
       ]
     },
-    "conf-budget": {
+    "conf-petite-budget": {
       "type": "question",
       "label": "Budget",
       "text": "Quel niveau de budget ?",
       "options": [
         {
-          "label": "[EXEMPLE] Intermédiaire",
-          "next": "conf-contraintes"
+          "label": "Essentiel : l'indispensable, simple à installer",
+          "next": "conf-petite-essentiel-contraintes"
+        },
+        {
+          "label": "Confort : qualité et marges de sécurité",
+          "next": "conf-petite-confort-contraintes"
         }
       ]
     },
-    "conf-contraintes": {
+    "conf-petite-essentiel-contraintes": {
       "type": "question",
-      "label": "Contraintes réseau / audio",
-      "text": "Quelles contraintes réseau et audio ?",
-      "help": "Réseau dédié disponible, diffusion en ligne, traduction, salle réverbérante…",
+      "label": "Contraintes",
+      "text": "Quelles contraintes réseau ?",
+      "help": "Un réseau dédié permet l'audio sur IP (Dante), le pilotage et la captation.",
       "options": [
         {
-          "label": "[EXEMPLE] Réseau dédié disponible, 4 orateurs simultanés",
-          "next": "reco-conf-exemple"
+          "label": "Réseau dédié disponible",
+          "next": "reco-conf-petite-essentiel-reseau"
+        },
+        {
+          "label": "Pas de réseau dédié : installation autonome",
+          "next": "reco-conf-petite-essentiel-autonome"
         }
       ]
     },
-    "reco-conf-exemple": {
-      "type": "result",
-      "title": "[EXEMPLE À REMPLACER] Pack conférence 300 personnes",
-      "summary": "Exemple fictif montrant le format d'une recommandation : remplacez-le par vos propres packs.",
-      "items": [
+    "conf-petite-confort-contraintes": {
+      "type": "question",
+      "label": "Contraintes",
+      "text": "Quelles contraintes réseau ?",
+      "help": "Un réseau dédié permet l'audio sur IP (Dante), le pilotage et la captation.",
+      "options": [
         {
-          "product": "shure-slxd",
-          "qty": 4,
-          "why": "[EXEMPLE] Un micro HF par orateur simultané."
+          "label": "Réseau dédié disponible",
+          "next": "reco-conf-petite-confort-reseau"
         },
         {
-          "product": "biamp-tesiraforte",
-          "qty": 1,
-          "why": "[EXEMPLE] Mixage automatique et traitement des micros."
-        },
-        {
-          "product": "epson-eb-l890e",
-          "qty": 1,
-          "why": "[EXEMPLE] 8000 lumens pour un grand écran de projection."
-        },
-        {
-          "product": "netgear-gsm4230px",
-          "qty": 1,
-          "why": "[EXEMPLE] Switch PoE+ pour le réseau audio et le pilotage."
+          "label": "Pas de réseau dédié : installation autonome",
+          "next": "reco-conf-petite-confort-autonome"
         }
-      ],
-      "notes": "[EXEMPLE] Prévoir un repérage de la salle et un test HF la veille."
+      ]
+    },
+    "conf-grande-budget": {
+      "type": "question",
+      "label": "Budget",
+      "text": "Quel niveau de budget ?",
+      "options": [
+        {
+          "label": "Essentiel : l'indispensable, simple à installer",
+          "next": "conf-grande-essentiel-contraintes"
+        },
+        {
+          "label": "Confort : qualité et marges de sécurité",
+          "next": "conf-grande-confort-contraintes"
+        }
+      ]
+    },
+    "conf-grande-essentiel-contraintes": {
+      "type": "question",
+      "label": "Contraintes",
+      "text": "Quelles contraintes réseau ?",
+      "help": "Un réseau dédié permet l'audio sur IP (Dante), le pilotage et la captation.",
+      "options": [
+        {
+          "label": "Réseau dédié disponible",
+          "next": "reco-conf-grande-essentiel-reseau"
+        },
+        {
+          "label": "Pas de réseau dédié : installation autonome",
+          "next": "reco-conf-grande-essentiel-autonome"
+        }
+      ]
+    },
+    "conf-grande-confort-contraintes": {
+      "type": "question",
+      "label": "Contraintes",
+      "text": "Quelles contraintes réseau ?",
+      "help": "Un réseau dédié permet l'audio sur IP (Dante), le pilotage et la captation.",
+      "options": [
+        {
+          "label": "Réseau dédié disponible",
+          "next": "reco-conf-grande-confort-reseau"
+        },
+        {
+          "label": "Pas de réseau dédié : installation autonome",
+          "next": "reco-conf-grande-confort-autonome"
+        }
+      ]
     },
     "stand-jauge": {
       "type": "question",
       "label": "Jauge",
-      "text": "Quelle surface ou fréquentation pour le stand ?",
+      "text": "Quelle surface de stand ?",
       "options": [
         {
-          "label": "[EXEMPLE] Petit stand, moins de 50 visiteurs simultanés",
-          "next": "stand-budget"
+          "label": "Jusqu'à 30 m²",
+          "next": "stand-petite-budget"
+        },
+        {
+          "label": "Plus de 30 m²",
+          "next": "stand-grande-budget"
         }
       ]
     },
-    "stand-budget": {
+    "stand-petite-budget": {
       "type": "question",
       "label": "Budget",
       "text": "Quel niveau de budget ?",
       "options": [
         {
-          "label": "[EXEMPLE] Serré",
-          "next": "stand-contraintes"
+          "label": "Essentiel : l'indispensable, simple à installer",
+          "next": "stand-petite-essentiel-contraintes"
+        },
+        {
+          "label": "Confort : qualité et marges de sécurité",
+          "next": "stand-petite-confort-contraintes"
         }
       ]
     },
-    "stand-contraintes": {
+    "stand-petite-essentiel-contraintes": {
       "type": "question",
-      "label": "Contraintes réseau / audio",
-      "text": "Quelles contraintes réseau et audio ?",
+      "label": "Contraintes",
+      "text": "Quel usage des écrans ?",
       "options": [
         {
-          "label": "[EXEMPLE] Pas de réseau dédié, son d'ambiance faible",
-          "next": "reco-stand-exemple"
+          "label": "Démonstrations et présentations par l'équipe ou les visiteurs",
+          "next": "reco-stand-petite-essentiel-partage"
+        },
+        {
+          "label": "Contenu en boucle uniquement",
+          "next": "reco-stand-petite-essentiel-boucle"
         }
       ]
     },
-    "reco-stand-exemple": {
+    "stand-petite-confort-contraintes": {
+      "type": "question",
+      "label": "Contraintes",
+      "text": "Quel usage des écrans ?",
+      "options": [
+        {
+          "label": "Démonstrations et présentations par l'équipe ou les visiteurs",
+          "next": "reco-stand-petite-confort-partage"
+        },
+        {
+          "label": "Contenu en boucle uniquement",
+          "next": "reco-stand-petite-confort-boucle"
+        }
+      ]
+    },
+    "stand-grande-budget": {
+      "type": "question",
+      "label": "Budget",
+      "text": "Quel niveau de budget ?",
+      "options": [
+        {
+          "label": "Essentiel : l'indispensable, simple à installer",
+          "next": "stand-grande-essentiel-contraintes"
+        },
+        {
+          "label": "Confort : qualité et marges de sécurité",
+          "next": "stand-grande-confort-contraintes"
+        }
+      ]
+    },
+    "stand-grande-essentiel-contraintes": {
+      "type": "question",
+      "label": "Contraintes",
+      "text": "Quel usage des écrans ?",
+      "options": [
+        {
+          "label": "Démonstrations et présentations par l'équipe ou les visiteurs",
+          "next": "reco-stand-grande-essentiel-partage"
+        },
+        {
+          "label": "Contenu en boucle uniquement",
+          "next": "reco-stand-grande-essentiel-boucle"
+        }
+      ]
+    },
+    "stand-grande-confort-contraintes": {
+      "type": "question",
+      "label": "Contraintes",
+      "text": "Quel usage des écrans ?",
+      "options": [
+        {
+          "label": "Démonstrations et présentations par l'équipe ou les visiteurs",
+          "next": "reco-stand-grande-confort-partage"
+        },
+        {
+          "label": "Contenu en boucle uniquement",
+          "next": "reco-stand-grande-confort-boucle"
+        }
+      ]
+    },
+    "reunion-jauge": {
+      "type": "question",
+      "label": "Jauge",
+      "text": "Combien de participants dans la salle ?",
+      "options": [
+        {
+          "label": "Jusqu'à 8 personnes",
+          "next": "reunion-petite-budget"
+        },
+        {
+          "label": "8 à 20 personnes",
+          "next": "reunion-grande-budget"
+        }
+      ]
+    },
+    "reunion-petite-budget": {
+      "type": "question",
+      "label": "Budget",
+      "text": "Quel niveau de budget ?",
+      "options": [
+        {
+          "label": "Essentiel : l'indispensable, simple à installer",
+          "next": "reunion-petite-essentiel-contraintes"
+        },
+        {
+          "label": "Confort : qualité et marges de sécurité",
+          "next": "reunion-petite-confort-contraintes"
+        }
+      ]
+    },
+    "reunion-petite-essentiel-contraintes": {
+      "type": "question",
+      "label": "Contraintes",
+      "text": "Comment la visio sera-t-elle lancée ?",
+      "help": "Portable des participants (BYOD) ou système de salle autonome (Teams Rooms, Zoom Rooms).",
+      "options": [
+        {
+          "label": "Depuis le portable des participants (BYOD)",
+          "next": "reco-reunion-petite-essentiel-byod"
+        },
+        {
+          "label": "Système de salle dédié (Teams Rooms ou équivalent)",
+          "next": "reco-reunion-petite-essentiel-salle"
+        }
+      ]
+    },
+    "reunion-petite-confort-contraintes": {
+      "type": "question",
+      "label": "Contraintes",
+      "text": "Comment la visio sera-t-elle lancée ?",
+      "help": "Portable des participants (BYOD) ou système de salle autonome (Teams Rooms, Zoom Rooms).",
+      "options": [
+        {
+          "label": "Depuis le portable des participants (BYOD)",
+          "next": "reco-reunion-petite-confort-byod"
+        },
+        {
+          "label": "Système de salle dédié (Teams Rooms ou équivalent)",
+          "next": "reco-reunion-petite-confort-salle"
+        }
+      ]
+    },
+    "reunion-grande-budget": {
+      "type": "question",
+      "label": "Budget",
+      "text": "Quel niveau de budget ?",
+      "options": [
+        {
+          "label": "Essentiel : l'indispensable, simple à installer",
+          "next": "reunion-grande-essentiel-contraintes"
+        },
+        {
+          "label": "Confort : qualité et marges de sécurité",
+          "next": "reunion-grande-confort-contraintes"
+        }
+      ]
+    },
+    "reunion-grande-essentiel-contraintes": {
+      "type": "question",
+      "label": "Contraintes",
+      "text": "Comment la visio sera-t-elle lancée ?",
+      "help": "Portable des participants (BYOD) ou système de salle autonome (Teams Rooms, Zoom Rooms).",
+      "options": [
+        {
+          "label": "Depuis le portable des participants (BYOD)",
+          "next": "reco-reunion-grande-essentiel-byod"
+        },
+        {
+          "label": "Système de salle dédié (Teams Rooms ou équivalent)",
+          "next": "reco-reunion-grande-essentiel-salle"
+        }
+      ]
+    },
+    "reunion-grande-confort-contraintes": {
+      "type": "question",
+      "label": "Contraintes",
+      "text": "Comment la visio sera-t-elle lancée ?",
+      "help": "Portable des participants (BYOD) ou système de salle autonome (Teams Rooms, Zoom Rooms).",
+      "options": [
+        {
+          "label": "Depuis le portable des participants (BYOD)",
+          "next": "reco-reunion-grande-confort-byod"
+        },
+        {
+          "label": "Système de salle dédié (Teams Rooms ou équivalent)",
+          "next": "reco-reunion-grande-confort-salle"
+        }
+      ]
+    },
+    "reco-conf-petite-essentiel-reseau": {
       "type": "result",
-      "title": "[EXEMPLE À REMPLACER] Pack stand affichage dynamique",
-      "summary": "Exemple fictif montrant le format d'une recommandation : remplacez-le par vos propres packs.",
+      "title": "Conférence · jusqu'à 100 personnes · essentiel · réseau dédié",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "shure-slxd",
+          "qty": 2,
+          "why": "Deux micros HF : orateur et questions de la salle."
+        },
+        {
+          "product": "cloud-serie-mpa",
+          "qty": 1,
+          "why": "Ampli-mélangeur compact : mixage simple des micros et d'une source."
+        },
+        {
+          "product": "biamp-desono-ex",
+          "qty": 2,
+          "why": "Enceintes en surface, faciles à installer sur pied ou au mur."
+        },
+        {
+          "product": "epson-eb-l790su",
+          "qty": 1,
+          "why": "Vidéoprojecteur courte focale : peu de recul nécessaire."
+        },
+        {
+          "product": "netgear-gsm4230px",
+          "qty": 1,
+          "why": "Switch PoE+ pour l'audio sur IP, le pilotage et les caméras."
+        }
+      ],
+      "notes": "Prévoir un repérage de la salle (dimensions, alimentation, accroches) et un test HF la veille.",
+      "status": "draft"
+    },
+    "reco-conf-petite-essentiel-autonome": {
+      "type": "result",
+      "title": "Conférence · jusqu'à 100 personnes · essentiel · autonome",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "shure-slxd",
+          "qty": 2,
+          "why": "Deux micros HF : orateur et questions de la salle."
+        },
+        {
+          "product": "cloud-serie-mpa",
+          "qty": 1,
+          "why": "Ampli-mélangeur compact : mixage simple des micros et d'une source."
+        },
+        {
+          "product": "biamp-desono-ex",
+          "qty": 2,
+          "why": "Enceintes en surface, faciles à installer sur pied ou au mur."
+        },
+        {
+          "product": "epson-eb-l790su",
+          "qty": 1,
+          "why": "Vidéoprojecteur courte focale : peu de recul nécessaire."
+        }
+      ],
+      "notes": "Prévoir un repérage de la salle (dimensions, alimentation, accroches) et un test HF la veille. Sans réseau dédié : liaisons analogiques et HDMI directes, pas de pilotage centralisé.",
+      "status": "draft"
+    },
+    "reco-conf-petite-confort-reseau": {
+      "type": "result",
+      "title": "Conférence · jusqu'à 100 personnes · confort · réseau dédié",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "shure-slxd",
+          "qty": 4,
+          "why": "Quatre micros HF pour une table ronde."
+        },
+        {
+          "product": "biamp-tesiraforte",
+          "qty": 1,
+          "why": "Traitement des micros et mixage automatique."
+        },
+        {
+          "product": "powersoft-mezzo",
+          "qty": 1,
+          "why": "Amplification compacte avec traitement intégré."
+        },
+        {
+          "product": "biamp-desono-ex",
+          "qty": 4,
+          "why": "Couverture homogène de la salle."
+        },
+        {
+          "product": "epson-eb-l890e",
+          "qty": 1,
+          "why": "8 000 lm : image lisible même salle éclairée."
+        },
+        {
+          "product": "panasonic-aw-ue30",
+          "qty": 1,
+          "why": "Caméra PTZ pour la captation ou la retransmission."
+        },
+        {
+          "product": "netgear-gsm4230px",
+          "qty": 1,
+          "why": "Switch PoE+ pour l'audio sur IP, le pilotage et les caméras."
+        }
+      ],
+      "notes": "Prévoir un repérage de la salle (dimensions, alimentation, accroches) et un test HF la veille.",
+      "status": "draft"
+    },
+    "reco-conf-petite-confort-autonome": {
+      "type": "result",
+      "title": "Conférence · jusqu'à 100 personnes · confort · autonome",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "shure-slxd",
+          "qty": 4,
+          "why": "Quatre micros HF pour une table ronde."
+        },
+        {
+          "product": "biamp-tesiraforte",
+          "qty": 1,
+          "why": "Traitement des micros et mixage automatique."
+        },
+        {
+          "product": "powersoft-mezzo",
+          "qty": 1,
+          "why": "Amplification compacte avec traitement intégré."
+        },
+        {
+          "product": "biamp-desono-ex",
+          "qty": 4,
+          "why": "Couverture homogène de la salle."
+        },
+        {
+          "product": "epson-eb-l890e",
+          "qty": 1,
+          "why": "8 000 lm : image lisible même salle éclairée."
+        },
+        {
+          "product": "panasonic-aw-ue30",
+          "qty": 1,
+          "why": "Caméra PTZ pour la captation ou la retransmission."
+        }
+      ],
+      "notes": "Prévoir un repérage de la salle (dimensions, alimentation, accroches) et un test HF la veille. Sans réseau dédié : liaisons analogiques et HDMI directes, pas de pilotage centralisé.",
+      "status": "draft"
+    },
+    "reco-conf-grande-essentiel-reseau": {
+      "type": "result",
+      "title": "Conférence · 100 à 500 personnes · essentiel · réseau dédié",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "shure-slxd",
+          "qty": 4,
+          "why": "Orateurs et questions de la salle."
+        },
+        {
+          "product": "biamp-tesiraforte",
+          "qty": 1,
+          "why": "Traitement des micros et mixage automatique."
+        },
+        {
+          "product": "powersoft-mezzo",
+          "qty": 1,
+          "why": "Amplification des enceintes."
+        },
+        {
+          "product": "biamp-desono-ex",
+          "qty": 6,
+          "why": "Couverture de la salle ; ajouter des rappels pour les salles profondes."
+        },
+        {
+          "product": "epson-eb-l890e",
+          "qty": 1,
+          "why": "8 000 lm pour un grand écran."
+        },
+        {
+          "product": "netgear-gsm4230px",
+          "qty": 1,
+          "why": "Switch PoE+ pour l'audio sur IP, le pilotage et les caméras."
+        }
+      ],
+      "notes": "Prévoir un repérage de la salle (dimensions, alimentation, accroches) et un test HF la veille.",
+      "status": "draft"
+    },
+    "reco-conf-grande-essentiel-autonome": {
+      "type": "result",
+      "title": "Conférence · 100 à 500 personnes · essentiel · autonome",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "shure-slxd",
+          "qty": 4,
+          "why": "Orateurs et questions de la salle."
+        },
+        {
+          "product": "biamp-tesiraforte",
+          "qty": 1,
+          "why": "Traitement des micros et mixage automatique."
+        },
+        {
+          "product": "powersoft-mezzo",
+          "qty": 1,
+          "why": "Amplification des enceintes."
+        },
+        {
+          "product": "biamp-desono-ex",
+          "qty": 6,
+          "why": "Couverture de la salle ; ajouter des rappels pour les salles profondes."
+        },
+        {
+          "product": "epson-eb-l890e",
+          "qty": 1,
+          "why": "8 000 lm pour un grand écran."
+        }
+      ],
+      "notes": "Prévoir un repérage de la salle (dimensions, alimentation, accroches) et un test HF la veille. Sans réseau dédié : liaisons analogiques et HDMI directes, pas de pilotage centralisé.",
+      "status": "draft"
+    },
+    "reco-conf-grande-confort-reseau": {
+      "type": "result",
+      "title": "Conférence · 100 à 500 personnes · confort · réseau dédié",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "shure-slxd",
+          "qty": 6,
+          "why": "Orateurs, panel et questions de la salle."
+        },
+        {
+          "product": "biamp-tesiraforte",
+          "qty": 1,
+          "why": "Traitement des micros, mixage automatique, gestion des zones."
+        },
+        {
+          "product": "powersoft-unica",
+          "qty": 1,
+          "why": "Amplification de puissance pour les grandes jauges."
+        },
+        {
+          "product": "biamp-desono-ex",
+          "qty": 8,
+          "why": "Façade et rappels pour une couverture homogène."
+        },
+        {
+          "product": "barco-g62-w9",
+          "qty": 2,
+          "why": "Deux écrans de projection pour les salles larges."
+        },
+        {
+          "product": "panasonic-aw-ue50",
+          "qty": 2,
+          "why": "Deux caméras PTZ : plan large et plan orateur."
+        },
+        {
+          "product": "arec-ls-410",
+          "qty": 1,
+          "why": "Mixage vidéo des caméras et de la présentation pour la captation."
+        },
+        {
+          "product": "netgear-gsm4230px",
+          "qty": 1,
+          "why": "Switch PoE+ pour l'audio sur IP, le pilotage et les caméras."
+        }
+      ],
+      "notes": "Prévoir un repérage de la salle (dimensions, alimentation, accroches) et un test HF la veille.",
+      "status": "draft"
+    },
+    "reco-conf-grande-confort-autonome": {
+      "type": "result",
+      "title": "Conférence · 100 à 500 personnes · confort · autonome",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "shure-slxd",
+          "qty": 6,
+          "why": "Orateurs, panel et questions de la salle."
+        },
+        {
+          "product": "biamp-tesiraforte",
+          "qty": 1,
+          "why": "Traitement des micros, mixage automatique, gestion des zones."
+        },
+        {
+          "product": "powersoft-unica",
+          "qty": 1,
+          "why": "Amplification de puissance pour les grandes jauges."
+        },
+        {
+          "product": "biamp-desono-ex",
+          "qty": 8,
+          "why": "Façade et rappels pour une couverture homogène."
+        },
+        {
+          "product": "barco-g62-w9",
+          "qty": 2,
+          "why": "Deux écrans de projection pour les salles larges."
+        },
+        {
+          "product": "panasonic-aw-ue50",
+          "qty": 2,
+          "why": "Deux caméras PTZ : plan large et plan orateur."
+        },
+        {
+          "product": "arec-ls-410",
+          "qty": 1,
+          "why": "Mixage vidéo des caméras et de la présentation pour la captation."
+        }
+      ],
+      "notes": "Prévoir un repérage de la salle (dimensions, alimentation, accroches) et un test HF la veille. Sans réseau dédié : liaisons analogiques et HDMI directes, pas de pilotage centralisé.",
+      "status": "draft"
+    },
+    "reco-stand-petite-essentiel-partage": {
+      "type": "result",
+      "title": "Stand d'exposition · jusqu'à 30 m² · essentiel · avec partage",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
       "items": [
         {
           "product": "samsung-serie-qhc",
-          "qty": 2,
-          "why": "[EXEMPLE] Écrans 700 nits lisibles sous l'éclairage du hall."
+          "qty": 1,
+          "why": "Écran UHD lumineux (700 nits) pour un hall éclairé."
         },
         {
           "product": "brightsign-xc4055-xc2055",
           "qty": 1,
-          "why": "[EXEMPLE] Lecteur autonome, sans réseau dédié."
+          "why": "Lecteur pour diffuser le contenu sans ordinateur."
+        },
+        {
+          "product": "barco-clickshare-c-5-c-10-gen-2",
+          "qty": 1,
+          "why": "Partage sans fil depuis un portable, sans câble à brancher."
+        }
+      ],
+      "notes": "Vérifier auprès de l'organisateur la puissance électrique du stand et les règles d'accroche.",
+      "status": "draft"
+    },
+    "reco-stand-petite-essentiel-boucle": {
+      "type": "result",
+      "title": "Stand d'exposition · jusqu'à 30 m² · essentiel · contenu en boucle",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "samsung-serie-qhc",
+          "qty": 1,
+          "why": "Écran UHD lumineux (700 nits) pour un hall éclairé."
+        },
+        {
+          "product": "brightsign-xc4055-xc2055",
+          "qty": 1,
+          "why": "Lecteur pour diffuser le contenu sans ordinateur."
+        }
+      ],
+      "notes": "Vérifier auprès de l'organisateur la puissance électrique du stand et les règles d'accroche.",
+      "status": "draft"
+    },
+    "reco-stand-petite-confort-partage": {
+      "type": "result",
+      "title": "Stand d'exposition · jusqu'à 30 m² · confort · avec partage",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "samsung-serie-qhc",
+          "qty": 2,
+          "why": "Deux écrans : contenu principal et démonstration."
+        },
+        {
+          "product": "brightsign-xc4055-xc2055",
+          "qty": 2,
+          "why": "Un lecteur par écran, contenu indépendant."
         },
         {
           "product": "sonos-era-100-pro",
           "qty": 2,
-          "why": "[EXEMPLE] Son d'ambiance à faible niveau."
+          "why": "Son d'ambiance discret pour les vidéos."
+        },
+        {
+          "product": "barco-clickshare-c-5-c-10-gen-2",
+          "qty": 1,
+          "why": "Partage sans fil depuis un portable, sans câble à brancher."
         }
-      ]
+      ],
+      "notes": "Vérifier auprès de l'organisateur la puissance électrique du stand et les règles d'accroche.",
+      "status": "draft"
+    },
+    "reco-stand-petite-confort-boucle": {
+      "type": "result",
+      "title": "Stand d'exposition · jusqu'à 30 m² · confort · contenu en boucle",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "samsung-serie-qhc",
+          "qty": 2,
+          "why": "Deux écrans : contenu principal et démonstration."
+        },
+        {
+          "product": "brightsign-xc4055-xc2055",
+          "qty": 2,
+          "why": "Un lecteur par écran, contenu indépendant."
+        },
+        {
+          "product": "sonos-era-100-pro",
+          "qty": 2,
+          "why": "Son d'ambiance discret pour les vidéos."
+        }
+      ],
+      "notes": "Vérifier auprès de l'organisateur la puissance électrique du stand et les règles d'accroche.",
+      "status": "draft"
+    },
+    "reco-stand-grande-essentiel-partage": {
+      "type": "result",
+      "title": "Stand d'exposition · plus de 30 m² · essentiel · avec partage",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "samsung-all-in-one-serie-iac",
+          "qty": 1,
+          "why": "Écran LED tout-en-un : grande taille visible de loin, montage simplifié."
+        },
+        {
+          "product": "brightsign-xc4055-xc2055",
+          "qty": 1,
+          "why": "Lecteur de contenu."
+        },
+        {
+          "product": "sonos-era-100-pro",
+          "qty": 2,
+          "why": "Son des vidéos."
+        },
+        {
+          "product": "barco-clickshare-c-5-c-10-gen-2",
+          "qty": 1,
+          "why": "Partage sans fil depuis un portable, sans câble à brancher."
+        }
+      ],
+      "notes": "Vérifier auprès de l'organisateur la puissance électrique du stand et les règles d'accroche.",
+      "status": "draft"
+    },
+    "reco-stand-grande-essentiel-boucle": {
+      "type": "result",
+      "title": "Stand d'exposition · plus de 30 m² · essentiel · contenu en boucle",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "samsung-all-in-one-serie-iac",
+          "qty": 1,
+          "why": "Écran LED tout-en-un : grande taille visible de loin, montage simplifié."
+        },
+        {
+          "product": "brightsign-xc4055-xc2055",
+          "qty": 1,
+          "why": "Lecteur de contenu."
+        },
+        {
+          "product": "sonos-era-100-pro",
+          "qty": 2,
+          "why": "Son des vidéos."
+        }
+      ],
+      "notes": "Vérifier auprès de l'organisateur la puissance électrique du stand et les règles d'accroche.",
+      "status": "draft"
+    },
+    "reco-stand-grande-confort-partage": {
+      "type": "result",
+      "title": "Stand d'exposition · plus de 30 m² · confort · avec partage",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "absen-icon-x",
+          "qty": 1,
+          "why": "Micro LED tout-en-un pour l'écran principal du stand."
+        },
+        {
+          "product": "philips-serie-3751t",
+          "qty": 1,
+          "why": "Écran interactif pour les démonstrations au contact des visiteurs."
+        },
+        {
+          "product": "brightsign-xc4055-xc2055",
+          "qty": 2,
+          "why": "Lecteurs pour les contenus en boucle."
+        },
+        {
+          "product": "sonos-era-100-pro",
+          "qty": 4,
+          "why": "Son réparti sur le stand."
+        },
+        {
+          "product": "barco-clickshare-c-5-c-10-gen-2",
+          "qty": 1,
+          "why": "Partage sans fil depuis un portable, sans câble à brancher."
+        }
+      ],
+      "notes": "Vérifier auprès de l'organisateur la puissance électrique du stand et les règles d'accroche.",
+      "status": "draft"
+    },
+    "reco-stand-grande-confort-boucle": {
+      "type": "result",
+      "title": "Stand d'exposition · plus de 30 m² · confort · contenu en boucle",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "absen-icon-x",
+          "qty": 1,
+          "why": "Micro LED tout-en-un pour l'écran principal du stand."
+        },
+        {
+          "product": "philips-serie-3751t",
+          "qty": 1,
+          "why": "Écran interactif pour les démonstrations au contact des visiteurs."
+        },
+        {
+          "product": "brightsign-xc4055-xc2055",
+          "qty": 2,
+          "why": "Lecteurs pour les contenus en boucle."
+        },
+        {
+          "product": "sonos-era-100-pro",
+          "qty": 4,
+          "why": "Son réparti sur le stand."
+        }
+      ],
+      "notes": "Vérifier auprès de l'organisateur la puissance électrique du stand et les règles d'accroche.",
+      "status": "draft"
+    },
+    "reco-reunion-petite-essentiel-byod": {
+      "type": "result",
+      "title": "Salle de réunion hybride · jusqu'à 8 personnes · essentiel · BYOD",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "philips-serie-4050q",
+          "qty": 1,
+          "why": "Écran UHD pour l'image des distants et le partage."
+        },
+        {
+          "product": "neat-neat-bar-byod",
+          "qty": 1,
+          "why": "Barre caméra, micros et haut-parleurs, branchée en USB sur le portable."
+        }
+      ],
+      "notes": "Vérifier avec le service informatique du client les comptes de visio et l'accès réseau.",
+      "status": "draft"
+    },
+    "reco-reunion-petite-essentiel-salle": {
+      "type": "result",
+      "title": "Salle de réunion hybride · jusqu'à 8 personnes · essentiel · système de salle",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "philips-serie-4050q",
+          "qty": 1,
+          "why": "Écran UHD pour l'image des distants et le partage."
+        },
+        {
+          "product": "yealink-a40",
+          "qty": 1,
+          "why": "Barre de visioconférence tout-en-un fonctionnant sans portable."
+        }
+      ],
+      "notes": "Vérifier avec le service informatique du client les comptes de visio et l'accès réseau.",
+      "status": "draft"
+    },
+    "reco-reunion-petite-confort-byod": {
+      "type": "result",
+      "title": "Salle de réunion hybride · jusqu'à 8 personnes · confort · BYOD",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "sharp-serie-me2",
+          "qty": 1,
+          "why": "Écran 4K pour l'image des distants et le partage."
+        },
+        {
+          "product": "biamp-parle-vbc-2500a",
+          "qty": 1,
+          "why": "Barre de visioconférence BYOD."
+        },
+        {
+          "product": "barco-clickshare-cx-20-cx-30-gen-2",
+          "qty": 1,
+          "why": "Lance la visio et le partage sans câble depuis le portable."
+        }
+      ],
+      "notes": "Vérifier avec le service informatique du client les comptes de visio et l'accès réseau.",
+      "status": "draft"
+    },
+    "reco-reunion-petite-confort-salle": {
+      "type": "result",
+      "title": "Salle de réunion hybride · jusqu'à 8 personnes · confort · système de salle",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "sharp-serie-me2",
+          "qty": 1,
+          "why": "Écran 4K pour l'image des distants et le partage."
+        },
+        {
+          "product": "neat-neat-bar-2",
+          "qty": 1,
+          "why": "Barre tout-en-un avec cadrage automatique."
+        }
+      ],
+      "notes": "Vérifier avec le service informatique du client les comptes de visio et l'accès réseau.",
+      "status": "draft"
+    },
+    "reco-reunion-grande-essentiel-byod": {
+      "type": "result",
+      "title": "Salle de réunion hybride · 8 à 20 personnes · essentiel · BYOD",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "iiyama-le9864uhs-b1ag",
+          "qty": 1,
+          "why": "Écran 98\" lisible du fond de la salle."
+        },
+        {
+          "product": "vaddio-venture-videobar",
+          "qty": 1,
+          "why": "Barre 4K pour salle moyenne."
+        },
+        {
+          "product": "shure-mxa902-aniusb",
+          "qty": 1,
+          "why": "Micro plafond pour capter les participants éloignés."
+        }
+      ],
+      "notes": "Vérifier avec le service informatique du client les comptes de visio et l'accès réseau.",
+      "status": "draft"
+    },
+    "reco-reunion-grande-essentiel-salle": {
+      "type": "result",
+      "title": "Salle de réunion hybride · 8 à 20 personnes · essentiel · système de salle",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "iiyama-le9864uhs-b1ag",
+          "qty": 1,
+          "why": "Écran 98\" lisible du fond de la salle."
+        },
+        {
+          "product": "yealink-mvc-s90",
+          "qty": 1,
+          "why": "Système Microsoft Teams Rooms complet pour grande salle."
+        }
+      ],
+      "notes": "Vérifier avec le service informatique du client les comptes de visio et l'accès réseau.",
+      "status": "draft"
+    },
+    "reco-reunion-grande-confort-byod": {
+      "type": "result",
+      "title": "Salle de réunion hybride · 8 à 20 personnes · confort · BYOD",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "iiyama-le9864uhs-b1ag",
+          "qty": 1,
+          "why": "Écran 98\" lisible du fond de la salle."
+        },
+        {
+          "product": "shure-mxa920",
+          "qty": 1,
+          "why": "Micro plafond : table dégagée, captation homogène."
+        },
+        {
+          "product": "shure-p300",
+          "qty": 1,
+          "why": "Traitement audio de conférence (annulation d'écho)."
+        },
+        {
+          "product": "panasonic-aw-ue20",
+          "qty": 1,
+          "why": "Caméra PTZ 4K pour cadrer toute la salle."
+        },
+        {
+          "product": "barco-clickshare-cx-50-gen-2",
+          "qty": 1,
+          "why": "Visio et partage sans fil depuis le portable."
+        }
+      ],
+      "notes": "Vérifier avec le service informatique du client les comptes de visio et l'accès réseau.",
+      "status": "draft"
+    },
+    "reco-reunion-grande-confort-salle": {
+      "type": "result",
+      "title": "Salle de réunion hybride · 8 à 20 personnes · confort · système de salle",
+      "summary": "Brouillon à valider par un technicien : quantités et modèles indicatifs, à ajuster après repérage.",
+      "items": [
+        {
+          "product": "iiyama-le9864uhs-b1ag",
+          "qty": 1,
+          "why": "Écran 98\" lisible du fond de la salle."
+        },
+        {
+          "product": "shure-mxa920",
+          "qty": 1,
+          "why": "Micro plafond : table dégagée, captation homogène."
+        },
+        {
+          "product": "shure-p300",
+          "qty": 1,
+          "why": "Traitement audio de conférence (annulation d'écho)."
+        },
+        {
+          "product": "yealink-mvc-s90",
+          "qty": 1,
+          "why": "Système Microsoft Teams Rooms complet pour grande salle."
+        }
+      ],
+      "notes": "Vérifier avec le service informatique du client les comptes de visio et l'accès réseau.",
+      "status": "draft"
     }
   }
 }

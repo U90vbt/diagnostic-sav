@@ -2019,6 +2019,7 @@
         h('header', { class: 'panel__head' }, h('span', { class: 'panel__tag' }, 'Recommandation')),
         h('div', { class: 'panel__body' },
           h('h2', { class: 'result__title', tabindex: '-1', 'data-focus': true }, current.title),
+          draftBadge(current.status),
           current.summary ? h('p', { class: 'result__summary' }, current.summary) : null,
           h('ul', { class: 'reco-items' }, items.map(({ it, pr }) => h('li', { class: 'reco-item' },
             h('span', { class: 'reco-item__qty' }, (it.qty || 1) + ' ×'),
@@ -2497,7 +2498,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.14.0';
+  const APP_VERSION = '1.15.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

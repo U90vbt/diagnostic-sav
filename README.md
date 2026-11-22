@@ -272,6 +272,18 @@ Convention d'identifiants conseillée : `<préfixe>-q<n>` pour les questions et 
 
 ---
 
+## Journal des diagnostics (retours terrain, sans tracking)
+
+En fin de diagnostic, le technicien indique **Résolu** ou **Pas résolu**. Chaque réponse est notée dans **Mon journal** (lien en pied de page), **sur l'appareil uniquement** : rien n'est envoyé. « Pas résolu » affiche la suite à donner (escalade).
+
+Le journal s'exporte en **CSV** (s'ouvre dans Excel) ou en **JSON**. Le responsable SAV regroupe les fichiers des techniciens pour repérer les procédures qui échouent le plus souvent. Les entrées de plus de 180 jours sont effacées automatiquement.
+
+## Symptômes fréquents, jargon et brouillons
+
+- `"frequent": true` sur un symptôme le place en **lien direct** sous les champs de recherche (case « Symptôme fréquent » dans l'éditeur).
+- Les **mots-clés** d'un symptôme acceptent le jargon terrain (« ça crache », « plus de HF ») ; la recherche tolère aussi une faute de frappe par mot.
+- `"status": "draft"` sur une étape, un résultat ou une recommandation affiche un badge **À valider**. Le contenu rédigé sans notice constructeur (nouveaux symptômes, recommandations avant-vente) est marqué ainsi : à relire par un technicien, puis à passer en « Validée » dans l'éditeur.
+
 ## Recommander (avant-vente)
 
 L'onglet **Recommander** (`#/recommander`) guide un commercial ou un technicien : **type d'événement → jauge → budget → contraintes réseau / audio**, jusqu'à une **carte de recommandation** (produits du catalogue, quantités, justification). **Copier le devis** produit un texte pré-rempli (besoin exprimé, matériel avec références et pages du catalogue). Les prix ne sont pas dans les données : le devis contient des lignes « à compléter ».

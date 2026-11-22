@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Assistant de diagnostic SAV — Niveau 1",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "updated": "2026-11-22",
     "maintainer": "Équipe SAV",
     "disclaimer": "Diagnostic de premier niveau. Toute intervention à l'intérieur d'un équipement sous tension est réservée au personnel habilité.",
@@ -521,6 +521,102 @@
         "retour plateau"
       ],
       "start": "rg-q1"
+    },
+    {
+      "id": "visio-peripherique",
+      "title": "Visio : caméra, micro ou son de la salle absents",
+      "category": "peripherique",
+      "summary": "Teams, Zoom ou Meet utilise la webcam ou le micro du portable au lieu de ceux de la salle.",
+      "keywords": [
+        "visio",
+        "teams",
+        "zoom",
+        "meet",
+        "visioconférence",
+        "barre de visio",
+        "caméra salle",
+        "micro salle",
+        "pas de caméra",
+        "on ne m'entend pas",
+        "on n'entend pas",
+        "usb",
+        "byod"
+      ],
+      "start": "vis-q1"
+    },
+    {
+      "id": "partage-sans-fil",
+      "title": "Partage d'écran sans fil impossible",
+      "category": "reseau",
+      "summary": "Le bouton ou l'application de présentation sans fil ne fait rien apparaître à l'écran.",
+      "keywords": [
+        "clickshare",
+        "partage",
+        "sans fil",
+        "présentation sans fil",
+        "bouton",
+        "dongle",
+        "airplay",
+        "miracast",
+        "cast",
+        "ne s'affiche pas",
+        "wifi"
+      ],
+      "start": "psf-q1"
+    },
+    {
+      "id": "tactile",
+      "title": "Le tactile ne répond pas ou est décalé",
+      "category": "peripherique",
+      "summary": "Écran interactif : l'image est là mais le toucher ne marche pas ou tombe à côté.",
+      "keywords": [
+        "tactile",
+        "touch",
+        "écran interactif",
+        "stylet",
+        "décalé",
+        "ne répond pas au doigt",
+        "calibration",
+        "tableau interactif"
+      ],
+      "start": "tac-q1"
+    },
+    {
+      "id": "appairage-bluetooth",
+      "title": "Appairage Bluetooth ou diffusion audio impossible",
+      "category": "audio",
+      "summary": "Le téléphone ou le portable ne trouve pas l'enceinte / le récepteur, ou la connexion se coupe.",
+      "keywords": [
+        "bluetooth",
+        "appairage",
+        "appairer",
+        "jumelage",
+        "enceinte bluetooth",
+        "diffusion",
+        "streaming",
+        "wifi audio",
+        "se déconnecte"
+      ],
+      "start": "bt-q1"
+    },
+    {
+      "id": "affichage-maj",
+      "title": "Affichage dynamique ou de salle pas à jour",
+      "category": "reseau",
+      "summary": "L'écran d'affichage, l'étiquette e-paper ou la tablette de réservation montre un contenu ancien.",
+      "keywords": [
+        "affichage dynamique",
+        "signage",
+        "e-paper",
+        "étiquette",
+        "tablette de réservation",
+        "planning",
+        "pas à jour",
+        "ancien contenu",
+        "lecteur",
+        "contenu"
+      ],
+      "start": "aff-q1"
     }
   ],
   "nodes": {
@@ -673,7 +769,8 @@
       ],
       "related": [
         "surchauffe"
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "alim-r-bootloop": {
       "type": "result",
@@ -689,7 +786,8 @@
       "related": [
         "firmware-echec",
         "peripherique-non-detecte"
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "reboot-q1": {
       "type": "question",
@@ -747,7 +845,8 @@
         "Installer un onduleur ou un conditionneur secteur sur les équipements critiques.",
         "Vérifier le séquenceur : l'audiovisuel doit démarrer après les gros consommateurs.",
         "Faire contrôler la qualité du réseau électrique par l'électricien du site."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "reboot-r-poe": {
       "type": "result",
@@ -774,7 +873,8 @@
             "Vérifier que la classe PoE délivrée sur le port correspond à celle de l'appareil."
           ]
         }
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "reboot-r-bloc": {
       "type": "result",
@@ -785,7 +885,8 @@
         "Brancher temporairement l'appareil en direct sur le secteur pour comparer.",
         "Vérifier l'état de la batterie de l'onduleur (voyant, autotest, date de remplacement).",
         "Remplacer le bloc externe par un modèle identique connu bon."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "reboot-r-interne": {
       "type": "result",
@@ -966,7 +1067,8 @@
         "Tester la continuité du câble HP, ampli hors tension.",
         "Mesurer l'impédance de la ligne et la comparer à la valeur attendue.",
         "Sur une ligne 100 V : vérifier les prises de transformateur des enceintes."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "audio-r-ampli": {
       "type": "result",
@@ -1009,7 +1111,8 @@
         "Mesurer l'impédance de l'enceinte (circuit ouvert = bobine coupée).",
         "Remplacer l'enceinte par une unité de secours.",
         "Étiqueter l'enceinte et l'envoyer à l'atelier."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "audio-r-canal": {
       "type": "result",
@@ -1111,7 +1214,8 @@
         "Utiliser des liaisons symétriques (XLR, jack TRS) plutôt qu'asymétriques (RCA).",
         "Insérer un isolateur galvanique ou une DI avec ground lift sur la liaison audio."
       ],
-      "warning": "Ne jamais supprimer la terre du cordon secteur pour éliminer une ronflette : danger d'électrocution."
+      "warning": "Ne jamais supprimer la terre du cordon secteur pour éliminer une ronflette : danger d'électrocution.",
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "bruit-r-blindage": {
       "type": "result",
@@ -1123,7 +1227,8 @@
         "Croiser les câbles audio et secteur à 90° plutôt qu'en parallèle.",
         "Vérifier le blindage des câbles (reprise de masse aux connecteurs).",
         "Couper les sources une à une pour identifier l'origine."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "bruit-r-gain-entree": {
       "type": "result",
@@ -1146,7 +1251,8 @@
         "Vérifier la sensibilité d'entrée de l'ampli et ses atténuateurs.",
         "Contrôler les réglages du limiteur de protection.",
         "Faire valider la structure de gain par le N2 si les réglages sont verrouillés."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "bruit-r-hp": {
       "type": "result",
@@ -1181,7 +1287,8 @@
         "Vérifier qu'un seul équipement est maître d'horloge et que les autres le suivent.",
         "Contrôler que tous les équipements utilisent la même fréquence d'échantillonnage.",
         "Vérifier le câble word clock / AES (impédance 75 Ω ou 110 Ω selon la liaison)."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "video-q1": {
       "type": "question",
@@ -1304,7 +1411,8 @@
             "Ouvrir l'interface web de la base pour vérifier la version du firmware et l'état réseau."
           ]
         }
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "video-r-extendeur": {
       "type": "result",
@@ -1332,7 +1440,8 @@
             "Extendeur fibre : vérifier la propreté et le sens des connecteurs fibre."
           ]
         }
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "video-r-edid": {
       "type": "result",
@@ -1361,7 +1470,8 @@
             "Vérifier sur le switch que le multicast (IGMP) est correctement configuré."
           ]
         }
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "video-r-source-noire": {
       "type": "result",
@@ -1481,7 +1591,8 @@
         "Réduire temporairement le débit (4K30, ou chroma 4:2:0) pour confirmer le diagnostic.",
         "Au-delà de 5 m en 4K60 : envisager un câble actif ou optique.",
         "Vérifier la compatibilité de chaque maillon (matrice, extendeur) avec le format."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "img-r-cable": {
       "type": "result",
@@ -1492,7 +1603,8 @@
         "Remplacer le câble par un câble court connu bon pour confirmer.",
         "Vérifier les connecteurs (broches, maintien mécanique, contrainte sur le câble).",
         "Éloigner le câble des sources de perturbation (alimentations, variateurs)."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "net-q1": {
       "type": "question",
@@ -1589,7 +1701,8 @@
         "Vérifier si l'appareil doit être en IP fixe selon le plan d'adressage du site.",
         "Contrôler le masque et la passerelle.",
         "Rechercher un conflit d'adresse IP avec un autre appareil."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "net-r-decouverte": {
       "type": "result",
@@ -1696,7 +1809,8 @@
         "Désigner un maître d'horloge préféré dans le logiciel de gestion.",
         "Vérifier que tous les appareils sont sur le même VLAN / sous-réseau.",
         "Rechercher un switch ou un câble qui isole une partie du réseau."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "lat-r-ptp": {
       "type": "result",
@@ -1776,7 +1890,8 @@
             "Appliquer un profil AV prédéfini, qui règle en une fois les options adaptées."
           ]
         }
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "th-q1": {
       "type": "question",
@@ -1890,7 +2005,8 @@
         "Respecter le sens du flux d'air (avant → arrière) et ne pas mélanger les sens dans un même rack.",
         "Ouvrir les portes du meuble ou ajouter une ventilation forcée.",
         "Installer des panneaux pleins pour éviter le recyclage d'air chaud."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "th-r-ambiant": {
       "type": "result",
@@ -1901,7 +2017,8 @@
         "Vérifier la plage de fonctionnement constructeur (souvent 0–40 °C).",
         "Signaler le défaut de climatisation au responsable du site.",
         "En urgence : réduire la charge (niveau sonore, appareils non essentiels éteints)."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "th-r-charge": {
       "type": "result",
@@ -2017,7 +2134,8 @@
             "Vérifier la carte mémoire (présence, contenu) et republier la présentation depuis BrightAuthor:connected."
           ]
         }
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "gel-r-materiel": {
       "type": "result",
@@ -2047,7 +2165,8 @@
       ],
       "related": [
         "firmware-incompatible"
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "per-q1": {
       "type": "question",
@@ -2132,7 +2251,8 @@
         "Tester avec un autre câble USB.",
         "Remplacer le périphérique par une unité de secours.",
         "Étiqueter et envoyer le périphérique à l'atelier."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "per-r-usb-chaine": {
       "type": "result",
@@ -2183,7 +2303,8 @@
       ],
       "related": [
         "redemarrages"
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "fw-q1": {
       "type": "question",
@@ -2303,7 +2424,8 @@
         "Sécuriser l'alimentation (onduleur) et la liaison réseau (câble direct).",
         "Relancer la mise à jour sans interruption.",
         "Vérifier le fonctionnement et restaurer la configuration si nécessaire."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "fw-r-brick": {
       "type": "result",
@@ -2494,7 +2616,8 @@
           "width": 800,
           "height": 450
         }
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "hf-r-interference": {
       "type": "result",
@@ -2604,7 +2727,8 @@
         "Placer la capsule du cravate au milieu du sternum, sans frottement de vêtement.",
         "Réduire le niveau des enceintes proches de l'orateur.",
         "Appliquer une coupe sur la fréquence qui accroche (égaliseur ou suppresseur de larsen du DSP)."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "lars-r-eq": {
       "type": "result",
@@ -2628,7 +2752,8 @@
         "Baisser le niveau du micro dans le mix retour concerné.",
         "Placer le retour dans l'axe arrière du micro (zone où il capte le moins).",
         "Égaliser le départ retour sur la fréquence qui accroche."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "ic-q1": {
       "type": "question",
@@ -2725,7 +2850,8 @@
         "Tester un casque connu bon sur ce poste.",
         "Échanger le poste avec un poste de secours.",
         "Étiqueter l'élément défectueux pour l'atelier."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "ic-r-partyline": {
       "type": "result",
@@ -2737,7 +2863,8 @@
         "Débrancher les postes un par un : un poste ou un câble en court-circuit peut faire tomber toute la ligne.",
         "Vérifier la terminaison de ligne si le système en exige une.",
         "Contrôler les câbles XLR (un câble pincé ou mal câblé suffit)."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "ic-r-ip": {
       "type": "result",
@@ -2751,7 +2878,8 @@
       ],
       "related": [
         "pas-reseau"
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "ic-r-base": {
       "type": "result",
@@ -2762,7 +2890,8 @@
         "Vérifier l'alimentation de la base et des antennes ou points d'accès.",
         "Vérifier le placement des antennes (hauteur, ligne de vue, loin des murs LED).",
         "Redémarrer la base puis réappairer un poste pour tester."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "ic-r-audio": {
       "type": "result",
@@ -2861,7 +2990,8 @@
       ],
       "related": [
         "regie-video"
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "led-r-donnees": {
       "type": "result",
@@ -2889,7 +3019,8 @@
             "Recharger la configuration d'écran enregistrée lors du montage plutôt que de la refaire."
           ]
         }
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "led-r-alim": {
       "type": "result",
@@ -2929,7 +3060,8 @@
             "Si une boucle de secours est câblée sur un second port de sortie, vérifier qu'elle prend le relais."
           ]
         }
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "led-r-module": {
       "type": "result",
@@ -2941,7 +3073,8 @@
         "Vérifier que la pièce de remplacement est du même lot (différence de teinte sinon).",
         "Lancer une recalibration ou mettre à jour la configuration du caisson si le processeur le propose.",
         "Étiqueter la pièce défectueuse pour l'atelier."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "led-r-mapping": {
       "type": "result",
@@ -3057,7 +3190,8 @@
             "Recharger la configuration enregistrée lors du montage."
           ]
         }
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "rg-r-entree": {
       "type": "result",
@@ -3068,7 +3202,8 @@
         "Basculer la source sur une entrée libre et mettre à jour l'affectation.",
         "Tester le câble d'origine sur une autre entrée pour exclure le câble.",
         "Signaler l'entrée défectueuse pour l'atelier."
-      ]
+      ],
+      "escalate": "Responsable technique (N2) avec le rapport (bouton « Copier le rapport ») si les actions ne suffisent pas."
     },
     "rg-r-source": {
       "type": "result",
@@ -3095,6 +3230,592 @@
         "Régler le format de sortie sur ce qu'accepte l'appareil en aval (écran, processeur LED, enregistreur).",
         "Vérifier le câble et les convertisseurs de la sortie."
       ]
+    },
+    "vis-q1": {
+      "type": "question",
+      "text": "Le matériel de la salle apparaît-il dans les réglages audio/vidéo de l'application de visio ?",
+      "options": [
+        {
+          "label": "Oui, mais il n'est pas sélectionné",
+          "next": "vis-r-select"
+        },
+        {
+          "label": "Non, il n'apparaît pas",
+          "next": "vis-q2"
+        },
+        {
+          "label": "Il apparaît mais l'image ou le son est absent",
+          "next": "vis-q3"
+        }
+      ],
+      "status": "draft",
+      "help": "Dans Teams : … > Paramètres > Périphériques. Dans Zoom : Paramètres > Audio / Vidéo."
+    },
+    "vis-q2": {
+      "type": "question",
+      "text": "Comment le portable est-il relié à la salle ?",
+      "options": [
+        {
+          "label": "Câble USB (ou USB-C) vers la barre / le hub",
+          "next": "vis-r-usb"
+        },
+        {
+          "label": "Boîtier ou dongle sans fil",
+          "next": "vis-r-sansfil"
+        },
+        {
+          "label": "Salle autonome (système Teams Rooms / Zoom Rooms)",
+          "next": "vis-r-room"
+        }
+      ],
+      "status": "draft"
+    },
+    "vis-q3": {
+      "type": "question",
+      "text": "Le problème concerne-t-il l'image ou le son ?",
+      "options": [
+        {
+          "label": "L'image (noire, figée ou mauvais cadrage)",
+          "next": "vis-r-image"
+        },
+        {
+          "label": "Le son (rien, ou écho chez les distants)",
+          "next": "vis-r-son"
+        }
+      ],
+      "status": "draft"
+    },
+    "vis-r-select": {
+      "type": "result",
+      "severity": "low",
+      "title": "Mauvais périphérique sélectionné",
+      "summary": "L'application de visio garde le dernier périphérique utilisé (souvent celui du portable).",
+      "actions": [
+        "Dans l'application, choisir la caméra, le micro et le haut-parleur de la salle (même nom de produit).",
+        "Faire un appel test (Teams : « Passer un appel test » ; Zoom : « Tester le haut-parleur et le micro »).",
+        "Dans les réglages système (Son), mettre aussi le périphérique de la salle par défaut pour éviter le retour au micro interne."
+      ],
+      "status": "draft"
+    },
+    "vis-r-usb": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Périphérique USB de la salle non reconnu",
+      "summary": "Le portable ne voit pas la barre ou la caméra par l'USB.",
+      "actions": [
+        "Débrancher puis rebrancher le câble USB côté portable, en essayant un autre port (USB-C de préférence directement, sans adaptateur).",
+        "Vérifier que la barre / le hub est alimenté (voyant allumé).",
+        "Essayer avec un autre portable : si ça marche, le problème vient du poste (pilote, droits, port).",
+        "Éviter les rallonges USB passives de plus de 5 m : utiliser l'extendeur ou le câble livré.",
+        "Redémarrer la barre de visio (coupure secteur 30 secondes)."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) si aucun portable ne reconnaît la barre ; support constructeur ensuite.",
+      "related": [
+        "peripherique-non-detecte"
+      ]
+    },
+    "vis-r-sansfil": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Liaison sans fil vers la salle non établie",
+      "summary": "Le boîtier ou dongle de partage n'a pas activé le mode « salle » (caméra et micro de la salle).",
+      "actions": [
+        "Vérifier que le dongle est appairé à la bonne base (nom de salle affiché à l'écran).",
+        "Sur le portable, contrôler que le dongle apparaît comme caméra / micro (certains modèles exigent une petite application ou une mise à jour).",
+        "Rebrancher le dongle, attendre la fin de connexion, puis relancer l'application de visio.",
+        "Tester en filaire si un câble USB est disponible."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) avec le nom de la salle et le modèle du dongle.",
+      "related": [
+        "partage-sans-fil"
+      ]
+    },
+    "vis-r-room": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Système de salle autonome : périphérique perdu",
+      "summary": "La console de salle n'utilise plus la caméra ou l'audio prévus.",
+      "actions": [
+        "Sur la console tactile, ouvrir les paramètres de périphériques et choisir la caméra / l'audio de la salle.",
+        "Redémarrer le système de salle depuis la console (ou couper l'alimentation 30 secondes).",
+        "Vérifier les câbles USB / HDMI derrière l'écran et sous la table."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) : l'administration du système (compte, mises à jour) se fait à distance."
+    },
+    "vis-r-image": {
+      "type": "result",
+      "severity": "low",
+      "title": "Caméra active mais image absente ou mal cadrée",
+      "summary": "La caméra est reconnue mais l'image est noire, figée ou mal orientée.",
+      "actions": [
+        "Vérifier le cache de confidentialité / volet de la caméra.",
+        "Fermer les autres applications qui utilisent la caméra (une seule à la fois sous Windows).",
+        "Désactiver puis réactiver la vidéo dans l'application.",
+        "Pour le cadrage automatique : vérifier qu'il est activé et que rien ne masque le champ (écran, plante)."
+      ],
+      "status": "draft",
+      "related": [
+        "peripherique-non-detecte"
+      ]
+    },
+    "vis-r-son": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Son absent ou écho côté distants",
+      "summary": "Le son de la salle ne part pas, ou les participants distants s'entendent en écho.",
+      "actions": [
+        "Vérifier que le micro n'est pas coupé (voyant rouge sur la barre ou bouton mute de table).",
+        "Un seul périphérique audio dans la salle : couper le micro et le haut-parleur des portables des participants présents.",
+        "Écho : vérifier que le haut-parleur et le micro choisis sont ceux du même appareil (annulation d'écho).",
+        "Baisser le volume des haut-parleurs si l'écho persiste."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) si l'écho persiste avec le bon périphérique : réglage du traitement audio.",
+      "related": [
+        "pas-de-son",
+        "larsen"
+      ]
+    },
+    "psf-q1": {
+      "type": "question",
+      "text": "Qu'utilisez-vous pour partager ?",
+      "options": [
+        {
+          "label": "Un bouton / dongle branché sur le portable",
+          "next": "psf-q2"
+        },
+        {
+          "label": "Une application ou le partage intégré (AirPlay, Miracast, Google Cast)",
+          "next": "psf-q3"
+        }
+      ],
+      "status": "draft"
+    },
+    "psf-q2": {
+      "type": "question",
+      "text": "Que fait le voyant du bouton ?",
+      "options": [
+        {
+          "label": "Il clignote longtemps puis s'arrête sans partager",
+          "next": "psf-r-appairage"
+        },
+        {
+          "label": "Il est fixe mais rien à l'écran",
+          "next": "psf-q4"
+        },
+        {
+          "label": "Aucun voyant",
+          "next": "psf-r-bouton"
+        }
+      ],
+      "status": "draft"
+    },
+    "psf-q3": {
+      "type": "question",
+      "text": "Le nom de la salle apparaît-il dans la liste de l'appareil ?",
+      "options": [
+        {
+          "label": "Non",
+          "next": "psf-r-reseau"
+        },
+        {
+          "label": "Oui, mais la connexion échoue ou demande un code",
+          "next": "psf-r-code"
+        }
+      ],
+      "status": "draft"
+    },
+    "psf-q4": {
+      "type": "question",
+      "text": "L'écran de la salle affiche-t-il la page d'accueil de la base (nom de salle, instructions) ?",
+      "options": [
+        {
+          "label": "Oui",
+          "next": "psf-r-pc"
+        },
+        {
+          "label": "Non, écran noir ou autre source",
+          "next": "psf-r-source"
+        }
+      ],
+      "status": "draft"
+    },
+    "psf-r-appairage": {
+      "type": "result",
+      "severity": "low",
+      "title": "Bouton non appairé à cette base",
+      "summary": "Le bouton a été appairé à une autre salle ou a perdu son appairage.",
+      "actions": [
+        "Brancher le bouton directement sur la base (port USB) jusqu'au message « appairage terminé ».",
+        "Rebrancher le bouton sur le portable et réessayer.",
+        "Si plusieurs salles voisines : vérifier que le bouton porte bien l'étiquette de cette salle."
+      ],
+      "status": "draft"
+    },
+    "psf-r-bouton": {
+      "type": "result",
+      "severity": "low",
+      "title": "Bouton non alimenté par le portable",
+      "summary": "Le port USB ne fournit pas assez de courant ou le bouton est défectueux.",
+      "actions": [
+        "Essayer un autre port USB du portable (sans hub ni adaptateur si possible).",
+        "Essayer un autre bouton de la même salle.",
+        "Si aucun bouton ne s'allume sur ce portable : port USB désactivé par la politique informatique du poste."
+      ],
+      "status": "draft",
+      "escalate": "Service informatique du client si les ports USB du portable sont bloqués."
+    },
+    "psf-r-pc": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Le logiciel du bouton ne démarre pas sur le portable",
+      "summary": "La base est prête mais le portable ne lance pas le partage.",
+      "actions": [
+        "Ouvrir le lecteur que le bouton ajoute sur le portable et lancer le programme manuellement.",
+        "Sur Mac : autoriser l'enregistrement de l'écran pour le logiciel (Réglages > Confidentialité).",
+        "Installer l'application de bureau du constructeur si l'exécution depuis le bouton est bloquée.",
+        "Appuyer sur le bouton une fois le voyant fixe."
+      ],
+      "status": "draft",
+      "escalate": "Service informatique du client si l'exécution de logiciels est bloquée sur le poste."
+    },
+    "psf-r-source": {
+      "type": "result",
+      "severity": "low",
+      "title": "L'écran n'est pas sur l'entrée de la base",
+      "summary": "Le partage fonctionne peut-être, mais l'écran affiche une autre source.",
+      "actions": [
+        "Sélectionner sur l'écran l'entrée HDMI reliée à la base.",
+        "Vérifier le câble HDMI entre la base et l'écran.",
+        "Si l'écran reste noir : suivre le diagnostic « Écran noir »."
+      ],
+      "status": "draft",
+      "related": [
+        "ecran-noir"
+      ]
+    },
+    "psf-r-reseau": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Appareil et base pas sur le même réseau",
+      "summary": "AirPlay, Miracast et Cast ne trouvent la salle que sur un réseau autorisé.",
+      "actions": [
+        "Connecter le portable ou la tablette au Wi-Fi indiqué sur l'écran d'accueil de la base.",
+        "Désactiver le VPN du portable, qui bloque souvent la découverte.",
+        "Vérifier que la base est en ligne (voyant réseau, adresse affichée)."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) ou service réseau du lieu : la découverte multicast (mDNS) peut être bloquée.",
+      "related": [
+        "pas-reseau"
+      ]
+    },
+    "psf-r-code": {
+      "type": "result",
+      "severity": "low",
+      "title": "Code de connexion ou autorisation demandé",
+      "summary": "La base exige un code affiché à l'écran ou une validation.",
+      "actions": [
+        "Saisir le code affiché à l'écran (il change à chaque session).",
+        "Vérifier l'heure du portable (une heure fausse peut faire échouer la connexion sécurisée).",
+        "Fermer puis relancer l'application de partage."
+      ],
+      "status": "draft"
+    },
+    "tac-q1": {
+      "type": "question",
+      "text": "Le tactile marche-t-il sur l'interface intégrée de l'écran (sans ordinateur branché) ?",
+      "options": [
+        {
+          "label": "Oui, seulement pas sur l'ordinateur",
+          "next": "tac-q2"
+        },
+        {
+          "label": "Non, nulle part",
+          "next": "tac-q3"
+        },
+        {
+          "label": "Oui, mais le point touché est décalé",
+          "next": "tac-r-calib"
+        }
+      ],
+      "status": "draft"
+    },
+    "tac-q2": {
+      "type": "question",
+      "text": "L'ordinateur est-il relié à l'écran par un câble USB (ou USB-C) en plus de la vidéo ?",
+      "options": [
+        {
+          "label": "Non, seulement HDMI",
+          "next": "tac-r-usb"
+        },
+        {
+          "label": "Oui",
+          "next": "tac-r-port"
+        }
+      ],
+      "status": "draft"
+    },
+    "tac-q3": {
+      "type": "question",
+      "text": "Le cadre de l'écran est-il propre et dégagé (pas d'objet posé contre le bord) ?",
+      "options": [
+        {
+          "label": "Non, objet ou saleté sur le bord",
+          "next": "tac-r-cadre"
+        },
+        {
+          "label": "Oui",
+          "next": "tac-r-panne"
+        }
+      ],
+      "status": "draft"
+    },
+    "tac-r-usb": {
+      "type": "result",
+      "severity": "low",
+      "title": "Câble USB tactile absent",
+      "summary": "Le tactile passe par un câble USB séparé de la vidéo.",
+      "actions": [
+        "Brancher un câble USB entre l'ordinateur et le port « Touch » de l'écran, sur le même côté que l'entrée vidéo utilisée.",
+        "Ou utiliser un câble USB-C qui transporte vidéo et tactile."
+      ],
+      "status": "draft"
+    },
+    "tac-r-port": {
+      "type": "result",
+      "severity": "low",
+      "title": "Port tactile non associé à l'entrée vidéo",
+      "summary": "L'écran envoie le tactile au port USB associé à une autre entrée.",
+      "actions": [
+        "Vérifier que le câble USB est branché sur le port « Touch » qui correspond à l'entrée HDMI utilisée.",
+        "Dans le menu de l'écran, régler l'association entrée vidéo / port tactile si l'option existe.",
+        "Débrancher puis rebrancher l'USB ; essayer un autre port de l'ordinateur."
+      ],
+      "status": "draft"
+    },
+    "tac-r-calib": {
+      "type": "result",
+      "severity": "low",
+      "title": "Tactile décalé : calibrage ou affichage étendu",
+      "summary": "Le toucher est pris en compte mais à la mauvaise position.",
+      "actions": [
+        "Sur l'ordinateur, passer l'affichage en « Dupliquer » ou régler l'écran interactif comme écran principal.",
+        "Windows : Panneau de configuration > Paramètres du Tablet PC > Configurer, pour associer le tactile au bon écran.",
+        "Lancer le calibrage depuis le menu de l'écran s'il existe."
+      ],
+      "status": "draft"
+    },
+    "tac-r-cadre": {
+      "type": "result",
+      "severity": "low",
+      "title": "Cadre infrarouge masqué",
+      "summary": "Les écrans à cadre infrarouge réagissent mal si un objet ou de la poussière coupe les faisceaux.",
+      "actions": [
+        "Retirer tout objet posé contre le bas de l'écran (stylo, câble, gobelet).",
+        "Nettoyer le cadre avec un chiffon sec et doux.",
+        "Éviter le soleil direct sur l'écran, qui perturbe la détection."
+      ],
+      "status": "draft"
+    },
+    "tac-r-panne": {
+      "type": "result",
+      "severity": "high",
+      "title": "Dalle tactile probablement défectueuse",
+      "summary": "Aucun toucher n'est détecté, même sur l'interface intégrée et avec un cadre propre.",
+      "actions": [
+        "Redémarrer l'écran par coupure secteur de 60 secondes.",
+        "Vérifier dans le menu de l'écran que le tactile n'est pas désactivé (verrouillage).",
+        "Noter le modèle et le numéro de série pour le retour atelier."
+      ],
+      "status": "draft",
+      "escalate": "Atelier / support constructeur avec le numéro de série."
+    },
+    "bt-q1": {
+      "type": "question",
+      "text": "L'appareil audio apparaît-il dans la liste Bluetooth du téléphone ?",
+      "options": [
+        {
+          "label": "Non",
+          "next": "bt-q2"
+        },
+        {
+          "label": "Oui, mais l'appairage échoue",
+          "next": "bt-r-echec"
+        },
+        {
+          "label": "Appairé, mais le son coupe",
+          "next": "bt-r-coupe"
+        }
+      ],
+      "status": "draft"
+    },
+    "bt-q2": {
+      "type": "question",
+      "text": "L'appareil audio est-il en mode appairage (voyant bleu qui clignote) ?",
+      "options": [
+        {
+          "label": "Non",
+          "next": "bt-r-mode"
+        },
+        {
+          "label": "Oui",
+          "next": "bt-r-liste"
+        }
+      ],
+      "status": "draft"
+    },
+    "bt-r-mode": {
+      "type": "result",
+      "severity": "low",
+      "title": "Appareil pas en mode appairage",
+      "summary": "Beaucoup d'appareils ne sont visibles qu'en mode appairage.",
+      "actions": [
+        "Maintenir le bouton Bluetooth (ou appairage) jusqu'au clignotement.",
+        "Si un autre téléphone est déjà connecté : le déconnecter d'abord (une seule source à la fois sur la plupart des modèles)."
+      ],
+      "status": "draft"
+    },
+    "bt-r-liste": {
+      "type": "result",
+      "severity": "low",
+      "title": "Appareil invisible malgré le mode appairage",
+      "summary": "La liste du téléphone n'est pas à jour ou l'appareil a atteint sa limite d'appareils mémorisés.",
+      "actions": [
+        "Désactiver puis réactiver le Bluetooth du téléphone, rester à moins de 2 m.",
+        "Éteindre puis rallumer l'appareil audio.",
+        "Effacer la liste des appareils mémorisés de l'enceinte (réinitialisation Bluetooth, voir la notice)."
+      ],
+      "status": "draft"
+    },
+    "bt-r-echec": {
+      "type": "result",
+      "severity": "low",
+      "title": "Appairage refusé",
+      "summary": "Une ancienne association bloque la nouvelle.",
+      "actions": [
+        "Sur le téléphone, « Oublier cet appareil » puis relancer l'appairage.",
+        "Réinitialiser la mémoire Bluetooth de l'appareil audio.",
+        "Essayer avec un autre téléphone pour savoir de quel côté vient le problème."
+      ],
+      "status": "draft"
+    },
+    "bt-r-coupe": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Liaison instable",
+      "summary": "Distance, obstacles ou Wi-Fi chargé (même bande 2,4 GHz) dégradent la liaison.",
+      "actions": [
+        "Rapprocher la source (moins de 10 m, sans mur ni corps entre les deux).",
+        "Désactiver le Bluetooth des autres appareils proches qui pourraient se connecter.",
+        "Sur un événement avec beaucoup de Wi-Fi : préférer une liaison filaire (jack, USB) ou un réseau audio dédié.",
+        "Désactiver l'économie d'énergie du téléphone pour l'application de lecture."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) si la liaison doit tenir pour un show : prévoir une source filaire.",
+      "related": [
+        "pas-de-son"
+      ]
+    },
+    "aff-q1": {
+      "type": "question",
+      "text": "Quel matériel ?",
+      "options": [
+        {
+          "label": "Écran avec lecteur d'affichage dynamique",
+          "next": "aff-q2"
+        },
+        {
+          "label": "Étiquette e-paper ou tablette de réservation de salle",
+          "next": "aff-q3"
+        }
+      ],
+      "status": "draft"
+    },
+    "aff-q2": {
+      "type": "question",
+      "text": "Le lecteur est-il en ligne (voyant réseau, ou état « en ligne » dans la plateforme) ?",
+      "options": [
+        {
+          "label": "Non",
+          "next": "aff-r-reseau"
+        },
+        {
+          "label": "Oui",
+          "next": "aff-r-planning"
+        }
+      ],
+      "status": "draft"
+    },
+    "aff-q3": {
+      "type": "question",
+      "text": "L'appareil est-il alimenté et la batterie chargée ?",
+      "options": [
+        {
+          "label": "Je ne sais pas / batterie faible",
+          "next": "aff-r-batterie"
+        },
+        {
+          "label": "Oui",
+          "next": "aff-r-passerelle"
+        }
+      ],
+      "status": "draft"
+    },
+    "aff-r-reseau": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Lecteur hors ligne",
+      "summary": "Le lecteur affiche son dernier contenu en cache mais ne reçoit plus les mises à jour.",
+      "actions": [
+        "Vérifier le câble réseau ou la connexion Wi-Fi du lecteur.",
+        "Redémarrer le lecteur (coupure 30 secondes).",
+        "Vérifier l'heure du lecteur : une heure fausse bloque souvent la connexion sécurisée à la plateforme."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) avec l'identifiant du lecteur.",
+      "related": [
+        "pas-reseau"
+      ]
+    },
+    "aff-r-planning": {
+      "type": "result",
+      "severity": "low",
+      "title": "Contenu ou programmation non publiés",
+      "summary": "Le lecteur fonctionne mais la nouvelle programmation n'a pas été publiée ou démarre plus tard.",
+      "actions": [
+        "Vérifier dans la plateforme que le contenu est publié et affecté à ce lecteur ou à son groupe.",
+        "Vérifier les dates et heures de début de la programmation.",
+        "Forcer une synchronisation depuis la plateforme si l'option existe."
+      ],
+      "status": "draft"
+    },
+    "aff-r-batterie": {
+      "type": "result",
+      "severity": "low",
+      "title": "Batterie faible ou appareil en veille",
+      "summary": "Les étiquettes e-paper gardent la dernière image même batterie vide.",
+      "actions": [
+        "Recharger ou remplacer la batterie selon le modèle.",
+        "Sortir l'appareil de veille (bouton ou toucher)."
+      ],
+      "status": "draft"
+    },
+    "aff-r-passerelle": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Liaison avec la passerelle ou le calendrier interrompue",
+      "summary": "L'appareil n'arrive plus à la passerelle radio, ou le calendrier de salle n'est plus synchronisé.",
+      "actions": [
+        "Vérifier que la passerelle / le point d'accès est alimenté et en ligne.",
+        "Rapprocher l'appareil de la passerelle pour tester.",
+        "Tablette de réservation : vérifier dans son menu l'état de la connexion au calendrier."
+      ],
+      "status": "draft",
+      "escalate": "Service informatique du client si la connexion au calendrier (compte de salle) est en cause."
     }
   },
   "sources": {
@@ -3116,6 +3837,7 @@
     "ecran-interactif": {
       "label": "Écrans interactifs et tactiles",
       "symptoms": [
+        "tactile",
         "ecran-noir",
         "image-instable",
         "peripherique-non-detecte"
@@ -3124,6 +3846,7 @@
     "affichage-epaper": {
       "label": "Affichage e-paper",
       "symptoms": [
+        "affichage-maj",
         "pas-alimentation",
         "pas-reseau"
       ]
@@ -3164,6 +3887,7 @@
     "presentation-sans-fil": {
       "label": "Présentation sans fil",
       "symptoms": [
+        "partage-sans-fil",
         "ecran-noir",
         "pas-reseau",
         "firmware-echec"
@@ -3172,6 +3896,7 @@
     "visio": {
       "label": "Barres et systèmes de visioconférence",
       "symptoms": [
+        "visio-peripherique",
         "peripherique-non-detecte",
         "pas-de-son",
         "ecran-noir",
@@ -3182,7 +3907,8 @@
       "label": "Caméras de visioconférence",
       "symptoms": [
         "peripherique-non-detecte",
-        "firmware-echec"
+        "firmware-echec",
+        "visio-peripherique"
       ]
     },
     "camera-ptz": {
@@ -3236,6 +3962,7 @@
     "lecteur-media": {
       "label": "Lecteurs d'affichage dynamique",
       "symptoms": [
+        "affichage-maj",
         "ecran-noir",
         "gel-plantage",
         "pas-reseau"
@@ -3244,6 +3971,7 @@
     "gestion-salle": {
       "label": "Réservation et capteurs de salle",
       "symptoms": [
+        "affichage-maj",
         "pas-reseau",
         "pas-alimentation"
       ]
@@ -3287,7 +4015,8 @@
         "pas-de-son",
         "larsen",
         "son-degrade",
-        "latence-reseau"
+        "latence-reseau",
+        "visio-peripherique"
       ]
     },
     "micro-hf": {
@@ -3301,6 +4030,7 @@
     "diffusion-audio": {
       "label": "Diffusion audio (Wi-Fi, Bluetooth, streaming)",
       "symptoms": [
+        "appairage-bluetooth",
         "pas-de-son",
         "pas-reseau"
       ]
