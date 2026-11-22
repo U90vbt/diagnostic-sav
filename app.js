@@ -158,6 +158,28 @@
     }
   };
 
+  /* Notes du technicien : une note par symptôme et par jour, sur cet appareil.
+     Les notes de plus de 30 jours sont supprimées automatiquement. */
+  const NOTES_KEY = 'diagsav.notes.v1';
+  const NOTES_MAX_AGE = 30 * 24 * 3600 * 1000;
+  const localDate = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const notes = {
+    all() {
+      try { const o = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}'); return o && typeof o === 'object' ? o : {}; }
+      catch { return {}; }
+    },
+    key: symptomId => localDate() + '|' + symptomId,
+    get(symptomId) { const e = this.all()[this.key(symptomId)]; return e ? e.text : ''; },
+    set(symptomId, text) {
+      const all = this.all();
+      const now = Date.now();
+      for (const k of Object.keys(all)) if (!all[k] || now - all[k].updated > NOTES_MAX_AGE) delete all[k];
+      if (text.trim()) all[this.key(symptomId)] = { text, updated: now };
+      else delete all[this.key(symptomId)];
+      try { localStorage.setItem(NOTES_KEY, JSON.stringify(all)); return true; } catch { return false; }
+    }
+  };
+
   function recordRecent(entry) {
     const list = store.read().filter(e => e && e.hash !== entry.hash);
     list.unshift(entry);
@@ -799,6 +821,7 @@
 
     renderProgress(path, current);
     renderJournal(rootSymptom, path, steps, current);
+    renderNotes(rootSymptom);
 
     // Scène
     const stage = $('#diag-stage');
@@ -883,6 +906,15 @@
     $('#progress-remaining').textContent = current.type === 'result'
       ? ''
       : remaining === 0 ? 'Dernière question' : 'au plus ' + remaining + ' restante' + (remaining > 1 ? 's' : '');
+  }
+
+  function renderNotes(rootSymptom) {
+    const input = $('#notes-input');
+    if (state.notesSymptom !== rootSymptom.id || document.activeElement !== input) {
+      input.value = notes.get(rootSymptom.id);
+    }
+    state.notesSymptom = rootSymptom.id;
+    $('#notes-state').textContent = input.value.trim() ? 'enregistrées' : '';
   }
 
   function renderJournal(rootSymptom, path, steps, current) {
@@ -1496,6 +1528,8 @@
       (b.actions || []).forEach(a => lines.push('  - ' + a));
     }
     if (node.warning) lines.push('', 'Attention : ' + node.warning);
+    const noteText = notes.get(rootSymptom.id).trim();
+    if (noteText) { lines.push('', 'Notes du technicien :'); noteText.split('\n').forEach(l => lines.push('  ' + l)); }
     if (node.escalate) lines.push('Escalade  : ' + node.escalate);
     lines.push('', 'Lien : ' + location.href);
     return lines.join('\n');
@@ -1565,6 +1599,24 @@
     }));
 
     $('#btn-exit-preview').addEventListener('click', () => stopPreview(true));
+
+    let notesTimer = null;
+    $('#notes-input').addEventListener('input', () => {
+      clearTimeout(notesTimer);
+      $('#notes-state').textContent = '…';
+      notesTimer = setTimeout(() => {
+        if (!state.notesSymptom) return;
+        const ok = notes.set(state.notesSymptom, $('#notes-input').value);
+        $('#notes-state').textContent = ok ? ($('#notes-input').value.trim() ? 'enregistrées' : '') : 'non enregistrées';
+      }, 400);
+    });
+    $('#btn-clear-notes').addEventListener('click', () => {
+      if (!state.notesSymptom) return;
+      $('#notes-input').value = '';
+      notes.set(state.notesSymptom, '');
+      $('#notes-state').textContent = '';
+      toast('Notes effacées');
+    });
 
     $('#btn-back').addEventListener('click', goBack);
     $('#btn-restart').addEventListener('click', restart);

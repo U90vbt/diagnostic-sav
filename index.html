@@ -215,6 +215,19 @@
             <ul class="gear__list" id="gear-list"></ul>
             <p class="gear__note muted">Références et pages : catalogue Focus, été 2025.</p>
           </details>
+          <details class="notes" id="notes" open>
+            <summary class="journal__head">
+              <span>Notes du technicien</span>
+              <span class="notes__state" id="notes-state"></span>
+            </summary>
+            <div class="notes__body">
+              <label for="notes-input" class="visually-hidden">Notes du technicien</label>
+              <textarea id="notes-input" class="notes__input" rows="4"
+                        placeholder="Constats, mesures, pièces changées…"></textarea>
+              <p class="notes__hint">Enregistrées sur cet appareil uniquement et reprises dans le rapport. N'y notez pas de données personnelles (noms, téléphones).</p>
+              <button type="button" class="btn btn--small btn--ghost" id="btn-clear-notes">Effacer les notes</button>
+            </div>
+          </details>
           <p class="kbd-help muted">
             Raccourcis : <kbd>1</kbd>–<kbd>9</kbd> répondre · <kbd>⌫</kbd> retour · <kbd>Échap</kbd> accueil
           </p>

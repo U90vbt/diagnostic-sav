@@ -584,6 +584,20 @@ body.is-home .crumbs { display: none; }
 .kbd-help { font-size: .8rem; margin: 12px 6px 0; display: none; }
 @media (hover: hover) and (pointer: fine) { .kbd-help { display: block; } }
 
+/* Notes du technicien */
+.notes { margin-top: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden; }
+.notes:not([open]) .journal__head::after { transform: rotate(-90deg); }
+.notes__state { margin-left: auto; font-size: .76rem; letter-spacing: 0; text-transform: none; color: var(--green); }
+.notes__body { display: grid; gap: 8px; padding: 0 16px 16px; }
+.notes__input {
+  width: 100%; min-height: 110px; padding: 12px 14px; border-radius: 12px; resize: vertical;
+  background: var(--bg-deep); border: 1px solid var(--line-strong); color: var(--text); font: inherit; font-size: .98rem; line-height: 1.45;
+}
+.notes__input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.notes__hint { margin: 0; font-size: .78rem; color: var(--muted); }
+.notes .btn { justify-self: start; }
+@media print { .notes__input { border: 1px solid #999; min-height: 0; } .notes__hint, .notes .btn { display: none; } }
+
 /* Matériel (catalogue) */
 .focus-product {
   display: inline-flex; flex-wrap: wrap; gap: 4px; margin: -8px 0 20px; padding: 8px 14px;

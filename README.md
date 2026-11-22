@@ -315,6 +315,7 @@ Sur tablette, utilisez « Ajouter à l'écran d'accueil » pour lancer l'outil c
 - **Fil d'Ariane** : cliquez sur une étape pour y revenir.
 - **Journal** : liste des questions et réponses. Cliquez sur une entrée pour revenir à cette question.
 - **Résultat** : cochez les actions réalisées, puis **Copier le rapport** pour coller un résumé dans un ticket, ou **Imprimer**.
+- **Notes du technicien** : champ « Notes » à côté du journal, enregistré automatiquement sur l'appareil (une note par symptôme et par jour, supprimée après 30 jours). Les notes sont reprises dans le rapport copié. Ne pas y saisir de données personnelles.
 - **Liens partageables** : l'URL contient tout le parcours (`#/d/pas-de-son/audio-q1/…`). Envoyer le lien permet à un collègue ou au N2 de voir exactement le même diagnostic.
 - **Raccourcis clavier** : `/` recherche · `1`–`9` répondre · `Retour arrière` étape précédente · `Échap` accueil.
 
@@ -323,7 +324,7 @@ Sur tablette, utilisez « Ajouter à l'écran d'accueil » pour lancer l'outil c
 ## Confidentialité
 
 - Aucun cookie, aucun outil de statistiques, aucune requête vers un domaine externe (pas de polices ni de CDN).
-- Seule donnée conservée : la liste des 6 derniers diagnostics, dans le stockage local du navigateur de l'appareil (`localStorage`). Elle ne quitte jamais l'appareil et peut être effacée avec le bouton **Effacer** de l'accueil.
+- Données conservées, uniquement dans le stockage local du navigateur de l'appareil (`localStorage`), jamais envoyées : les 6 derniers diagnostics (bouton **Effacer** de l'accueil), les notes du technicien (bouton **Effacer les notes**, purge automatique après 30 jours) et le brouillon de l'éditeur.
 
 ---
 
