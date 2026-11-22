@@ -27,7 +27,8 @@
     savedAt: null,
     conflict: false,               // le fichier publié a changé depuis le brouillon
     root: null, route: null,
-    pendingDelete: null            // suppression en attente de confirmation (clé)
+    pendingDelete: null,           // suppression en attente de confirmation (clé)
+    localImages: {}                // src → { url, blob, name } : images ajoutées dans cette session (pas encore publiées)
   };
 
   /* ---------------------------------------------------------------------
@@ -485,6 +486,24 @@
     reader.readAsText(file, 'utf-8');
   }
 
+  /** Images citées par le brouillon mais absentes des fichiers publiés : à déposer dans img/. */
+  function newImagesCard() {
+    const before = new Set();
+    for (const n of Object.values(E.base.dec.nodes || {})) for (const img of n.images || []) before.add(img.src);
+    const added = [];
+    for (const n of Object.values(E.dec.nodes || {})) for (const img of n.images || []) if (img.src && !before.has(img.src)) added.push(img.src);
+    if (!added.length) return null;
+    return h('section', { class: 'ed-card' },
+      h('h2', { class: 'ed-h2' }, 'Images à déposer (' + added.length + ')'),
+      h('p', { class: 'ed-hint' }, 'Sur GitHub, ouvrez le dossier img/ puis « Add file → Upload files ». Déposez-y ces fichiers avant ou en même temps que decisions.json.'),
+      h('ul', { class: 'ed-refs' }, added.map(src => {
+        const local = E.localImages[src];
+        return h('li', null, src.replace(/^img\//, ''), ' ',
+          local ? h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => saveFile(local.name, local.blob) }, 'Télécharger à nouveau')
+                : h('span', { class: 'ed-hint' }, '(fichier ajouté lors d\'une session précédente)'));
+      })));
+  }
+
   function screenExport() {
     const d = computeDiff();
     const iss = issues();
@@ -515,6 +534,7 @@
           h('button', { type: 'button', class: 'btn btn--light', onclick: () => download('decisions.json', exportedDecisions(version)) }, 'Télécharger decisions.json'),
           h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => download('catalogue.json', exportedCatalogue()) }, 'Télécharger catalogue.json'),
           h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => copy(exportedDecisions(version)) }, 'Copier decisions.json'))),
+      newImagesCard(),
       h('section', { class: 'ed-card' },
         h('h2', { class: 'ed-h2' }, 'Publier sur le site'),
         h('ol', { class: 'ed-steps' },
@@ -573,6 +593,107 @@
 
   function nodeIssues(id) {
     return issues().filter(x => x.ref && x.ref.kind === 'node' && x.ref.id === id);
+  }
+
+  /* ---------------------------------------------------------------------
+     Images (photos, schémas) : compression dans le navigateur, sans build
+     --------------------------------------------------------------------- */
+  const IMG_MAX = 1280, IMG_TARGET = 150 * 1024;
+
+  function canvasBlob(canvas, type, q) {
+    return new Promise(res => canvas.toBlob(res, type, q));
+  }
+
+  /** Redimensionne (1280 px max) et compresse en WebP (JPEG si le navigateur ne sait pas) sous 150 Ko. */
+  async function compressImage(file) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('image illisible')); i.src = url; });
+      const longest = Math.max(img.naturalWidth, img.naturalHeight);
+      let side = Math.min(IMG_MAX, longest), type = 'image/webp', blob = null, w = 0, hgt = 0;
+      // 1. on baisse la qualité ; 2. si ça ne suffit pas, on réduit la taille (640 px minimum)
+      while (true) {
+        const scale = side / longest;
+        w = Math.round(img.naturalWidth * scale); hgt = Math.round(img.naturalHeight * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = hgt;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, hgt);
+        for (const q of [0.82, 0.74, 0.66, 0.58, 0.5]) {
+          blob = await canvasBlob(canvas, type, q);
+          if (!blob || blob.type !== type) { type = 'image/jpeg'; blob = await canvasBlob(canvas, type, q); }
+          if (blob && blob.size <= IMG_TARGET) break;
+        }
+        if ((blob && blob.size <= IMG_TARGET) || side <= 640) break;
+        side = Math.max(640, Math.round(side * 0.8));
+      }
+      return { blob, width: w, height: hgt, ext: type === 'image/webp' ? 'webp' : 'jpg' };
+    } finally { URL.revokeObjectURL(url); }
+  }
+
+  function saveFile(name, blob) {
+    const url = URL.createObjectURL(blob);
+    const a = h('a', { href: url, download: name });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  function imagesEditor(nodeId, n) {
+    const box = h('div', { class: 'ed-images' });
+    const input = h('input', { type: 'file', accept: 'image/*', class: 'visually-hidden', id: 'ed-img-' + nodeId.replace(/[^\w-]/g, '') });
+    input.addEventListener('change', async () => {
+      const file = input.files[0];
+      input.value = '';
+      if (!file) return;
+      const list = n.images || [];
+      const base = 'img/' + slug(nodeId) + '-' + (list.length + 1);
+      try {
+        let entry, blob, name;
+        if (/svg/i.test(file.type) || /\.svg$/i.test(file.name)) {
+          name = slug(nodeId) + '-' + (list.length + 1) + '.svg';
+          blob = file;
+          entry = { src: 'img/' + name, alt: '' };
+        } else {
+          const out = await compressImage(file);
+          name = slug(nodeId) + '-' + (list.length + 1) + '.' + out.ext;
+          blob = out.blob;
+          entry = { src: 'img/' + name, alt: '', width: out.width, height: out.height };
+        }
+        void base;
+        E.localImages[entry.src] = { url: URL.createObjectURL(blob), blob, name };
+        n.images = [...list, entry];
+        saveFile(name, blob);
+        changed(true);   // réaffiche l'écran : la description manquante apparaît dans « à corriger »
+        toast('✓ ' + name + ' (' + Math.round(blob.size / 1024) + ' Ko) téléchargée : déposez-la dans le dossier img/ sur GitHub');
+      } catch (err) {
+        toast('Image non ajoutée : ' + err.message);
+      }
+    });
+    const draw = () => {
+      const list = n.images || [];
+      box.replaceChildren(...list.map((img, i) => {
+        const local = E.localImages[img.src];
+        const thumb = h('img', { class: 'ed-thumb', alt: '', src: local ? local.url : img.src, loading: 'lazy' });
+        thumb.addEventListener('error', () => thumb.replaceWith(h('span', { class: 'ed-thumb ed-thumb--missing' }, 'non publiée')), { once: true });
+        const move = d => { const arr = n.images; [arr[i + d], arr[i]] = [arr[i], arr[i + d]]; changed(false); draw(); };
+        return h('div', { class: 'ed-option ed-image' },
+          thumb,
+          h('div', { class: 'ed-sub' },
+            field('Description (obligatoire)', textInput(img.alt, v => { img.alt = v; changed(false); }, { placeholder: 'Ce que montre l\'image, pour qui ne peut pas la voir' })),
+            field('Légende (facultatif)', textInput(img.caption, v => { if (v.trim()) img.caption = v; else delete img.caption; changed(false); })),
+            h('p', { class: 'ed-hint' }, 'Fichier : ' + img.src + (local ? ' — à déposer dans img/ sur GitHub' : ''))),
+          h('div', { class: 'ed-list__tools' },
+            h('button', { type: 'button', class: 'ed-icon', 'aria-label': 'Monter l\'image', disabled: i === 0 || null, onclick: () => move(-1) }, '↑'),
+            h('button', { type: 'button', class: 'ed-icon', 'aria-label': 'Descendre l\'image', disabled: i === list.length - 1 || null, onclick: () => move(1) }, '↓'),
+            h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Retirer l\'image', onclick: () => {
+              n.images.splice(i, 1); if (!n.images.length) delete n.images; changed(false); draw();
+            } }, '✕')));
+      }),
+      input,
+      h('label', { class: 'btn btn--small btn--ghost', for: input.id }, '+ Ajouter une photo ou un schéma'),
+      h('p', { class: 'ed-hint' }, 'Photos : réduites à 1280 px et compressées (moins de 150 Ko) dans le navigateur, puis téléchargées. Déposez le fichier dans le dossier img/ du dépôt GitHub. Utilisez vos propres photos ou schémas, jamais celles du catalogue.'));
+    };
+    draw();
+    return box;
   }
 
   /* ---------------------------------------------------------------------
@@ -663,6 +784,8 @@
     return h('div', { class: 'ed-sub' },
       field('Question posée au technicien', textInput(n.text, v => { n.text = v; changed(false); }, { multiline: true, rows: 2 })),
       field('Aide (facultatif)', textInput(n.help, v => { if (v.trim()) n.help = v; else delete n.help; changed(false); }, { multiline: true, rows: 2 }), 'Précision affichée sous la question : où regarder, comment tester.'),
+      h('h3', { class: 'ed-h3' }, 'Photos et schémas'),
+      imagesEditor(id, n),
       h('h3', { class: 'ed-h3' }, 'Réponses possibles'),
       h('p', { class: 'ed-hint' }, 'Chaque réponse mène à une autre question, à un résultat, ou au diagnostic d\'un autre symptôme. 9 réponses au maximum.'),
       box);
@@ -722,6 +845,8 @@
       field('Titre du résultat', textInput(n.title, v => { n.title = v; changed(false); })),
       field('Gravité', selectInput(['low', 'moderate', 'high'].map(k => ({ value: k, label: SEV_LABEL[k] })), n.severity, v => { n.severity = v; changed(false); })),
       opt('summary', 'Résumé (facultatif)', 'Une phrase qui explique la cause probable.'),
+      h('h3', { class: 'ed-h3' }, 'Photos et schémas'),
+      imagesEditor(id, n),
       h('h3', { class: 'ed-h3' }, 'Actions recommandées'),
       listEditor(n.actions, () => changed(false), { multiline: true, addLabel: 'Ajouter une action', placeholder: 'Une action concrète, dans l\'ordre' }),
       opt('warning', 'Mise en garde (facultatif)', 'Affichée en rouge : risque électrique, matériel à ne pas réarmer…'),

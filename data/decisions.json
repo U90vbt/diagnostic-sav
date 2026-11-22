@@ -2414,6 +2414,15 @@
         "Utiliser des antennes déportées (directives si possible) au plus près de la zone de jeu, avec un câble coaxial adapté.",
         "Contrôler le distributeur d'antennes et ses câbles (alimentation, connecteurs BNC).",
         "Faire un test de couverture en marchant sur toute la zone avec l'émetteur."
+      ],
+      "images": [
+        {
+          "src": "img/schemas/hf-antennes.svg",
+          "alt": "Schéma : antennes HF en hauteur avec une ligne de vue dégagée vers l'orateur ; une antenne placée derrière le mur LED est barrée.",
+          "caption": "Antennes en hauteur, face à la zone de jeu, jamais derrière un mur LED.",
+          "width": 800,
+          "height": 450
+        }
       ]
     },
     "hf-r-interference": {
@@ -2756,6 +2765,15 @@
         {
           "label": "Non, un caisson isolé",
           "next": "led-r-module"
+        }
+      ],
+      "images": [
+        {
+          "src": "img/schemas/led-chainage.svg",
+          "alt": "Schéma : contrôleur LED relié à deux lignes de caissons ; sur la première ligne, tout est noir après le caisson 3, encadré en rouge.",
+          "caption": "Le défaut est sur le dernier caisson allumé ou sur le câble qui le relie au suivant.",
+          "width": 800,
+          "height": 450
         }
       ]
     },

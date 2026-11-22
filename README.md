@@ -23,6 +23,7 @@ Site web statique qui remplace les procédures papier par un arbre de décision 
 ├── manifest.webmanifest   Installation sur l'écran d'accueil (tablette)
 ├── icon.svg               Icône de l'application
 ├── .nojekyll              Désactive Jekyll sur GitHub Pages
+├── img/                   Photos et schémas des étapes (img/schemas/ : exemples)
 └── data/
     ├── decisions.json     Arbre de décision + fiches produits (marque, modèle, page)
     └── catalogue.json     Caractéristiques produits et synonymes (Assistant produit)
@@ -232,6 +233,25 @@ Sur un résultat, `brandSteps` ajoute un bloc repliable « Selon le matériel »
 - Si le technicien a trouvé le diagnostic en cherchant un produit (ex. « MCTRL4K »), le bloc de sa marque s'ouvre directement et le rapport copié mentionne le produit.
 
 **État actuel** : 17 résultats ont des étapes par marque (Novastar, Shure, Biamp, Powersoft, Netgear, Kramer, Lindy, Visionary, Datapath, BrightSign, Barco ClickShare, vidéoprojecteurs). **Toutes sont en brouillon** et doivent être validées avec les notices constructeur.
+
+### Photos et schémas dans les étapes
+
+Une question ou un résultat peut afficher des images (champ facultatif `images`) :
+
+```json
+"images": [
+  { "src": "img/schemas/led-chainage.svg", "alt": "Schéma : contrôleur relié à deux lignes de caissons…",
+    "caption": "Le défaut est sur le dernier caisson allumé…", "width": 800, "height": 450 }
+]
+```
+
+- `src` : un fichier du dossier **`img/`** du dépôt (WebP, JPEG, PNG, SVG). Les images externes (`https://…`) sont refusées : le site ne fait aucun appel extérieur.
+- `alt` (obligatoire) : ce que montre l'image, affiché si elle ne peut pas être chargée. `caption` : légende facultative.
+- `width` / `height` : dimensions, pour réserver la place et éviter que la page saute pendant le chargement.
+- **Dans l'éditeur** : « + Ajouter une photo ou un schéma ». La photo est réduite (1280 px au maximum) et compressée en WebP de moins de 150 Ko **dans le navigateur**, puis téléchargée. Déposez-la dans `img/` sur GitHub (l'onglet Exporter liste les images à déposer).
+- Utilisez vos propres photos ou des schémas, jamais les visuels du catalogue (droits).
+- Hors ligne : une image vue une fois reste disponible. Le lien **Préparer le hors-ligne** (pied de page) télécharge d'avance toutes les images et les données.
+- Deux schémas d'exemple sont fournis : `img/schemas/led-chainage.svg` (question « Le défaut suit-il une ligne… » du mur LED) et `img/schemas/hf-antennes.svg` (résultat « Réception insuffisante » des micros HF).
 
 ### Migration du schéma
 

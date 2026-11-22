@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">
+  <title>Chaînage des données d'un mur LED</title>
+  <rect width="800" height="450" rx="18" fill="#1f1f23"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#56a7d5"/></marker>
+    <marker id="r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#ef5b52"/></marker>
+  </defs>
+  <!-- contrôleur -->
+  <rect x="32" y="178" width="120" height="94" rx="10" fill="#2e2e34" stroke="#56a7d5" stroke-width="2"/>
+  <text x="92" y="214" fill="#ebedf3" font-size="15" font-weight="700" text-anchor="middle">Contrôleur</text>
+  <text x="92" y="234" fill="#b4b7c0" font-size="12" text-anchor="middle">sorties data</text>
+  <text x="92" y="252" fill="#b4b7c0" font-size="12" text-anchor="middle">1 · 2</text>
+  <!-- grille de caissons 2 lignes x 5 -->
+  <g fill="#26262b" stroke="#4a4a52" stroke-width="2">
+    <rect x="232" y="110" width="96" height="96" rx="6"/><rect x="340" y="110" width="96" height="96" rx="6"/>
+    <rect x="448" y="110" width="96" height="96" rx="6" stroke="#ef5b52" stroke-width="3"/>
+    <rect x="556" y="110" width="96" height="96" rx="6" fill="#141416"/><rect x="664" y="110" width="96" height="96" rx="6" fill="#141416"/>
+    <rect x="232" y="244" width="96" height="96" rx="6"/><rect x="340" y="244" width="96" height="96" rx="6"/>
+    <rect x="448" y="244" width="96" height="96" rx="6"/><rect x="556" y="244" width="96" height="96" rx="6"/><rect x="664" y="244" width="96" height="96" rx="6"/>
+  </g>
+  <g fill="#b4b7c0" font-size="12" text-anchor="middle">
+    <text x="280" y="163">1</text><text x="388" y="163">2</text><text x="496" y="163" fill="#ef5b52" font-weight="700">3</text>
+    <text x="604" y="163" fill="#7d808a">noir</text><text x="712" y="163" fill="#7d808a">noir</text>
+    <text x="280" y="297">1</text><text x="388" y="297">2</text><text x="496" y="297">3</text><text x="604" y="297">4</text><text x="712" y="297">5</text>
+  </g>
+  <!-- liaisons data -->
+  <g stroke="#56a7d5" stroke-width="3" fill="none" marker-end="url(#a)">
+    <path d="M152 205 H226"/><path d="M328 158 H336"/><path d="M436 158 H444"/>
+    <path d="M152 250 C190 250 196 292 226 292"/><path d="M328 292 H336"/><path d="M436 292 H444"/><path d="M544 292 H552"/><path d="M652 292 H660"/>
+  </g>
+  <path d="M544 158 H552" stroke="#ef5b52" stroke-width="3" stroke-dasharray="4 4" marker-end="url(#r)"/>
+  <!-- légende -->
+  <text x="40" y="52" fill="#ebedf3" font-size="20" font-weight="700">Tout s'éteint après un caisson ?</text>
+  <text x="40" y="80" fill="#b4b7c0" font-size="14">Les données passent de caisson en caisson. Si tout est noir à partir d'un point,</text>
+  <text x="40" y="98" fill="#b4b7c0" font-size="14">le défaut est sur le dernier caisson allumé (3) ou sur le câble qui le relie au suivant.</text>
+  <circle cx="48" cy="400" r="6" fill="#56a7d5"/><text x="62" y="405" fill="#b4b7c0" font-size="13">liaison data</text>
+  <rect x="160" y="393" width="14" height="14" rx="3" fill="none" stroke="#ef5b52" stroke-width="2.5"/><text x="182" y="405" fill="#b4b7c0" font-size="13">caisson ou câble à contrôler en premier</text>
+  <rect x="470" y="393" width="14" height="14" rx="3" fill="#141416" stroke="#4a4a52" stroke-width="2"/><text x="492" y="405" fill="#b4b7c0" font-size="13">caissons sans image</text>
+</svg>

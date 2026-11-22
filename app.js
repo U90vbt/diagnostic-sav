@@ -359,7 +359,7 @@
    */
   function validateDetailed(data) {
     const w = [];
-    const add = (msg, kind, id) => w.push({ msg, ref: kind ? { kind, id } : null });
+    const add = (msg, kind, id) => w.push({ msg: msg.replace(/\bde le\b/g, 'du').replace(/\bDe le\b/g, 'Du'), ref: kind ? { kind, id } : null });
     const nodes = data.nodes || {};
     const symptoms = Array.isArray(data.symptoms) ? data.symptoms : [];
     const symptomIds = new Set();
@@ -407,6 +407,12 @@
       } else {
         add('L\'étape « ' + id + ' » a un type inconnu (« ' + n.type + ' ») : attendu question ou result.', 'node', id);
       }
+      (n.images || []).forEach((img, i) => {
+        const where = 'L\'image n° ' + (i + 1) + ' de ' + nodeName(id);
+        if (!img || !img.src) add(where + ' n\'a pas de fichier.', 'node', id);
+        else if (!isLocalImage(img.src)) add(where + ' doit être un fichier du dossier img/ du site (« ' + img.src + ' ») : aucune image externe.', 'node', id);
+        if (!img || !String(img.alt || '').trim()) add(where + ' n\'a pas de description (texte alternatif, utile si l\'image ne s\'affiche pas).', 'node', id);
+      });
       if (n.status && !STATUSES.includes(n.status)) add(cap(nodeName(id)) + ' a un statut invalide (« ' + n.status + ' ») : attendu draft ou validated.', 'node', id);
       for (const pid of n.products || []) {
         if (!products[pid]) add(cap(nodeName(id)) + ' cite un produit inconnu (« ' + pid + ' »).', 'node', id);
@@ -446,6 +452,11 @@
       if (!reached.has(id)) add(cap(nodeName(id)) + ' n\'est atteinte depuis aucun symptôme.', 'node', id);
     }
     return w;
+  }
+
+  /** Seules les images du dossier img/ du site sont autorisées (aucun appel externe). */
+  function isLocalImage(src) {
+    return /^img\/[\w\-./]+\.(webp|jpe?g|png|svg|gif)$/i.test(String(src || '')) && !String(src).includes('..');
   }
 
   function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
@@ -981,10 +992,66 @@
         h('h2', { class: 'question__text', tabindex: '-1', 'data-focus': true }, node.text),
         draftBadge(node.status),
         node.help ? h('p', { class: 'question__help' }, node.help) : null,
+        renderImages(node),
         productChips(node.products),
         h('ul', { class: 'options', role: 'list' }, options)
       )
     );
+  }
+
+  /** Photos / schémas d'une étape : chargement différé, agrandissement au toucher. */
+  function renderImages(node) {
+    const list = (node.images || []).filter(img => img && isLocalImage(img.src));
+    if (!list.length) return null;
+    return h('div', { class: 'figs' + (list.length > 1 ? ' figs--multi' : '') }, list.map(img => {
+      const url = new URL(img.src, SCRIPT_URL).href;
+      const pic = h('img', { src: url, alt: img.alt || '', loading: 'lazy', decoding: 'async',
+        width: img.width ? String(img.width) : null, height: img.height ? String(img.height) : null });
+      const fig = h('figure', { class: 'fig' },
+        h('button', { type: 'button', class: 'fig__btn', 'aria-label': 'Agrandir : ' + (img.alt || 'image'), onclick: () => openLightbox(url, img) }, pic),
+        img.caption ? h('figcaption', { class: 'fig__cap' }, img.caption) : null);
+      pic.addEventListener('error', () => {
+        fig.replaceChildren(h('div', { class: 'fig__missing' },
+          h('strong', null, 'Image indisponible'), ' — ' + (img.alt || img.src),
+          h('span', { class: 'fig__path' }, img.src + (navigator.onLine ? ' (pas encore publiée ?)' : ' (hors ligne, jamais consultée)'))));
+      }, { once: true });
+      return fig;
+    }));
+  }
+
+  let lightboxReturn = null;
+  function openLightbox(url, img) {
+    const box = $('#lightbox');
+    lightboxReturn = document.activeElement;
+    $('#lightbox-img').src = url;
+    $('#lightbox-img').alt = img.alt || '';
+    $('#lightbox-cap').textContent = img.caption || img.alt || '';
+    box.hidden = false;
+    document.body.classList.add('has-lightbox');
+    $('#lightbox-close').focus();
+  }
+  function closeLightbox() {
+    const box = $('#lightbox');
+    if (box.hidden) return false;
+    box.hidden = true;
+    document.body.classList.remove('has-lightbox');
+    $('#lightbox-img').removeAttribute('src');
+    if (lightboxReturn && lightboxReturn.focus) lightboxReturn.focus();
+    return true;
+  }
+
+  /** Télécharge d'avance tout ce qui sert hors ligne (le service worker le met en cache). */
+  async function prepareOffline() {
+    if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) {
+      toast('Mode hors ligne pas encore actif : rechargez la page une fois, puis réessayez');
+      return;
+    }
+    const urls = new Set(['data/decisions.json', 'data/catalogue.json', 'pdf.js', 'editor.js']);
+    for (const n of Object.values(state.nodes)) for (const img of n.images || []) if (img && isLocalImage(img.src)) urls.add(img.src);
+    let ok = 0, fail = 0;
+    toast('Préparation du hors-ligne…');
+    await Promise.all([...urls].map(u => fetch(new URL(u, SCRIPT_URL).href).then(r => { if (r.ok) ok++; else fail++; }).catch(() => { fail++; })));
+    toast(fail ? '⚠ ' + ok + ' éléments prêts, ' + fail + ' indisponibles' : '✓ ' + ok + ' éléments prêts pour le hors-ligne');
   }
 
   function draftBadge(status) {
@@ -1053,6 +1120,7 @@
         ),
         h('h2', { class: 'result__title', tabindex: '-1', 'data-focus': true }, node.title),
         node.summary ? h('p', { class: 'result__summary' }, node.summary) : null,
+        renderImages(node),
         info.description ? h('p', { class: 'result__sevdesc' }, info.description) : null,
 
         productChips(node.products),
@@ -1494,7 +1562,7 @@
 
   /* Interface exposée à editor.js (même origine, aucun appel externe). */
   window.DIAGSAV = {
-    h, icon, normalize, truncate, toast, jsonErrorPosition, validateDetailed, severityInfo, SEVERITY_ORDER,
+    h, icon, normalize, truncate, toast, jsonErrorPosition, validateDetailed, severityInfo, SEVERITY_ORDER, isLocalImage,
     published: () => state.published,
     loadPublishedCatalogue: async () => {
       const res = await fetch(CATALOGUE_URL, { cache: 'no-cache' });
@@ -1683,6 +1751,9 @@
     }));
 
     $('#btn-exit-preview').addEventListener('click', () => stopPreview(true));
+    $('#lightbox-close').addEventListener('click', closeLightbox);
+    $('#lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') closeLightbox(); });
+    $('#btn-prepare-offline').addEventListener('click', prepareOffline);
 
     let notesTimer = null;
     $('#notes-input').addEventListener('input', () => {
@@ -1712,6 +1783,8 @@
     });
 
     document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && closeLightbox()) { e.preventDefault(); return; }
+      if (!$('#lightbox').hidden) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       const t = e.target;
       const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);

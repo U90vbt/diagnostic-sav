@@ -584,6 +584,28 @@ body.is-home .crumbs { display: none; }
 .kbd-help { font-size: .8rem; margin: 12px 6px 0; display: none; }
 @media (hover: hover) and (pointer: fine) { .kbd-help { display: block; } }
 
+/* Photos et schémas */
+.figs { display: grid; gap: 12px; margin: 16px 0 4px; }
+.figs--multi { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+.fig { margin: 0; display: grid; gap: 6px; }
+.fig__btn { display: block; padding: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg-deep); overflow: hidden; cursor: zoom-in; }
+.fig__btn img { display: block; width: 100%; height: auto; aspect-ratio: auto 16 / 9; object-fit: contain; }
+.fig__btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.fig__cap { font-size: .86rem; color: var(--muted); }
+.fig__missing { display: grid; gap: 4px; padding: 14px 16px; border-radius: var(--r); border: 1px dashed var(--line-strong); color: var(--text-2); font-size: .9rem; }
+.fig__path { font-size: .78rem; color: var(--muted); word-break: break-all; }
+.lightbox {
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; gap: 12px; padding: 20px;
+  background: rgba(10, 10, 12, .92); grid-template-rows: 1fr auto;
+}
+.lightbox[hidden] { display: none; }
+.lightbox__fig { margin: 0; display: grid; gap: 10px; justify-items: center; max-width: 100%; max-height: 100%; }
+.lightbox__fig img { max-width: 100%; max-height: calc(100dvh - 140px); object-fit: contain; border-radius: var(--r); background: var(--bg-deep); }
+.lightbox__fig figcaption { color: var(--text-2); text-align: center; max-width: 70ch; }
+body.has-lightbox { overflow: hidden; }
+.footer__link { padding: 0; border: 0; background: none; color: var(--text-2); font: inherit; text-decoration: underline; cursor: pointer; }
+@media print { .fig__btn { border: 0; } .lightbox { display: none !important; } }
+
 /* Notes du technicien */
 .notes { margin-top: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden; }
 .notes:not([open]) .journal__head::after { transform: rotate(-90deg); }
@@ -745,6 +767,13 @@ body.is-home .crumbs { display: none; }
 .chip.is-main { border-color: var(--green); color: #dcefc4; }
 .ed-actions--end { align-self: end; }
 .ed-option.is-target { box-shadow: 0 0 0 2px var(--sev-moderate); }
+
+.ed-images { display: grid; gap: 10px; }
+.ed-image { grid-template-columns: 120px 1fr auto; align-items: start; }
+.ed-thumb { width: 120px; height: 80px; object-fit: contain; border-radius: 10px; background: var(--bg-deep); border: 1px solid var(--line); }
+.ed-thumb--missing { display: grid; place-items: center; font-size: .78rem; color: var(--muted); }
+.ed-images > .btn { justify-self: start; }
+@media (max-width: 640px) { .ed-image { grid-template-columns: 1fr; } }
 
 /* ---------- Pied de page ---------- */
 .footer {
