@@ -1024,6 +1024,13 @@
         return h('div', { class: 'ed-option', id: 'famille-' + fid },
           h('div', { class: 'ed-row' },
             field('Nom de la famille', textInput(f.label, v => { f.label = v; changed(false); })),
+            field('Rayon du catalogue', (() => {
+              const groups = [...new Set(Object.values(fams).map(x => x.group).filter(Boolean))];
+              const input = textInput(f.group || '', v => { if (v.trim()) f.group = v.trim(); else delete f.group; changed(false); }, { placeholder: 'ex. Audio' });
+              const field0 = input.tagName === 'INPUT' ? input : input.querySelector('input');
+              if (field0) { field0.setAttribute('list', 'ed-groups-' + fid); }
+              return h('div', null, input, h('datalist', { id: 'ed-groups-' + fid }, groups.map(g => h('option', { value: g }))));
+            })(), 'Regroupe les familles dans « Parcourir le catalogue » de l\'assistant produit.'),
             h('p', { class: 'ed-hint' }, used + ' produit' + (used > 1 ? 's' : '') + ' · identifiant ' + fid)),
           field('Symptômes concernés', holder, 'Le premier (★) est le symptôme principal : il sort en tête quand on cherche un produit de cette famille.'),
           used ? null : h('div', { class: 'ed-actions' }, deleteButton('fam:' + fid, 'Supprimer cette famille (aucun produit)', () => { delete fams[fid]; changed(true); })));

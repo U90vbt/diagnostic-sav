@@ -944,3 +944,27 @@ button.ftext { background: none; border-top: 0; border-left: 0; border-right: 0;
 
 .node-products__link { color: inherit; text-underline-offset: 3px; text-decoration-color: var(--line-strong); }
 .node-products__link:hover { text-decoration-color: var(--blue); }
+
+/* Catalogue */
+.catalog { margin-top: 8px; }
+.catalog__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; margin: 0 0 18px; }
+.catalog__title { margin: 0; font-size: clamp(1.4rem, 3.4vw, 1.9rem); font-weight: 300; letter-spacing: -.02em; }
+.catalog__select { min-height: var(--tap); max-width: 100%; padding: 0 40px 0 16px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); font: inherit; }
+.catalog__select:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.catalog__groups { justify-content: flex-start; margin: 0 0 12px; }
+.catalog__count { color: var(--muted); font-size: .9rem; margin: 0 0 28px; }
+.catalog__fam { margin: 0 0 36px; }
+.catalog__famtitle { display: flex; align-items: baseline; gap: 10px; margin: 0 0 8px; font-size: 1.15rem; font-weight: 400; }
+.catalog__n { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.catalog__list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.crow { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto; gap: 4px 18px; align-items: center; min-height: var(--tap); padding: 10px 6px; border-bottom: 1px solid var(--line); color: var(--text); text-decoration: none; transition: background .2s; }
+.crow:hover, .crow:focus-visible { background: var(--surface); }
+.crow__name { font-weight: 500; overflow-wrap: anywhere; }
+.crow__brand { color: var(--text-2); font-weight: 400; }
+.crow__type { color: var(--muted); font-size: .92rem; overflow-wrap: anywhere; }
+.crow__page { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 640px) {
+  .crow { grid-template-columns: minmax(0, 1fr) auto; }
+  .crow__type { grid-column: 1 / -1; grid-row: 2; }
+  .catalog__select { width: 100%; }
+}

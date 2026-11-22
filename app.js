@@ -544,11 +544,14 @@
       return { view: 'editor', sub: parts.slice(1) };
     }
     if (parts[0] && parts[0].split('?')[0] === 'produits') {
-      const q = (raw.split('?')[1] || '').match(/(?:^|&)q=([^&]*)/);
-      let query = '';
-      if (q) { try { query = decodeURIComponent(q[1].replace(/\+/g, ' ')); } catch { query = q[1]; } }
+      const qs = raw.split('?')[1] || '';
+      const param = (k) => {
+        const m = qs.match(new RegExp('(?:^|&)' + k + '=([^&]*)'));
+        if (!m) return '';
+        try { return decodeURIComponent(m[1].replace(/\+/g, ' ')); } catch { return m[1]; }
+      };
       const id = parts[1] ? parts[1].split('?')[0] : null;
-      return { view: 'products', productId: id, query };
+      return { view: 'products', productId: id, query: param('q'), group: param('rayon'), brand: param('marque') };
     }
     return { view: 'hub' };
   }
@@ -1590,14 +1593,87 @@
     );
   }
 
+  /* ---------------------------------------------------------------------
+     Catalogue : parcours par rayon, marque et famille (quand la recherche est vide)
+     --------------------------------------------------------------------- */
+  function catalogueHash(b) {
+    const p = [];
+    if (b.group) p.push('rayon=' + encodeURIComponent(b.group));
+    if (b.brand) p.push('marque=' + encodeURIComponent(b.brand));
+    return '#/produits' + (p.length ? '?' + p.join('&') : '');
+  }
+
+  function renderCatalogue(box) {
+    const b = state.pBrowse || { group: '', brand: '' };
+    const groupOf = (pr) => { const f = state.families.get(pr.family); return (f && f.group) || 'Autres'; };
+    const all = state.pIndex.map(e => e.pr && { id: e.id, pr: e.pr, facts: e.facts }).filter(Boolean);
+    const groups = [...new Set([...state.families.values()].map(f => f.group || 'Autres'))]
+      .filter(g => all.some(x => groupOf(x.pr) === g));
+    const inGroup = all.filter(x => !b.group || groupOf(x.pr) === b.group);
+    const brands = [...new Set(inGroup.map(x => x.pr.brand))].sort((x, y) => x.localeCompare(y, 'fr'));
+    const brand = brands.includes(b.brand) ? b.brand : '';
+    const list = inGroup.filter(x => !brand || x.pr.brand === brand);
+    const go = (next) => navigate(catalogueHash(next), { replace: true });
+
+    const filters = h('div', { class: 'filters filters--text catalog__groups', role: 'group', 'aria-label': 'Rayons du catalogue' },
+      [['', 'Tout'], ...groups.map(g => [g, g])].map(([id, label]) => h('button', {
+        type: 'button', class: 'ftext', 'aria-pressed': String(b.group === id),
+        dataset: { focusKey: 'g:' + id },
+        onclick: () => { state.pFocusKey = 'g:' + id; go({ group: id, brand: '' }); }
+      }, label, h('span', { class: 'ftext__n' }, String(all.filter(x => !id || groupOf(x.pr) === id).length)))));
+
+    const sel = h('select', { id: 'catalog-brand', class: 'catalog__select', dataset: { focusKey: 'brand' }, onchange: (e) => { state.pFocusKey = 'brand'; go({ group: b.group, brand: e.target.value }); } },
+      h('option', { value: '' }, 'Toutes les marques (' + brands.length + ')'),
+      brands.map(br => h('option', { value: br, selected: br === brand },
+        br + ' (' + inGroup.filter(x => x.pr.brand === br).length + ')')));
+
+    // regroupement par famille, dans l'ordre des familles de decisions.json
+    const famOrder = [...state.families.keys()];
+    const byFam = new Map();
+    for (const x of list) {
+      if (!byFam.has(x.pr.family)) byFam.set(x.pr.family, []);
+      byFam.get(x.pr.family).push(x);
+    }
+    const fams = [...byFam.keys()].sort((x, y) => famOrder.indexOf(x) - famOrder.indexOf(y));
+    const row = (x) => h('li', null,
+      h('a', { class: 'crow', href: '#/produits/' + encodeURIComponent(x.id) },
+        h('span', { class: 'crow__name' }, h('span', { class: 'crow__brand' }, x.pr.brand), ' ', x.pr.model),
+        h('span', { class: 'crow__type' }, x.pr.type),
+        h('span', { class: 'crow__page' }, x.pr.page ? 'p. ' + x.pr.page : '')));
+    const sections = fams.map(fid => {
+      const f = state.families.get(fid);
+      const items = byFam.get(fid).sort((x, y) => (x.pr.brand + x.pr.model).localeCompare(y.pr.brand + y.pr.model, 'fr'));
+      return h('section', { class: 'catalog__fam', 'aria-labelledby': 'cf-' + fid },
+        h('h2', { class: 'catalog__famtitle', id: 'cf-' + fid }, f ? f.label : fid, h('span', { class: 'catalog__n' }, String(items.length))),
+        h('ul', { class: 'catalog__list' }, items.map(row)));
+    });
+
+    box.replaceChildren(
+      h('div', { class: 'catalog' },
+        h('div', { class: 'catalog__bar' },
+          h('h2', { class: 'catalog__title' }, 'Parcourir le catalogue'),
+          h('label', { class: 'visually-hidden', for: 'catalog-brand' }, 'Filtrer par marque'), sel),
+        filters,
+        h('p', { class: 'catalog__count', 'aria-live': 'polite' },
+          list.length + ' produit' + (list.length > 1 ? 's' : '') + (b.group ? ' · ' + b.group : '') + (brand ? ' · ' + brand : '') +
+          ' · ' + fams.length + ' famille' + (fams.length > 1 ? 's' : '')),
+        ...sections));
+    // le focus clavier reste sur le filtre utilisé
+    if (state.pFocusKey) {
+      const el = box.querySelector('[data-focus-key="' + state.pFocusKey + '"]');
+      state.pFocusKey = null;
+      if (el) el.focus({ preventScroll: true });
+    }
+  }
+
   const P_PAGE = 20;
   function renderProductResults(query, limit = P_PAGE) {
     const box = $('#products-results');
     const statusEl = $('#products-status');
     const q = query.trim();
     if (!q) {
-      statusEl.textContent = state.pIndex.length + ' produits indexés. Tapez une marque, une référence ou une caractéristique.';
-      box.replaceChildren();
+      statusEl.replaceChildren();
+      renderCatalogue(box);
       return;
     }
     const { results, partial } = productSearch(q);
@@ -1641,6 +1717,7 @@
     $('#view-products').classList.remove('is-detail');
     if (route.query !== undefined && input.value !== route.query) input.value = route.query;
     state.lastPQuery = input.value;
+    state.pBrowse = { group: route.group || '', brand: route.brand || '' };
     $('#product-detail').replaceChildren();
     renderProductResults(input.value);
   }
@@ -1681,8 +1758,8 @@
     box.dataset.pid = pid;
     $('#products-results').replaceChildren();
     $('#view-products').classList.add('is-detail');
-    const back = h('a', { class: 'btn btn--small btn--ghost', href: '#/produits' + (state.lastPQuery ? '?q=' + encodeURIComponent(state.lastPQuery) : '') },
-      '← ' + (state.lastPQuery ? 'Résultats pour « ' + state.lastPQuery + ' »' : 'Recherche'));
+    const back = h('a', { class: 'btn btn--small btn--ghost', href: state.lastPQuery ? '#/produits?q=' + encodeURIComponent(state.lastPQuery) : catalogueHash(state.pBrowse || {}) },
+      '← ' + (state.lastPQuery ? 'Résultats pour « ' + state.lastPQuery + ' »' : 'Catalogue'));
     if (!pr) {
       $('#products-status').textContent = '';
       box.replaceChildren(h('div', { class: 'empty' }, 'Ce produit n\'existe pas dans le catalogue. ', back));
@@ -2498,7 +2575,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.15.0';
+  const APP_VERSION = '1.16.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

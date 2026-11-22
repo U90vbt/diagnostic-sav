@@ -353,6 +353,10 @@ L'onglet **Assistant produit** (`#/produits`) répond aux questions sur le maté
 - La fiche d'un produit (`#/produits/<id>`) propose **Diagnostiquer ce produit** (symptômes de sa famille, diagnostic ouvert avec le produit présélectionné) et un accès direct aux **étapes spécifiques** à ce produit.
 - La requête est dans l'URL (`#/produits?q=…`) : un lien peut être partagé.
 
+### Parcourir le catalogue
+
+Quand la recherche est vide, la page affiche tout le catalogue, regroupé par famille. On filtre par **rayon** (Affichage, Audio…) et par **marque** ; le lien est partageable (`#/produits?rayon=Audio&marque=Shure`). Le rayon d'une famille est le champ `group` de `families` dans `decisions.json`, modifiable dans l'éditeur (Produits › Familles, « Rayon du catalogue »).
+
 ### Format de `data/catalogue.json`
 
 ```json

@@ -3828,6 +3828,7 @@
   "families": {
     "ecran": {
       "label": "Écrans professionnels",
+      "group": "Affichage",
       "symptoms": [
         "ecran-noir",
         "image-instable",
@@ -3836,6 +3837,7 @@
     },
     "ecran-interactif": {
       "label": "Écrans interactifs et tactiles",
+      "group": "Affichage",
       "symptoms": [
         "tactile",
         "ecran-noir",
@@ -3845,6 +3847,7 @@
     },
     "affichage-epaper": {
       "label": "Affichage e-paper",
+      "group": "Affichage",
       "symptoms": [
         "affichage-maj",
         "pas-alimentation",
@@ -3853,6 +3856,7 @@
     },
     "led-caisson": {
       "label": "Murs LED (caissons, modules)",
+      "group": "Affichage",
       "symptoms": [
         "mur-led",
         "pas-alimentation",
@@ -3861,6 +3865,7 @@
     },
     "led-tout-en-un": {
       "label": "Écrans LED tout-en-un",
+      "group": "Affichage",
       "symptoms": [
         "mur-led",
         "ecran-noir",
@@ -3869,6 +3874,7 @@
     },
     "led-controleur": {
       "label": "Contrôleurs LED",
+      "group": "Affichage",
       "symptoms": [
         "mur-led",
         "firmware-echec",
@@ -3877,6 +3883,7 @@
     },
     "videoprojecteur": {
       "label": "Vidéoprojecteurs",
+      "group": "Affichage",
       "symptoms": [
         "ecran-noir",
         "image-instable",
@@ -3886,6 +3893,7 @@
     },
     "presentation-sans-fil": {
       "label": "Présentation sans fil",
+      "group": "Visio et collaboration",
       "symptoms": [
         "partage-sans-fil",
         "ecran-noir",
@@ -3895,6 +3903,7 @@
     },
     "visio": {
       "label": "Barres et systèmes de visioconférence",
+      "group": "Visio et collaboration",
       "symptoms": [
         "visio-peripherique",
         "peripherique-non-detecte",
@@ -3905,6 +3914,7 @@
     },
     "camera-usb": {
       "label": "Caméras de visioconférence",
+      "group": "Visio et collaboration",
       "symptoms": [
         "peripherique-non-detecte",
         "firmware-echec",
@@ -3913,6 +3923,7 @@
     },
     "camera-ptz": {
       "label": "Caméras PTZ et captation",
+      "group": "Vidéo et captation",
       "symptoms": [
         "regie-video",
         "pas-reseau",
@@ -3921,6 +3932,7 @@
     },
     "regie-captation": {
       "label": "Stations de captation et matrices",
+      "group": "Vidéo et captation",
       "symptoms": [
         "regie-video",
         "ecran-noir",
@@ -3929,6 +3941,7 @@
     },
     "av-ip": {
       "label": "AV sur IP et extendeurs",
+      "group": "Vidéo et captation",
       "symptoms": [
         "ecran-noir",
         "image-instable",
@@ -3938,6 +3951,7 @@
     },
     "commutateur-video": {
       "label": "Commutateurs vidéo",
+      "group": "Vidéo et captation",
       "symptoms": [
         "ecran-noir",
         "image-instable"
@@ -3945,6 +3959,7 @@
     },
     "processeur-mur": {
       "label": "Processeurs et contrôleurs de mur d'images",
+      "group": "Affichage",
       "symptoms": [
         "regie-video",
         "image-instable",
@@ -3953,6 +3968,7 @@
     },
     "switch-reseau": {
       "label": "Switchs réseau AV",
+      "group": "Réseau et connectique",
       "symptoms": [
         "pas-reseau",
         "latence-reseau",
@@ -3961,6 +3977,7 @@
     },
     "lecteur-media": {
       "label": "Lecteurs d'affichage dynamique",
+      "group": "Affichage",
       "symptoms": [
         "affichage-maj",
         "ecran-noir",
@@ -3970,6 +3987,7 @@
     },
     "gestion-salle": {
       "label": "Réservation et capteurs de salle",
+      "group": "Visio et collaboration",
       "symptoms": [
         "affichage-maj",
         "pas-reseau",
@@ -3978,6 +3996,7 @@
     },
     "dsp": {
       "label": "Processeurs audio (DSP)",
+      "group": "Audio",
       "symptoms": [
         "pas-de-son",
         "son-degrade",
@@ -3988,6 +4007,7 @@
     },
     "ampli": {
       "label": "Amplificateurs",
+      "group": "Audio",
       "symptoms": [
         "pas-de-son",
         "son-degrade",
@@ -3996,6 +4016,7 @@
     },
     "enceinte": {
       "label": "Enceintes",
+      "group": "Audio",
       "symptoms": [
         "pas-de-son",
         "son-degrade"
@@ -4003,6 +4024,7 @@
     },
     "enceinte-ip": {
       "label": "Enceintes et amplis réseau (Dante, PoE)",
+      "group": "Audio",
       "symptoms": [
         "pas-de-son",
         "latence-reseau",
@@ -4011,6 +4033,7 @@
     },
     "micro-conference": {
       "label": "Micros de conférence et plafond",
+      "group": "Audio",
       "symptoms": [
         "pas-de-son",
         "larsen",
@@ -4021,6 +4044,7 @@
     },
     "micro-hf": {
       "label": "Micros HF",
+      "group": "Audio",
       "symptoms": [
         "hf-coupures",
         "larsen",
@@ -4029,6 +4053,7 @@
     },
     "diffusion-audio": {
       "label": "Diffusion audio (Wi-Fi, Bluetooth, streaming)",
+      "group": "Audio",
       "symptoms": [
         "appairage-bluetooth",
         "pas-de-son",
@@ -4037,6 +4062,7 @@
     },
     "connectique": {
       "label": "Prises, hubs et chargeurs",
+      "group": "Réseau et connectique",
       "symptoms": [
         "peripherique-non-detecte",
         "pas-alimentation"

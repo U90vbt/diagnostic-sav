@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#171b20">
-  <meta name="diagsav-version" content="1.15.0">
+  <meta name="diagsav-version" content="1.16.0">
   <meta name="description" content="Assistant de diagnostic SAV de premier niveau — usage interne.">
   <title>DIAG·SAV — Assistant de diagnostic N1</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -168,7 +168,7 @@
       <div class="phead">
         <p class="eyebrow">Catalogue Focus · été 2025</p>
         <h1 id="products-title" class="phead__title">Assistant produit</h1>
-        <p class="phead__lead">Posez votre question sur le matériel : chaque réponse cite le produit et la page du catalogue.</p>
+        <p class="phead__lead">Parcourez le catalogue par rayon et par marque, ou posez une question : chaque réponse cite le produit et la page.</p>
         <form class="search" role="search" id="psearch-form" autocomplete="off">
           <label for="psearch-input" class="visually-hidden">Rechercher un produit ou une caractéristique</label>
           <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -177,10 +177,10 @@
         </form>
         <p class="search__hint">
           Exemples :
-          <button type="button" class="chip chip--ghost" data-psuggest="switch PoE 48 ports">switch PoE 48 ports</button>
-          <button type="button" class="chip chip--ghost" data-psuggest="vidéoprojecteur 8000 lumens">projecteur 8000 lumens</button>
-          <button type="button" class="chip chip--ghost" data-psuggest="micro Dante PoE">micro Dante PoE</button>
-          <button type="button" class="chip chip--ghost" data-psuggest="contrôleur LED 4K">contrôleur LED 4K</button>
+          <button type="button" class="slink" data-psuggest="switch PoE 48 ports">switch PoE 48 ports</button>
+          <button type="button" class="slink" data-psuggest="vidéoprojecteur 8000 lumens">projecteur 8000 lumens</button>
+          <button type="button" class="slink" data-psuggest="micro Dante PoE">micro Dante PoE</button>
+          <button type="button" class="slink" data-psuggest="contrôleur LED 4K">contrôleur LED 4K</button>
         </p>
       </div>
       <div id="products-status" class="pstatus" aria-live="polite"></div>
