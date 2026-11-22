@@ -530,6 +530,10 @@
     if (parts[0] === 'd' && parts[1]) {
       return { view: 'diag', symptomId: parts[1], path: parts.slice(2) };
     }
+    if (parts[0] && parts[0].split('?')[0] === 'veille') {
+      const f = (raw.split('?')[1] || '').match(/(?:^|&)f=([^&]*)/);
+      return { view: 'news', filter: f ? decodeURIComponent(f[1]) : 'all' };
+    }
     if (parts[0] === 'recommander') {
       return { view: 'reco', path: parts.slice(1) };
     }
@@ -579,7 +583,12 @@
     if (!state.data) return;
     const route = parseHash();
 
-    setActiveTab(['products', 'editor', 'reco'].includes(route.view) ? route.view : 'diag');
+    setActiveTab(['products', 'editor', 'reco', 'news'].includes(route.view) ? route.view : 'diag');
+    if (route.view === 'news') {
+      trackNav();
+      renderNews(route);
+      return;
+    }
     if (route.view === 'reco') {
       trackNav();
       renderReco(route);
@@ -623,7 +632,7 @@
   }
 
   function showView(name) {
-    for (const v of ['loading', 'error', 'home', 'diag', 'products', 'editor', 'reco']) {
+    for (const v of ['loading', 'error', 'home', 'diag', 'products', 'editor', 'reco', 'news']) {
       const el = $('#view-' + v);
       if (el) el.hidden = v !== name;
     }
@@ -1739,6 +1748,91 @@
     if (heading) heading.focus({ preventScroll: true });
   }
 
+  /* ---------------------------------------------------------------------
+     Veille technologique (news.json) : cartes filtrables
+     --------------------------------------------------------------------- */
+  const IMPACT_SEV = { faible: 'low', moyen: 'moderate', eleve: 'high' };
+
+  function validateNews(data) {
+    const w = [];
+    if (!data || !Array.isArray(data.items)) return ['news.json : la liste « items » est absente.'];
+    const cats = new Set((data.categories || []).map(c => c.id));
+    const ids = new Set();
+    data.items.forEach((it, i) => {
+      const name = '« ' + truncate(it.title || it.id || 'n° ' + (i + 1), 60) + ' »';
+      if (!it.id) w.push('L\'actualité ' + name + ' n\'a pas d\'identifiant.');
+      else if (ids.has(it.id)) w.push('Deux actualités portent l\'identifiant « ' + it.id + ' ».');
+      ids.add(it.id);
+      if (!it.title) w.push('Une actualité n\'a pas de titre (« ' + it.id + ' »).');
+      if (!cats.has(it.category)) w.push('L\'actualité ' + name + ' a une catégorie inconnue (« ' + it.category + ' ») : attendu ' + [...cats].join(', ') + '.');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(it.date || '') || isNaN(Date.parse(it.date))) w.push('L\'actualité ' + name + ' a une date invalide (« ' + it.date + ' ») : format AAAA-MM-JJ.');
+      if (!IMPACT_SEV[it.impact]) w.push('L\'actualité ' + name + ' a un impact SAV invalide (« ' + it.impact + ' ») : faible, moyen ou eleve.');
+      if (!it.source || !it.source.name) w.push('L\'actualité ' + name + ' n\'indique pas sa source.');
+      else if (it.source.url && !/^https:\/\//.test(it.source.url)) w.push('Le lien de la source de ' + name + ' doit commencer par https://.');
+      for (const pid of it.products || []) if (!state.products.has(pid)) w.push('L\'actualité ' + name + ' cite un produit inconnu du catalogue (« ' + pid + ' »).');
+    });
+    return w;
+  }
+
+  const fmtDate = iso => { const d = new Date(iso + 'T12:00:00'); return isNaN(d) ? iso : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); };
+
+  async function renderNews(route) {
+    showView('news');
+    renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Veille' }]);
+    const box = $('#news-root');
+    let data;
+    try { data = await loadJson('data/news.json'); }
+    catch (err) { return loadError(box, 'Le fichier de veille (data/news.json)', err); }
+    if (state.preview && state.previewNews) data = state.previewNews;
+    if (state.newsChecked !== data) {
+      state.newsChecked = data;
+      state.newsIssues = validateNews(data);
+      if (state.newsIssues.length) console.warn('[DIAG·SAV] Anomalies dans news.json :\n- ' + state.newsIssues.join('\n- '));
+    }
+    const cats = data.categories || [];
+    const items = [...(data.items || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const filter = cats.some(c => c.id === route.filter) ? route.filter : 'all';
+    const shown = filter === 'all' ? items : items.filter(it => it.category === filter);
+    const impacts = data.impacts || {};
+    const catLabel = id => (cats.find(c => c.id === id) || {}).label || id;
+
+    const filters = h('nav', { class: 'filters filters--text', 'aria-label': 'Filtrer la veille' },
+      [{ id: 'all', label: 'Tout' }, ...cats].map(c => {
+        const n = c.id === 'all' ? items.length : items.filter(it => it.category === c.id).length;
+        return h('a', { class: 'ftext', href: '#/veille' + (c.id === 'all' ? '' : '?f=' + encodeURIComponent(c.id)), 'aria-current': c.id === filter ? 'true' : null },
+          c.label, h('span', { class: 'ftext__n' }, String(n)));
+      }));
+
+    const card = it => {
+      const sev = IMPACT_SEV[it.impact] || 'low';
+      const imp = impacts[it.impact] || {};
+      const prods = (it.products || []).map(pid => [pid, state.products.get(pid)]);
+      return h('li', null, h('article', { class: 'news' },
+        h('div', { class: 'news__meta' },
+          h('span', { class: 'news__cat' }, catLabel(it.category)),
+          h('time', { class: 'news__date', datetime: it.date }, fmtDate(it.date))),
+        h('h2', { class: 'news__title' }, it.title),
+        h('p', { class: 'news__impact' }, h('span', { class: 'badge badge--' + sev, title: imp.description || null }, 'Impact SAV · ' + (imp.label || it.impact))),
+        it.summary ? h('p', { class: 'news__summary' }, it.summary) : null,
+        it.action ? h('p', { class: 'news__action' }, h('strong', null, 'À faire : '), it.action) : null,
+        prods.length ? h('p', { class: 'news__products' }, 'Matériel : ', prods.map(([pid, pr], i) => [i ? ', ' : '',
+          pr ? h('a', { href: '#/produits/' + encodeURIComponent(pid) }, productLabel(pr)) : h('span', { class: 'is-bad' }, '⚠ ' + pid)])) : null,
+        it.source ? h('p', { class: 'news__source' }, 'Source : ',
+          it.source.url && /^https:\/\//.test(it.source.url)
+            ? h('a', { href: it.source.url, target: '_blank', rel: 'noopener noreferrer' }, it.source.name || it.source.url, h('span', { class: 'visually-hidden' }, ' (ouvre un nouvel onglet)'))
+            : it.source.name) : null));
+    };
+
+    box.replaceChildren(...[
+      h('div', { class: 'phead' }, h('p', { class: 'eyebrow' }, 'Mise à jour ' + fmtDate((data.meta && data.meta.updated) || '')), h('h1', { class: 'phead__title' }, (data.meta && data.meta.title) || 'Veille')),
+      state.newsIssues.length ? h('p', { class: 'reco-warn' }, '⚠ ' + state.newsIssues.length + ' anomalie(s) dans data/news.json (détail dans la console).') : null,
+      filters,
+      h('p', { class: 'visually-hidden', 'aria-live': 'polite' }, shown.length + ' actualité' + (shown.length > 1 ? 's' : '') + ' affichée' + (shown.length > 1 ? 's' : '')),
+      shown.length ? h('ul', { class: 'news-list' }, shown.map(card)) : h('p', { class: 'empty' }, 'Aucune actualité dans cette catégorie.'),
+      (data.meta && data.meta.note) ? h('p', { class: 'muted news-note' }, data.meta.note) : null
+    ].filter(Boolean));
+  }
+
   /** Texte de devis pré-rempli, sans prix (le catalogue n'en contient pas). */
   function buildQuote(data, result, answers, items) {
     const now = new Date();
@@ -2065,7 +2159,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.9.0';
+  const APP_VERSION = '1.10.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

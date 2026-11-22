@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#171b20">
-  <meta name="diagsav-version" content="1.9.0">
+  <meta name="diagsav-version" content="1.10.0">
   <meta name="description" content="Assistant de diagnostic SAV de premier niveau — usage interne.">
   <title>DIAG·SAV — Assistant de diagnostic N1</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -47,7 +47,8 @@
       <nav class="tabs" aria-label="Sections">
         <a class="tabs__tab" href="#/" data-tab="diag">Diagnostic</a>
         <a class="tabs__tab" href="#/recommander" data-tab="reco">Recommander</a>
-        <a class="tabs__tab" href="#/produits" data-tab="products"><span class="tabs__long">Assistant&nbsp;</span>produit</a>
+        <a class="tabs__tab" href="#/veille" data-tab="news">Veille</a>
+        <a class="tabs__tab tabs__tab--wide" href="#/produits" data-tab="products"><span class="tabs__long">Assistant&nbsp;</span>produit</a>
         <a class="tabs__tab tabs__tab--wide" href="#/editeur" data-tab="editor">Éditeur</a>
       </nav>
 
@@ -168,6 +169,11 @@
       <div id="reco-root" aria-live="polite"><p class="pstatus">Chargement…</p></div>
     </section>
 
+    <!-- Veille technologique -->
+    <section id="view-news" class="view" hidden aria-label="Veille technologique">
+      <div id="news-root"><p class="pstatus">Chargement…</p></div>
+    </section>
+
     <!-- Éditeur des procédures (editor.js) -->
     <section id="view-editor" class="view" hidden aria-label="Éditeur des procédures">
       <div id="editor-root"><p class="pstatus">Chargement de l'éditeur…</p></div>
@@ -249,6 +255,8 @@
     <span>Aucune donnée collectée</span>
     <span class="footer__sep" aria-hidden="true">|</span>
 <button type="button" class="footer__link" id="btn-prepare-offline">Préparer le hors-ligne</button>
+    <span class="footer__sep" aria-hidden="true">|</span>
+    <a href="#/produits">Assistant produit</a>
     <span class="footer__sep" aria-hidden="true">|</span>
         <a href="#/editeur">Éditer les procédures</a>
     <span id="data-warnings" class="footer__warn" hidden></span>

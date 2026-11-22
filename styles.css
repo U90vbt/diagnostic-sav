@@ -628,6 +628,30 @@ a.reco-item__name:hover { text-decoration: underline; text-underline-offset: 3px
 .reco-item__why { font-size: .92rem; color: var(--text-2); }
 .reco-warn { margin: 0 0 14px; color: var(--sev-moderate); font-size: .9rem; text-align: center; }
 
+/* Filtres en texte seul, soulignement de l'élément actif */
+.filters--text { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 22px; margin: 4px 0 26px; }
+.ftext {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 2px;
+  color: var(--muted); text-decoration: none; font-weight: 500; border-bottom: 2px solid transparent; transition: color .2s, border-color .2s;
+}
+.ftext:hover { color: var(--text); }
+.ftext[aria-current="true"] { color: var(--text); border-bottom-color: var(--blue); }
+.ftext__n { font-size: .78rem; color: var(--muted); }
+
+/* Veille */
+.news-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); }
+.news { height: 100%; display: grid; align-content: start; gap: 10px; padding: 24px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); }
+.news__meta { display: flex; justify-content: space-between; gap: 10px; font-size: .82rem; color: var(--muted); }
+.news__cat { text-transform: uppercase; letter-spacing: .08em; color: var(--blue); }
+.news__title { font-size: 1.25rem; letter-spacing: -.015em; }
+.news__impact { margin: 0; }
+.news__summary, .news__action, .news__products { margin: 0; color: var(--text-2); font-size: .95rem; }
+.news__products a { color: var(--text); }
+.news__source { margin: 4px 0 0; font-size: .85rem; color: var(--muted); }
+.news__source a { color: var(--blue); }
+.news-note { text-align: center; font-size: .85rem; margin-top: 26px; }
+.is-bad { color: var(--sev-high); }
+
 /* Notes du technicien */
 .notes { margin-top: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden; }
 .notes:not([open]) .journal__head::after { transform: rotate(-90deg); }

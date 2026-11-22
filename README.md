@@ -27,6 +27,7 @@ Site web statique qui remplace les procédures papier par un arbre de décision 
 └── data/
     ├── decisions.json     Arbre de décision + fiches produits (marque, modèle, page)
     ├── reco.json          Arbre de recommandation avant-vente (onglet Recommander)
+    ├── news.json          Veille technologique (onglet Veille)
     └── catalogue.json     Caractéristiques produits et synonymes (Assistant produit)
 ```
 
@@ -296,6 +297,34 @@ Les réponses données restent visibles (« Vos réponses ») et chacune se modi
 - Une réponse mène toujours à une autre question ou à une recommandation (`next`). Pour que la recommandation dépende de chaque réponse, faites une branche par réponse.
 - **Le fichier livré ne contient que 2 parcours d'exemple marqués [EXEMPLE À REMPLACER]** : remplacez-les par vos packs réels.
 - Les anomalies (réponse sans suite, produit inconnu, quantité invalide) sont signalées en haut de l'onglet et détaillées dans la console.
+
+---
+
+## Veille technologique
+
+L'onglet **Veille** (`#/veille`) présente les actualités utiles au SAV en cartes, filtrables par catégorie (**Nouveautés / Firmware / Fin de vie / Bulletins sécurité**), de la plus récente à la plus ancienne. Chaque carte indique la date, l'**impact SAV** (faible, moyen, élevé), la source, l'action à mener et le matériel concerné (lien vers sa fiche). Le filtre est dans l'adresse (`#/veille?f=firmware`).
+
+**La veille est saisie à la main** : le site ne va chercher aucune information sur Internet (aucun appel externe). Le lien de la source s'ouvre dans un nouvel onglet.
+
+### Format de `data/news.json`
+
+```json
+{
+  "meta": { "version": "0.1.0", "updated": "2026-11-22", "title": "Veille technologique" },
+  "categories": [ { "id": "firmware", "label": "Firmware" } ],
+  "impacts": { "moyen": { "label": "Moyen", "description": "À planifier…" } },
+  "items": [
+    { "id": "mctrl4k-firmware-x", "category": "firmware", "title": "…", "date": "2026-11-15",
+      "impact": "moyen", "summary": "…", "action": "…", "products": ["novastar-mctrl4k"],
+      "source": { "name": "Notes de version du constructeur", "url": "https://…" } }
+  ]
+}
+```
+
+- `category` : `nouveaute`, `firmware`, `fin-de-vie` ou `securite`. `impact` : `faible`, `moyen` ou `eleve`.
+- `date` au format AAAA-MM-JJ ; `source.url` doit commencer par `https://`.
+- `products` : identifiants de produits de `decisions.json` (facultatif).
+- **Le fichier livré contient une seule entrée fictive marquée [EXEMPLE]** : remplacez-la.
 
 ---
 
