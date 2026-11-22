@@ -530,6 +530,7 @@
     if (parts[0] === 'd' && parts[1]) {
       return { view: 'diag', symptomId: parts[1], path: parts.slice(2) };
     }
+    if (parts[0] === 'diagnostic') return { view: 'home' };
     if (parts[0] && parts[0].split('?')[0] === 'veille') {
       const f = (raw.split('?')[1] || '').match(/(?:^|&)f=([^&]*)/);
       return { view: 'news', filter: f ? decodeURIComponent(f[1]) : 'all' };
@@ -547,7 +548,7 @@
       const id = parts[1] ? parts[1].split('?')[0] : null;
       return { view: 'products', productId: id, query };
     }
-    return { view: 'home' };
+    return { view: 'hub' };
   }
 
   function navigate(hash, { replace = false } = {}) {
@@ -583,7 +584,12 @@
     if (!state.data) return;
     const route = parseHash();
 
-    setActiveTab(['products', 'editor', 'reco', 'news'].includes(route.view) ? route.view : 'diag');
+    setActiveTab({ hub: 'home', home: 'diag', diag: 'diag', reco: 'reco', news: 'news' }[route.view] || null);
+    if (route.view === 'hub') {
+      trackNav();
+      renderHub();
+      return;
+    }
     if (route.view === 'news') {
       trackNav();
       renderNews(route);
@@ -608,7 +614,7 @@
       const symptom = state.symptoms.get(route.symptomId);
       if (!symptom || !state.nodes[symptom.start]) {
         toast('Symptôme introuvable');
-        navigate('#/', { replace: true });
+        navigate('#/diagnostic', { replace: true });
         return;
       }
       const path = sanitizePath(symptom, route.path.length ? route.path : [symptom.start]);
@@ -625,18 +631,18 @@
   }
 
   function setActiveTab(tab) {
-    for (const a of document.querySelectorAll('.tabs__tab')) {
+    for (const a of document.querySelectorAll('.nav__link')) {
       if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     }
   }
 
   function showView(name) {
-    for (const v of ['loading', 'error', 'home', 'diag', 'products', 'editor', 'reco', 'news']) {
+    for (const v of ['loading', 'error', 'hub', 'home', 'diag', 'products', 'editor', 'reco', 'news']) {
       const el = $('#view-' + v);
       if (el) el.hidden = v !== name;
     }
-    document.body.classList.toggle('is-home', name === 'home');
+    document.body.classList.toggle('is-home', name === 'hub');
   }
 
   /* ---------------------------------------------------------------------
@@ -704,25 +710,25 @@
   function renderFilters() {
     const wrap = $('#filters');
     wrap.replaceChildren();
-    const make = (id, label, iconName) => h('button', {
+    const make = (id, label) => h('button', {
       type: 'button',
-      class: 'chip',
+      class: 'ftext',
       'aria-pressed': String(state.filter === id),
       dataset: { filter: id },
       onclick: () => { state.filter = id; renderHome(); }
-    }, iconName ? icon(iconName) : null, label, h('span', { class: 'chip__count', dataset: { countFor: id } }));
+    }, label, h('span', { class: 'ftext__n', dataset: { countFor: id } }));
 
-    wrap.append(make('all', 'Tous', null));
-    for (const c of state.categories.values()) wrap.append(make(c.id, c.label, c.icon));
+    wrap.append(make('all', 'Tous'));
+    for (const c of state.categories.values()) wrap.append(make(c.id, c.label));
   }
 
   function updateFilterCounts() {
     const base = search(state.query, 'all');
-    for (const btn of document.querySelectorAll('#filters .chip')) {
+    for (const btn of document.querySelectorAll('#filters .ftext')) {
       const id = btn.dataset.filter;
       btn.setAttribute('aria-pressed', String(state.filter === id));
       const n = id === 'all' ? base.length : base.filter(s => s.category === id).length;
-      const counter = btn.querySelector('.chip__count');
+      const counter = btn.querySelector('.ftext__n');
       if (counter) counter.textContent = n;
       btn.hidden = id !== 'all' && n === 0 && state.filter !== id;
     }
@@ -731,13 +737,13 @@
   function renderGrid() {
     const list = search(state.query, state.filter);
     const grid = $('#symptom-grid');
-    grid.replaceChildren(...list.map(symptomCard));
+    grid.replaceChildren(...list.map((s, i) => symptomCard(s, i)));
     $('#empty-state').hidden = list.length > 0;
     $('#result-count').textContent = list.length + ' / ' + state.symptoms.size;
     updateFilterCounts();
   }
 
-  function symptomCard(s) {
+  function symptomCard(s, index = 0) {
     const cat = categoryOf(s);
     const hintId = state.searchHints.get(s.id);
     const hint = hintId && state.products.get(hintId);
@@ -748,8 +754,8 @@
         onclick: () => { state.focusProduct = hintId || null; }
       },
         h('span', { class: 'card__top' },
-          h('span', { class: 'card__cat' }, icon(cat.icon), cat.label),
-          h('span', { class: 'card__id' }, s.id.toUpperCase())
+          h('span', { class: 'card__num' }, String(index + 1).padStart(2, '0')),
+          h('span', { class: 'card__cat' }, icon(cat.icon), cat.label)
         ),
         h('h3', { class: 'card__title' }, s.title),
         s.summary ? h('p', { class: 'card__summary' }, s.summary) : null,
@@ -793,13 +799,62 @@
   function renderHome() {
     showView('home');
     state.focusProduct = null;
-    renderCrumbs([{ label: 'Accueil', href: '#/' }]);
+    renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Diagnostic' }]);
     const input = $('#search-input');
     if (input.value !== state.query) input.value = state.query;
     renderGrid();
     renderRecents();
     state.lastRenderedHash = null;
     setActiveTab('diag');
+  }
+
+  /* ---------------------------------------------------------------------
+     Accueil (hub) : recherche globale + cartes de sections
+     --------------------------------------------------------------------- */
+  function renderHub() {
+    showView('hub');
+    renderCrumbs([{ label: 'Accueil' }]);
+    state.lastRenderedHash = null;
+    const q = $('#gsearch-input').value;
+    if (q.trim()) runGlobalSearch(q);
+  }
+
+  let gTimer = null, gSeq = 0;
+  async function runGlobalSearch(query) {
+    const box = $('#gsearch-results');
+    const q = query.trim();
+    const seq = ++gSeq;
+    if (!q) { box.replaceChildren(); return; }
+    const groups = [];
+    // symptômes (déjà en mémoire)
+    const sym = search(q, 'all').slice(0, 5);
+    if (sym.length) groups.push({ title: 'Diagnostic', items: sym.map(s => ({ href: diagHash(s.id, [s.start]), label: s.title, sub: categoryOf(s).label, pid: state.searchHints.get(s.id) })) });
+    // produits (catalogue chargé à la demande)
+    try {
+      await loadCatalogue();
+      const pr = productSearch(q);
+      if (pr.results.length && !pr.partial) groups.push({ title: 'Produits', items: pr.results.slice(0, 5).map(r => ({ href: '#/produits/' + encodeURIComponent(r.entry.id), label: productLabel(r.entry.pr), sub: r.entry.pr.type + ' · ' + productSourceLabel(r.entry.pr) })) });
+    } catch { /* catalogue indisponible : on ignore */ }
+    // veille
+    try {
+      const news = state.preview && state.previewNews ? state.previewNews : await loadJson('data/news.json');
+      const toks = tokenize(q);
+      const hits = (news.items || []).filter(it => { const t = normalize([it.title, it.summary, it.action].join(' ')); return toks.length && toks.every(k => t.includes(k)); });
+      if (hits.length) groups.push({ title: 'Veille', items: hits.slice(0, 5).map(it => ({ href: '#/veille' + (it.category ? '?f=' + encodeURIComponent(it.category) : ''), label: it.title, sub: fmtDate(it.date) })) });
+    } catch { /* veille indisponible : on ignore */ }
+    if (seq !== gSeq) return;   // une recherche plus récente est en cours
+    const all = groups.flatMap(g => g.items);
+    state.gFirst = all[0] ? all[0].href : null;
+    if (!groups.length) {
+      box.replaceChildren(h('p', { class: 'gresults__none' }, 'Aucun résultat pour « ' + q + ' ».'));
+      return;
+    }
+    box.replaceChildren(...groups.map(g => h('section', { class: 'gresults__group' },
+      h('h2', { class: 'gresults__title' }, g.title),
+      h('ul', { class: 'gresults__list' }, g.items.map(it => h('li', null,
+        h('a', { class: 'gresults__item', href: it.href, onclick: () => { state.focusProduct = it.pid || null; } },
+          h('span', { class: 'gresults__label' }, it.label),
+          it.sub ? h('span', { class: 'gresults__sub' }, it.sub) : null)))))));
   }
 
   /* ---------------------------------------------------------------------
@@ -840,7 +895,7 @@
     renderGear(active);
 
     // Fil d'Ariane
-    const crumbs = [{ label: 'Accueil', href: '#/' }];
+    const crumbs = [{ label: 'Accueil', href: '#/' }, { label: 'Diagnostic', href: '#/diagnostic' }];
     path.forEach((id, i) => {
       const node = state.nodes[id];
       const prevStep = steps[i - 1];
@@ -1159,7 +1214,7 @@
           h('button', { type: 'button', class: 'btn btn--success', onclick: () => copyReport(node, rootSymptom, active, steps) }, 'Copier le rapport'),
           h('button', { type: 'button', class: 'btn', onclick: () => exportPdf(node, rootSymptom, active, steps) }, 'Télécharger le PDF'),
           h('button', { type: 'button', class: 'btn', onclick: () => window.print() }, 'Imprimer'),
-          h('a', { class: 'btn btn--primary', href: '#/' }, 'Nouveau diagnostic')
+          h('a', { class: 'btn btn--primary', href: '#/diagnostic' }, 'Nouveau diagnostic')
         )
       )
     );
@@ -1182,9 +1237,9 @@
     const route = parseHash();
     if (route.view !== 'diag') return;
     const symptom = state.symptoms.get(route.symptomId);
-    if (!symptom) return navigate('#/');
+    if (!symptom) return navigate('#/diagnostic');
     const path = sanitizePath(symptom, route.path);
-    navigateBack(path.length > 1 ? diagHash(symptom.id, path.slice(0, -1)) : '#/');
+    navigateBack(path.length > 1 ? diagHash(symptom.id, path.slice(0, -1)) : '#/diagnostic');
   }
 
   function restart() {
@@ -2062,6 +2117,15 @@
     }));
 
     $('#btn-exit-preview').addEventListener('click', () => stopPreview(true));
+    $('#gsearch-input').addEventListener('input', () => {
+      clearTimeout(gTimer);
+      gTimer = setTimeout(() => runGlobalSearch($('#gsearch-input').value), 150);
+    });
+    $('#gsearch-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await runGlobalSearch($('#gsearch-input').value);
+      if (state.gFirst) navigate(state.gFirst);
+    });
     $('#lightbox-close').addEventListener('click', closeLightbox);
     $('#lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') closeLightbox(); });
     $('#btn-prepare-offline').addEventListener('click', prepareOffline);
@@ -2113,6 +2177,10 @@
         return;
       }
       if (route.view === 'editor') return;
+      if (route.view === 'hub') {
+        if (e.key === '/') { e.preventDefault(); $('#gsearch-input').focus(); $('#gsearch-input').select(); }
+        return;
+      }
       if (route.view === 'reco') {
         if (e.key === 'Escape') { e.preventDefault(); navigate('#/'); return; }
         if (e.key === 'Backspace' && (route.path || []).length) { e.preventDefault(); navigate(recoHash(route.path.slice(0, -1))); return; }
@@ -2128,7 +2196,7 @@
       }
 
       if (route.view === 'diag') {
-        if (e.key === 'Escape') { e.preventDefault(); navigate('#/'); return; }
+        if (e.key === 'Escape') { e.preventDefault(); navigate('#/diagnostic'); return; }
         if (e.key === 'Backspace') { e.preventDefault(); goBack(); return; }
         if (/^[1-9]$/.test(e.key)) {
           const btn = document.querySelector('#diag-stage .option[data-index="' + (Number(e.key) - 1) + '"]');
@@ -2165,7 +2233,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.11.0';
+  const APP_VERSION = '1.12.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

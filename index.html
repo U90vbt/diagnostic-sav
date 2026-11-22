@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#171b20">
-  <meta name="diagsav-version" content="1.11.0">
+  <meta name="diagsav-version" content="1.12.0">
   <meta name="description" content="Assistant de diagnostic SAV de premier niveau — usage interne.">
   <title>DIAG·SAV — Assistant de diagnostic N1</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -32,36 +32,25 @@
 <body>
   <a class="skip-link" href="#app">Aller au contenu</a>
 
-  <header class="topbar" role="banner">
-    <div class="topbar__inner">
-      <a class="brand" href="#/" aria-label="Accueil — DIAG SAV">
+  <header class="nav" role="banner">
+    <div class="nav__inner">
+      <a class="brand" href="#/" aria-label="Diag SAV — accueil">
         <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
           <path d="M16 2 30 16 16 30 2 16Z" fill="currentColor"/>
-          <path d="M8 16.5h4l2-4.5 3 8 2-5 1 1.5h4" fill="none" stroke="#19191b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 16.5h4l2-4.5 3 8 2-5 1 1.5h4" fill="none" stroke="#0e0e10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="brand__text">
-          <span class="brand__name">Diag<span class="brand__dot">·</span>SAV</span>
-        </span>
+        <span class="brand__name">Diag·SAV</span>
       </a>
-
-      <nav class="tabs" aria-label="Sections">
-        <a class="tabs__tab" href="#/" data-tab="diag">Diagnostic</a>
-        <a class="tabs__tab" href="#/recommander" data-tab="reco">Recommander</a>
-        <a class="tabs__tab" href="#/veille" data-tab="news">Veille</a>
-        <a class="tabs__tab tabs__tab--wide" href="#/produits" data-tab="products"><span class="tabs__long">Assistant&nbsp;</span>produit</a>
-        <a class="tabs__tab tabs__tab--wide" href="#/editeur" data-tab="editor">Éditeur</a>
+      <nav class="nav__links" aria-label="Sections">
+        <a class="nav__link" href="#/" data-tab="home">Accueil</a>
+        <a class="nav__link" href="#/diagnostic" data-tab="diag">Diagnostic</a>
+        <a class="nav__link" href="#/recommander" data-tab="reco">Recommander</a>
+        <a class="nav__link" href="#/veille" data-tab="news">Veille</a>
       </nav>
-
-      <div class="status" aria-label="État du système">
-        <span class="status__item" title="État de la connexion">
-          <span class="led" id="net-led" aria-hidden="true"></span>
-          <span id="net-label">En ligne</span>
-        </span>
-        <span class="status__item status__item--data" title="Version des procédures">
-          Procédures <span id="data-version">—</span>
-        </span>
-        <a class="btn btn--pill btn--light" href="#/">Nouveau diagnostic</a>
-      </div>
+      <span class="netstate" title="État de la connexion">
+        <span class="led" id="net-led" aria-hidden="true"></span>
+        <span class="netstate__label" id="net-label">En ligne</span>
+      </span>
     </div>
   </header>
 
@@ -95,13 +84,53 @@
       </div>
     </section>
 
-    <!-- Accueil -->
+    <!-- Accueil (hub) -->
+    <section id="view-hub" class="view" hidden aria-labelledby="hub-title">
+      <div class="hub">
+        <h1 id="hub-title" class="hub__title">Assistant SAV</h1>
+        <p class="hub__lead">Diagnostiquer, recommander, rester informé.</p>
+        <form class="search" role="search" id="gsearch-form" autocomplete="off">
+          <label for="gsearch-input" class="visually-hidden">Rechercher dans tout le site</label>
+          <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input id="gsearch-input" class="search__input" type="search" inputmode="search" enterkeyhint="search"
+                 placeholder="Un symptôme, un produit, une actualité…">
+          <kbd class="search__kbd" aria-hidden="true">/</kbd>
+        </form>
+        <div id="gsearch-results" class="gresults" aria-live="polite"></div>
+      </div>
+      <ol class="hub__grid" aria-label="Sections">
+        <li><a class="hcard" href="#/diagnostic">
+          <span class="hcard__num">01</span>
+          <svg class="hcard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="hcard__title">Diagnostic</span>
+          <span class="hcard__text">Un symptôme, quelques questions, la marche à suivre.</span>
+        </a></li>
+        <li><a class="hcard" href="#/recommander">
+          <span class="hcard__num">02</span>
+          <svg class="hcard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h6M17 15l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="hcard__title">Recommander</span>
+          <span class="hcard__text">Le bon matériel pour un événement, et son devis.</span>
+        </a></li>
+        <li><a class="hcard" href="#/veille">
+          <span class="hcard__num">03</span>
+          <svg class="hcard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9M10 19V5M15 19v-7M20 19v-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span class="hcard__title">Veille</span>
+          <span class="hcard__text">Nouveautés, firmwares, fins de vie, sécurité.</span>
+        </a></li>
+        <li><a class="hcard" href="#/produits">
+          <span class="hcard__num">04</span>
+          <svg class="hcard__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 9h8M8 13h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span class="hcard__title">Assistant produit</span>
+          <span class="hcard__text">171 produits du catalogue, réponses sourcées.</span>
+        </a></li>
+      </ol>
+    </section>
+
+    <!-- Diagnostic : liste des symptômes -->
     <section id="view-home" class="view" hidden aria-labelledby="home-title">
       <div class="hero">
-        <div class="hero__cover" aria-hidden="true"></div>
-        <p class="eyebrow">Assistant de diagnostic · niveau 1</p>
+        <p class="eyebrow">Diagnostic</p>
         <h1 id="home-title" class="hero__title">Quel est le symptôme&nbsp;?</h1>
-        <p class="hero__lead">Décrivez la panne, répondez aux questions, obtenez la marche à suivre.</p>
 
         <form class="search" role="search" id="search-form" autocomplete="off">
           <label for="search-input" class="visually-hidden">Rechercher un symptôme</label>
@@ -112,14 +141,14 @@
         </form>
         <p id="search-hint" class="search__hint">
           Suggestions :
-          <button type="button" class="chip chip--ghost" data-suggest="pas de son">pas de son</button>
-          <button type="button" class="chip chip--ghost" data-suggest="écran noir">écran noir</button>
-          <button type="button" class="chip chip--ghost" data-suggest="surchauffe">surchauffe</button>
-          <button type="button" class="chip chip--ghost" data-suggest="dante">dante</button>
+          <button type="button" class="slink" data-suggest="pas de son">pas de son</button>
+          <button type="button" class="slink" data-suggest="écran noir">écran noir</button>
+          <button type="button" class="slink" data-suggest="surchauffe">surchauffe</button>
+          <button type="button" class="slink" data-suggest="dante">dante</button>
         </p>
       </div>
 
-      <div class="filters" role="group" aria-label="Filtrer par catégorie" id="filters"></div>
+      <div class="filters filters--text" role="group" aria-label="Filtrer par catégorie" id="filters"></div>
 
       <div class="section-head">
         <h2 class="section-title">Symptômes</h2>
@@ -205,8 +234,8 @@
             <button type="button" class="btn btn--ghost" id="btn-restart">
               <span aria-hidden="true">↺</span> Recommencer
             </button>
-            <a class="btn btn--ghost" href="#/">
-              <span aria-hidden="true">⌂</span> Accueil
+            <a class="btn btn--ghost" href="#/diagnostic">
+              <span aria-hidden="true">⌂</span> Tous les symptômes
             </a>
           </div>
         </div>
@@ -251,6 +280,8 @@
 
   <footer class="footer" role="contentinfo">
     <span id="footer-disclaimer">Diagnostic de premier niveau — usage interne.</span>
+    <span class="footer__sep" aria-hidden="true">|</span>
+    <span>Procédures <span id="data-version">—</span></span>
     <span class="footer__sep" aria-hidden="true">|</span>
     <span>Aucune donnée collectée</span>
     <span class="footer__sep" aria-hidden="true">|</span>
