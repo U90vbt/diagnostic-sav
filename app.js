@@ -530,6 +530,9 @@
     if (parts[0] === 'd' && parts[1]) {
       return { view: 'diag', symptomId: parts[1], path: parts.slice(2) };
     }
+    if (parts[0] === 'recommander') {
+      return { view: 'reco', path: parts.slice(1) };
+    }
     if (parts[0] === 'editeur') {
       return { view: 'editor', sub: parts.slice(1) };
     }
@@ -576,7 +579,12 @@
     if (!state.data) return;
     const route = parseHash();
 
-    setActiveTab(['products', 'editor'].includes(route.view) ? route.view : 'diag');
+    setActiveTab(['products', 'editor', 'reco'].includes(route.view) ? route.view : 'diag');
+    if (route.view === 'reco') {
+      trackNav();
+      renderReco(route);
+      return;
+    }
     if (route.view === 'editor') {
       trackNav();
       renderEditor(route);
@@ -615,7 +623,7 @@
   }
 
   function showView(name) {
-    for (const v of ['loading', 'error', 'home', 'diag', 'products', 'editor']) {
+    for (const v of ['loading', 'error', 'home', 'diag', 'products', 'editor', 'reco']) {
       const el = $('#view-' + v);
       if (el) el.hidden = v !== name;
     }
@@ -1576,6 +1584,207 @@
   };
 
   /* ---------------------------------------------------------------------
+     Données JSON secondaires (reco.json, news.json) : chargées à la demande,
+     erreurs détaillées (adresse, statut HTTP, ligne de l'erreur de syntaxe).
+     --------------------------------------------------------------------- */
+  const jsonPromises = {};
+  function loadJson(path) {
+    if (!jsonPromises[path]) {
+      const url = new URL(path, SCRIPT_URL).href;
+      jsonPromises[path] = (async () => {
+        let res;
+        try { res = await fetch(url, { cache: 'no-cache' }); }
+        catch (err) { throw new Error('Téléchargement impossible (' + (err && err.message || err) + ') — ' + url); }
+        if (!res.ok) throw new Error('HTTP ' + res.status + (res.statusText ? ' ' + res.statusText : '') + ' — ' + url);
+        const text = await res.text();
+        try { return JSON.parse(text); }
+        catch (err) { throw new Error('Erreur de syntaxe dans ' + path + jsonErrorPosition(text, err) + ' : ' + err.message); }
+      })();
+      jsonPromises[path].catch(() => { delete jsonPromises[path]; });
+    }
+    return jsonPromises[path];
+  }
+
+  function loadError(box, what, err) {
+    console.error('[DIAG·SAV] ' + what + ' :', err);
+    box.replaceChildren(h('div', { class: 'pstatus' }, h('p', { class: 'pstatus__error' }, what + ' n\'a pas pu être chargé. ', h('code', null, err.message))));
+  }
+
+  /* ---------------------------------------------------------------------
+     Recommander (avant-vente) : arbre de questions → carte de recommandation
+     --------------------------------------------------------------------- */
+  /** Contrôle de reco.json, messages en français. */
+  function validateReco(data) {
+    const w = [];
+    const nodes = (data && data.nodes) || {};
+    if (!data || typeof data !== 'object') return ['Le fichier reco.json est vide ou mal formé.'];
+    if (!data.start) w.push('reco.json : aucune question de départ (champ « start »).');
+    else if (!nodes[data.start]) w.push('reco.json : la question de départ « ' + data.start + ' » n\'existe pas.');
+    for (const [id, n] of Object.entries(nodes)) {
+      const name = n.type === 'result' ? 'la recommandation « ' + truncate(n.title || id, 60) + ' »' : 'la question « ' + truncate(n.text || id, 60) + ' »';
+      if (n.type === 'question') {
+        if (!n.text) w.push('Une question de reco.json n\'a pas de texte (« ' + id + ' »).');
+        if (!Array.isArray(n.options) || !n.options.length) w.push(cap(name) + ' n\'a aucune réponse.');
+        for (const o of n.options || []) {
+          if (!o.label) w.push(cap(name) + ' a une réponse sans libellé.');
+          if (!o.next) w.push('La réponse « ' + (o.label || '?') + ' » de ' + name + ' ne mène nulle part.');
+          else if (!nodes[o.next]) w.push('La réponse « ' + (o.label || '?') + ' » de ' + name + ' mène vers « ' + o.next + ' », qui n\'existe pas.');
+        }
+      } else if (n.type === 'result') {
+        if (!n.title) w.push('Une recommandation n\'a pas de titre (« ' + id + ' »).');
+        if (!Array.isArray(n.items) || !n.items.length) w.push(cap(name) + ' ne propose aucun produit.');
+        (n.items || []).forEach((it, i) => {
+          if (!it.product) w.push(cap(name) + ' : la ligne ' + (i + 1) + ' n\'indique pas de produit.');
+          else if (!state.products.has(it.product)) w.push(cap(name) + ' cite un produit inconnu du catalogue (« ' + it.product + ' »).');
+          if (it.qty != null && !(Number.isInteger(it.qty) && it.qty > 0)) w.push(cap(name) + ' : la quantité de la ligne ' + (i + 1) + ' doit être un nombre entier positif.');
+        });
+      } else {
+        w.push('reco.json : l\'étape « ' + id + ' » a un type inconnu (« ' + n.type + ' ») : attendu question ou result.');
+      }
+    }
+    return w;
+  }
+
+  function recoHash(path) { return '#/recommander' + (path.length ? '/' + path.map(encodeURIComponent).join('/') : ''); }
+
+  async function renderReco(route) {
+    showView('reco');
+    const box = $('#reco-root');
+    let data;
+    try { data = await loadJson('data/reco.json'); }
+    catch (err) { renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Recommander' }]); return loadError(box, 'Le fichier des recommandations (data/reco.json)', err); }
+    if (state.preview && state.previewReco) data = state.previewReco;
+    const nodes = data.nodes || {};
+    if (!state.recoChecked || state.recoChecked !== data) {
+      state.recoChecked = data;
+      state.recoIssues = validateReco(data);
+      if (state.recoIssues.length) console.warn('[DIAG·SAV] Anomalies dans reco.json :\n- ' + state.recoIssues.join('\n- '));
+    }
+    if (!nodes[data.start]) {
+      renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Recommander' }]);
+      box.replaceChildren(h('div', { class: 'empty' }, 'Aucune recommandation n\'est encore configurée (data/reco.json).'));
+      return;
+    }
+    // chemin : départ + étapes reliées
+    const path = [data.start];
+    for (const id of route.path || []) {
+      const prev = nodes[path[path.length - 1]];
+      if (!prev || prev.type !== 'question' || !(prev.options || []).some(o => o.next === id) || !nodes[id]) break;
+      path.push(id);
+    }
+    const canonical = recoHash(path.slice(1));
+    if (location.hash !== canonical && (route.path || []).length !== path.length - 1) history.replaceState(null, '', canonical);
+
+    const current = nodes[path[path.length - 1]];
+    const answers = path.slice(0, -1).map((id, i) => {
+      const q = nodes[id];
+      const o = (q.options || []).find(x => x.next === path[i + 1]);
+      return { q, label: q.label || q.text, answer: o ? o.label : '?', index: i };
+    });
+
+    renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Recommander', href: '#/recommander' },
+      ...path.slice(1).map((id, i) => ({ label: nodes[id].type === 'result' ? 'Recommandation' : (nodes[id].label || 'Étape ' + (i + 2)), href: recoHash(path.slice(1, i + 2)) }))]);
+
+    const recap = answers.length ? h('ol', { class: 'reco-recap' }, answers.map(a => h('li', null,
+      h('a', { href: recoHash(path.slice(1, a.index + 1)), title: 'Modifier cette réponse' },
+        h('span', { class: 'reco-recap__q' }, a.label), h('span', { class: 'reco-recap__a' }, a.answer))))) : null;
+
+    let stage;
+    if (current.type === 'question') {
+      stage = h('article', { class: 'panel question' },
+        h('header', { class: 'panel__head' }, h('span', { class: 'panel__tag' }, 'Étape ' + path.length), h('span', null, current.label || 'Question')),
+        h('div', { class: 'panel__body' },
+          h('h2', { class: 'question__text', tabindex: '-1', 'data-focus': true }, current.text),
+          current.help ? h('p', { class: 'question__help' }, current.help) : null,
+          h('ul', { class: 'options', role: 'list' }, (current.options || []).map((o, i) => h('li', null,
+            h('button', { type: 'button', class: 'option', dataset: { index: String(i) }, disabled: nodes[o.next] ? null : true,
+              onclick: () => navigate(recoHash([...path.slice(1), o.next])) },
+              h('span', { class: 'option__key', 'aria-hidden': 'true' }, String(i + 1)),
+              h('span', null, o.label),
+              h('span', { class: 'option__arrow', 'aria-hidden': 'true' }, '→')))))));
+    } else {
+      const items = (current.items || []).map(it => ({ it, pr: state.products.get(it.product) }));
+      stage = h('article', { class: 'panel reco-result' },
+        h('header', { class: 'panel__head' }, h('span', { class: 'panel__tag' }, 'Recommandation')),
+        h('div', { class: 'panel__body' },
+          h('h2', { class: 'result__title', tabindex: '-1', 'data-focus': true }, current.title),
+          current.summary ? h('p', { class: 'result__summary' }, current.summary) : null,
+          h('ul', { class: 'reco-items' }, items.map(({ it, pr }) => h('li', { class: 'reco-item' },
+            h('span', { class: 'reco-item__qty' }, (it.qty || 1) + ' ×'),
+            h('div', { class: 'reco-item__main' },
+              pr ? h('a', { class: 'reco-item__name', href: '#/produits/' + encodeURIComponent(it.product) }, productLabel(pr))
+                 : h('span', { class: 'reco-item__name is-bad' }, '⚠ Produit inconnu : ' + it.product),
+              pr ? h('span', { class: 'reco-item__type' }, pr.type + (productSourceLabel(pr) ? ' · ' + productSourceLabel(pr) : '')) : null,
+              it.why ? h('span', { class: 'reco-item__why' }, it.why) : null)))),
+          current.notes ? h('p', { class: 'callout callout--escalate' }, h('span', { class: 'callout__icon', 'aria-hidden': 'true' }, 'i'), h('span', null, current.notes)) : null,
+          (data.meta && data.meta.disclaimer) ? h('p', { class: 'result__sevdesc' }, data.meta.disclaimer) : null,
+          h('div', { class: 'result__footer' },
+            h('button', { type: 'button', class: 'btn btn--primary', onclick: () => copyText(buildQuote(data, current, answers, items), '✓ Devis copié dans le presse-papiers') }, 'Copier le devis'),
+            h('a', { class: 'btn', href: '#/recommander' }, 'Nouvelle recommandation'))));
+    }
+
+    box.replaceChildren(...[
+      h('div', { class: 'phead' },
+        h('p', { class: 'eyebrow' }, 'Avant-vente'),
+        h('h1', { class: 'phead__title' }, (data.meta && data.meta.title) || 'Recommander')),
+      state.recoIssues.length ? h('p', { class: 'reco-warn' }, '⚠ ' + state.recoIssues.length + ' anomalie(s) dans data/reco.json (détail dans la console).') : null,
+      h('div', { class: 'reco' },
+        h('div', { class: 'reco__main' }, stage,
+          h('div', { class: 'diag__controls' },
+            path.length > 1 ? h('a', { class: 'btn btn--ghost', href: recoHash(path.slice(1, -1)) }, '← Étape précédente') : null,
+            path.length > 1 ? h('a', { class: 'btn btn--ghost', href: '#/recommander' }, '↺ Recommencer') : null)),
+        recap ? h('aside', { class: 'reco__aside' }, h('h2', { class: 'reco-aside__title' }, 'Vos réponses'), recap) : null)
+    ].filter(Boolean));
+    const heading = box.querySelector('[data-focus]');
+    if (heading) heading.focus({ preventScroll: true });
+  }
+
+  /** Texte de devis pré-rempli, sans prix (le catalogue n'en contient pas). */
+  function buildQuote(data, result, answers, items) {
+    const now = new Date();
+    const L = [];
+    L.push('=== DEVIS — RECOMMANDATION AVANT-VENTE ===');
+    L.push('Date : ' + now.toLocaleDateString('fr-FR'));
+    L.push('Client : ____________________   Événement : ____________________   Date(s) : __________');
+    L.push('');
+    L.push('Besoin exprimé :');
+    answers.forEach(a => L.push('  - ' + a.label + ' : ' + a.answer));
+    L.push('');
+    L.push('Proposition : ' + result.title);
+    if (result.summary) L.push('  ' + result.summary);
+    L.push('');
+    L.push('Matériel :');
+    items.forEach(({ it, pr }) => {
+      const name = pr ? productLabel(pr) : '(produit inconnu : ' + it.product + ')';
+      const ref = pr && pr.ref ? ' — réf. ' + pr.ref : '';
+      const src = pr && productSourceLabel(pr) ? ' (' + productSourceLabel(pr) + ')' : '';
+      L.push('  ' + (it.qty || 1) + ' × ' + name + ref + src);
+      if (it.why) L.push('      ' + it.why);
+      L.push('      Prix unitaire : à compléter');
+    });
+    if (result.notes) { L.push(''); L.push('Remarques : ' + result.notes); }
+    L.push('');
+    L.push('Prestations (installation, exploitation, transport) : à compléter');
+    L.push('Total HT : à compléter');
+    L.push('');
+    L.push((data.meta && data.meta.disclaimer) || 'Recommandation indicative, à valider.');
+    return L.join('\n');
+  }
+
+  async function copyText(text, okMsg) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
+      else {
+        const ta = h('textarea', { style: 'position:fixed;opacity:0;left:-9999px', readonly: true });
+        ta.value = text; document.body.append(ta); ta.select();
+        const ok = document.execCommand('copy'); ta.remove();
+        if (!ok) throw new Error('execCommand');
+      }
+      toast(okMsg);
+    } catch { toast('Copie impossible sur ce navigateur'); }
+  }
+
+  /* ---------------------------------------------------------------------
      Rapport texte (à coller dans un ticket)
      --------------------------------------------------------------------- */
   function buildReport(node, rootSymptom, active, steps) {
@@ -1804,6 +2013,15 @@
         return;
       }
       if (route.view === 'editor') return;
+      if (route.view === 'reco') {
+        if (e.key === 'Escape') { e.preventDefault(); navigate('#/'); return; }
+        if (e.key === 'Backspace' && (route.path || []).length) { e.preventDefault(); navigate(recoHash(route.path.slice(0, -1))); return; }
+        if (/^[1-9]$/.test(e.key)) {
+          const btn = document.querySelector('#reco-root .option[data-index="' + (Number(e.key) - 1) + '"]');
+          if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+        }
+        return;
+      }
       if (route.view === 'products') {
         if (e.key === '/') { e.preventDefault(); $('#psearch-input').focus(); $('#psearch-input').select(); }
         return;

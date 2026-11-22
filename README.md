@@ -26,6 +26,7 @@ Site web statique qui remplace les procédures papier par un arbre de décision 
 ├── img/                   Photos et schémas des étapes (img/schemas/ : exemples)
 └── data/
     ├── decisions.json     Arbre de décision + fiches produits (marque, modèle, page)
+    ├── reco.json          Arbre de recommandation avant-vente (onglet Recommander)
     └── catalogue.json     Caractéristiques produits et synonymes (Assistant produit)
 ```
 
@@ -265,6 +266,36 @@ Une question ou un résultat peut afficher des images (champ facultatif `images`
 4. Incrémenter `meta.version` : elle s'affiche en haut à droite (`DATA v…`), ce qui permet de vérifier que les techniciens ont la bonne version.
 
 Convention d'identifiants conseillée : `<préfixe>-q<n>` pour les questions et `<préfixe>-r-<nom>` pour les résultats (ex. `video-q3`, `video-r-edid`).
+
+---
+
+## Recommander (avant-vente)
+
+L'onglet **Recommander** (`#/recommander`) guide un commercial ou un technicien : **type d'événement → jauge → budget → contraintes réseau / audio**, jusqu'à une **carte de recommandation** (produits du catalogue, quantités, justification). **Copier le devis** produit un texte pré-rempli (besoin exprimé, matériel avec références et pages du catalogue). Les prix ne sont pas dans les données : le devis contient des lignes « à compléter ».
+
+Les réponses données restent visibles (« Vos réponses ») et chacune se modifie d'un clic. L'adresse contient tout le parcours : un lien peut être partagé.
+
+### Format de `data/reco.json`
+
+```json
+{
+  "meta": { "version": "0.1.0", "title": "Recommandation avant-vente", "disclaimer": "…" },
+  "start": "type-evenement",
+  "nodes": {
+    "type-evenement": { "type": "question", "label": "Type d'événement", "text": "Quel type d'événement préparez-vous ?",
+      "options": [ { "label": "Conférence ou plénière", "next": "conf-jauge" } ] },
+    "reco-conf": { "type": "result", "title": "Pack conférence 300 personnes", "summary": "…",
+      "items": [ { "product": "shure-slxd", "qty": 4, "why": "Un micro HF par orateur." } ],
+      "notes": "Prévoir un repérage de la salle." }
+  }
+}
+```
+
+- `label` (question) : intitulé court repris dans le devis (« Jauge », « Budget »…).
+- `items[].product` : identifiant d'un produit de `decisions.json` (le nom, la référence et la page s'affichent automatiquement). `qty` : nombre entier.
+- Une réponse mène toujours à une autre question ou à une recommandation (`next`). Pour que la recommandation dépende de chaque réponse, faites une branche par réponse.
+- **Le fichier livré ne contient que 2 parcours d'exemple marqués [EXEMPLE À REMPLACER]** : remplacez-les par vos packs réels.
+- Les anomalies (réponse sans suite, produit inconnu, quantité invalide) sont signalées en haut de l'onglet et détaillées dans la console.
 
 ---
 

@@ -46,6 +46,7 @@
 
       <nav class="tabs" aria-label="Sections">
         <a class="tabs__tab" href="#/" data-tab="diag">Diagnostic</a>
+        <a class="tabs__tab" href="#/recommander" data-tab="reco">Recommander</a>
         <a class="tabs__tab" href="#/produits" data-tab="products"><span class="tabs__long">Assistant&nbsp;</span>produit</a>
         <a class="tabs__tab tabs__tab--wide" href="#/editeur" data-tab="editor">Éditeur</a>
       </nav>
@@ -160,6 +161,11 @@
       <div id="products-status" class="pstatus" aria-live="polite"></div>
       <div id="products-results"></div>
       <div id="product-detail"></div>
+    </section>
+
+    <!-- Recommander (avant-vente) -->
+    <section id="view-reco" class="view" hidden aria-label="Recommandation avant-vente">
+      <div id="reco-root" aria-live="polite"><p class="pstatus">Chargement…</p></div>
     </section>
 
     <!-- Éditeur des procédures (editor.js) -->
