@@ -347,7 +347,7 @@ Au premier chargement, `sw.js` met en cache tous les fichiers. Ensuite :
 - **Données** (`decisions.json`, `catalogue.json`) : le réseau est interrogé en premier, le cache sert de secours. Une modification publiée est donc visible dès que l'appareil a du réseau.
 - **Code** (HTML, CSS, JS) : servi depuis le cache, mis à jour en arrière-plan.
 
-Après une modification de `index.html`, `styles.css` ou `app.js`, changez `CACHE_VERSION` dans `sw.js` (ex. `diagsav-v1.0.1`) pour forcer la mise à jour chez tous les utilisateurs.
+Après une modification de `index.html`, `styles.css` ou `app.js`, changez `CACHE_VERSION` dans `sw.js` (ex. `diagsav-v1.0.1`) pour forcer la mise à jour chez tous les utilisateurs. Changez aussi, **avec la même valeur**, `APP_VERSION` dans `app.js` et la balise `<meta name="diagsav-version">` de `index.html` : si le serveur sert brièvement des fichiers de versions différentes (cache de GitHub Pages juste après une publication), la page se recharge une fois puis affiche « Mise à jour en cours » au lieu de planter.
 
 Sur tablette, utilisez « Ajouter à l'écran d'accueil » pour lancer l'outil comme une application.
 
