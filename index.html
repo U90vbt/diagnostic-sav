@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#171b20">
-  <meta name="diagsav-version" content="1.8.1">
+  <meta name="diagsav-version" content="1.9.0">
   <meta name="description" content="Assistant de diagnostic SAV de premier niveau — usage interne.">
   <title>DIAG·SAV — Assistant de diagnostic N1</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -47,15 +47,10 @@
       <nav class="tabs" aria-label="Sections">
         <a class="tabs__tab" href="#/" data-tab="diag">Diagnostic</a>
         <a class="tabs__tab" href="#/produits" data-tab="products"><span class="tabs__long">Assistant&nbsp;</span>produit</a>
-        <a class="tabs__tab" href="#/salon" data-tab="salon">Salon</a>
         <a class="tabs__tab tabs__tab--wide" href="#/editeur" data-tab="editor">Éditeur</a>
       </nav>
 
       <div class="status" aria-label="État du système">
-        <a class="incident-chip" id="incident-chip" href="#/salon" hidden title="Panne en cours — ouvrir le mode salon">
-          <span class="incident-chip__dot" aria-hidden="true"></span>
-          <span class="visually-hidden">Panne en cours depuis </span><span id="incident-chip-time">00:00</span>
-        </a>
         <span class="status__item" title="État de la connexion">
           <span class="led" id="net-led" aria-hidden="true"></span>
           <span id="net-label">En ligne</span>
@@ -165,11 +160,6 @@
       <div id="products-status" class="pstatus" aria-live="polite"></div>
       <div id="products-results"></div>
       <div id="product-detail"></div>
-    </section>
-
-    <!-- Mode salon -->
-    <section id="view-salon" class="view" hidden aria-label="Mode salon">
-      <div id="salon-root"></div>
     </section>
 
     <!-- Éditeur des procédures (editor.js) -->

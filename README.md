@@ -255,7 +255,7 @@ Une question ou un résultat peut afficher des images (champ facultatif `images`
 
 ### Migration du schéma
 
-`meta.schemaVersion` indique la version du format (actuellement `3`). Un fichier plus ancien est complété automatiquement au chargement : v1 → v2 ajoute `sources`, `families`, `products` vides ; v2 → v3 ajoute `checklists` vide (les `images` sont facultatives). Un ancien `decisions.json` fonctionne sans modification.
+`meta.schemaVersion` indique la version du format (actuellement `4`). Un fichier plus ancien est complété automatiquement au chargement : v1 → v2 ajoute `sources`, `families`, `products` vides ; v3 (images facultatives) ; v4 retire l'ancienne section `checklists` du mode salon, supprimé. Un ancien `decisions.json` fonctionne sans modification.
 
 ### Contrôler ses modifications
 
@@ -265,30 +265,6 @@ Une question ou un résultat peut afficher des images (champ facultatif `images`
 4. Incrémenter `meta.version` : elle s'affiche en haut à droite (`DATA v…`), ce qui permet de vérifier que les techniciens ont la bonne version.
 
 Convention d'identifiants conseillée : `<préfixe>-q<n>` pour les questions et `<préfixe>-r-<nom>` pour les résultats (ex. `video-q3`, `video-r-edid`).
-
----
-
-## Mode salon
-
-L'onglet **Salon** (`#/salon`) accompagne le technicien pendant l'événement :
-
-- **Panne signalée** : démarre le chrono de la panne. **Je commence l'intervention** démarre un second chrono (temps passé par le technicien). Les durées sont calculées à partir des heures enregistrées : elles restent justes après une mise en veille ou un rechargement de la page.
-- Pendant une panne, un **mini-chrono rouge** reste visible dans la barre du haut sur tous les onglets.
-- Le diagnostic lancé pendant la panne y est **rattaché** (symptôme et résultat), et le rapport PDF indique l'heure de la panne et la durée d'intervention.
-- **Résolu** ajoute la panne au **journal du jour** (heures, durées, diagnostic), exportable en PDF. Le journal est conservé 7 jours sur l'appareil.
-- **Check-lists** (ouverture, fermeture…) : les cases cochées sont mémorisées pour la journée et repartent à zéro le lendemain. Elles se modifient dans l'éditeur (onglet **Check-lists**).
-- **Garder l'écran allumé** : empêche la mise en veille de la tablette pendant que l'onglet est affiché (navigateurs compatibles).
-
-Format des check-lists dans `decisions.json` (schéma v3) :
-
-```json
-"checklists": [
-  { "id": "ouverture", "title": "Avant l'ouverture du salon", "status": "draft",
-    "items": [ { "text": "Micros HF : piles neuves…", "help": "Tester chaque micro sur toute la zone." } ] }
-]
-```
-
-Les deux check-lists fournies (ouverture, fermeture) sont des **propositions à valider** par l'équipe.
 
 ---
 
@@ -369,7 +345,7 @@ Sur tablette, utilisez « Ajouter à l'écran d'accueil » pour lancer l'outil c
 ## Confidentialité
 
 - Aucun cookie, aucun outil de statistiques, aucune requête vers un domaine externe (pas de polices ni de CDN).
-- Données conservées, uniquement dans le stockage local du navigateur de l'appareil (`localStorage`), jamais envoyées : les 6 derniers diagnostics (bouton **Effacer** de l'accueil), les notes du technicien (bouton **Effacer les notes**, purge automatique après 30 jours), le mode salon (cases cochées du jour, panne en cours, journal de 7 jours, bouton **Effacer le journal**) et le brouillon de l'éditeur.
+- Données conservées, uniquement dans le stockage local du navigateur de l'appareil (`localStorage`), jamais envoyées : les 6 derniers diagnostics (bouton **Effacer** de l'accueil), les notes du technicien (bouton **Effacer les notes**, purge automatique après 30 jours) et le brouillon de l'éditeur.
 
 ---
 

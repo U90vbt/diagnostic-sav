@@ -271,10 +271,11 @@
   /**
    * Migration du schéma : les fichiers sans meta.schemaVersion sont en version 1.
    * v1 → v2 : ajout facultatif de sources, families, products et brandSteps.
-   * v2 → v3 : ajout facultatif de checklists (mode salon) et images sur les étapes.
+   * v2 → v3 : images facultatives sur les étapes.
+   * v3 → v4 : suppression du mode salon (section checklists retirée si présente).
    * Rien n'est perdu ni renommé : on complète simplement les sections manquantes.
    */
-  const SCHEMA_VERSION = 3;
+  const SCHEMA_VERSION = 4;
   function migrate(data) {
     data.meta = data.meta || {};
     const from = Number(data.meta.schemaVersion) || 1;
@@ -286,9 +287,7 @@
       data.families = data.families || {};
       data.products = data.products || {};
     }
-    if (from < 3) {
-      data.checklists = data.checklists || [];
-    }
+    if (from < 4) delete data.checklists;
     data.meta.schemaVersion = Math.max(from, SCHEMA_VERSION);
     return data;
   }
@@ -444,17 +443,6 @@
       if (pr.page != null && !(Number.isInteger(pr.page) && pr.page > 0)) add('La page du produit ' + name + ' doit être un nombre entier (actuellement « ' + pr.page + ' »).', 'product', pid);
     }
 
-    const clIds = new Set();
-    (Array.isArray(data.checklists) ? data.checklists : []).forEach((cl, i) => {
-      const name = '« ' + (cl.title || cl.id || 'n° ' + (i + 1)) + ' »';
-      if (!cl.id) add('La check-list ' + name + ' n\'a pas d\'identifiant.', 'checklist', String(i));
-      else if (clIds.has(cl.id)) add('Deux check-lists portent l\'identifiant « ' + cl.id + ' ».', 'checklist', cl.id);
-      clIds.add(cl.id);
-      if (!cl.title) add('Une check-list n\'a pas de titre (« ' + cl.id + ' »).', 'checklist', cl.id);
-      if (!Array.isArray(cl.items) || !cl.items.filter(it => it && String(it.text || '').trim()).length) add('La check-list ' + name + ' ne contient aucun point.', 'checklist', cl.id);
-      if (cl.status && !STATUSES.includes(cl.status)) add('La check-list ' + name + ' a un statut invalide (« ' + cl.status + ' »).', 'checklist', cl.id);
-    });
-
     // Étapes jamais atteintes
     const reached = new Set();
     const walk = (id) => {
@@ -542,9 +530,6 @@
     if (parts[0] === 'd' && parts[1]) {
       return { view: 'diag', symptomId: parts[1], path: parts.slice(2) };
     }
-    if (parts[0] === 'salon') {
-      return { view: 'salon' };
-    }
     if (parts[0] === 'editeur') {
       return { view: 'editor', sub: parts.slice(1) };
     }
@@ -591,12 +576,7 @@
     if (!state.data) return;
     const route = parseHash();
 
-    setActiveTab(['products', 'editor', 'salon'].includes(route.view) ? route.view : 'diag');
-    if (route.view === 'salon') {
-      trackNav();
-      renderSalon();
-      return;
-    }
+    setActiveTab(['products', 'editor'].includes(route.view) ? route.view : 'diag');
     if (route.view === 'editor') {
       trackNav();
       renderEditor(route);
@@ -635,7 +615,7 @@
   }
 
   function showView(name) {
-    for (const v of ['loading', 'error', 'home', 'diag', 'products', 'editor', 'salon']) {
+    for (const v of ['loading', 'error', 'home', 'diag', 'products', 'editor']) {
       const el = $('#view-' + v);
       if (el) el.hidden = v !== name;
     }
@@ -880,7 +860,6 @@
 
     $('#btn-back').disabled = false;
 
-    if (!state.preview) salonLinkDiagnostic(rootSymptom, active, isResult ? current : null, hashNow);
     if (isResult && !state.preview) {
       recordRecent({
         hash: hashNow,
@@ -1597,224 +1576,6 @@
   };
 
   /* ---------------------------------------------------------------------
-     Mode salon : check-lists, minuteurs de panne et d'intervention, journal
-     Tout est calculé à partir d'horodatages enregistrés sur l'appareil :
-     les durées restent justes après une mise en veille ou un rechargement.
-     --------------------------------------------------------------------- */
-  const SALON_KEY = 'diagsav.salon.v1';
-  const LOG_DAYS = 7;
-  const salon = {
-    read() {
-      try {
-        const o = JSON.parse(localStorage.getItem(SALON_KEY) || '{}');
-        return { checks: o.checks || {}, incident: o.incident || null, log: Array.isArray(o.log) ? o.log : [], wake: !!o.wake };
-      } catch { return { checks: {}, incident: null, log: [], wake: false }; }
-    },
-    write(st) {
-      const limit = Date.now() - LOG_DAYS * 24 * 3600 * 1000;
-      st.log = st.log.filter(e => e.end >= limit);
-      const today = localDate();
-      for (const k of Object.keys(st.checks)) if (!k.startsWith(today + '|')) delete st.checks[k];   // cases du jour seulement
-      try { localStorage.setItem(SALON_KEY, JSON.stringify(st)); return true; } catch { toast('Enregistrement impossible (stockage du navigateur indisponible)'); return false; }
-    },
-    update(fn) { const st = this.read(); fn(st); this.write(st); updateIncidentChip(); return st; }
-  };
-
-  const pad2 = n => String(n).padStart(2, '0');
-  function fmtDuration(ms) {
-    const t = Math.max(0, Math.floor(ms / 1000));
-    const hh = Math.floor(t / 3600), mm = Math.floor(t % 3600 / 60), ss = t % 60;
-    return (hh ? hh + ' h ' + pad2(mm) + ' min' : mm + ' min ' + pad2(ss) + ' s');
-  }
-  function fmtClock(ms) {
-    const t = Math.max(0, Math.floor(ms / 1000));
-    return (t >= 3600 ? Math.floor(t / 3600) + ':' : '') + pad2(Math.floor(t % 3600 / 60)) + ':' + pad2(t % 60);
-  }
-  const fmtHour = ts => new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-
-  /** Rattache le diagnostic en cours à la panne active (le dernier résultat atteint fait foi). */
-  function salonLinkDiagnostic(rootSymptom, active, resultNode, hash) {
-    const st = salon.read();
-    if (!st.incident) return;
-    salon.update(s2 => {
-      const inc = s2.incident;
-      inc.symptom = rootSymptom.title + (active !== rootSymptom ? ' → ' + active.title : '');
-      inc.hash = hash;
-      if (resultNode) { inc.result = resultNode.title; inc.severity = resultNode.severity; }
-    });
-  }
-
-  /** Lignes ajoutées au rapport PDF quand une panne est en cours. */
-  function incidentReportRows() {
-    const inc = salon.read().incident;
-    if (!inc) return [];
-    const now = Date.now();
-    const rows = [['Panne signalée', fmtHour(inc.start) + ' (depuis ' + fmtDuration(now - inc.start) + ')']];
-    if (inc.interventionStart) rows.push(['Intervention', 'commencée à ' + fmtHour(inc.interventionStart) + ' (' + fmtDuration(now - inc.interventionStart) + ')']);
-    return rows;
-  }
-
-  function updateIncidentChip() {
-    const chip = $('#incident-chip');
-    const inc = salon.read().incident;
-    chip.hidden = !inc;
-    if (inc) $('#incident-chip-time').textContent = fmtClock(Date.now() - inc.start);
-  }
-
-  let salonTick = null;
-  function startTicker() {
-    if (salonTick) return;
-    salonTick = setInterval(() => {
-      if (document.hidden) return;
-      updateIncidentChip();
-      for (const el of document.querySelectorAll('[data-since]')) el.textContent = fmtClock(Date.now() - Number(el.dataset.since));
-    }, 1000);
-  }
-
-  /* Écran allumé (API Wake Lock du navigateur, aucune ressource externe) */
-  let wakeLock = null;
-  async function applyWakeLock(on) {
-    try {
-      if (on && 'wakeLock' in navigator && document.visibilityState === 'visible') {
-        if (!wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); }
-      } else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
-    } catch (err) { console.warn('[DIAG·SAV] Écran allumé indisponible :', err); }
-  }
-
-  function renderSalon() {
-    showView('salon');
-    renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Mode salon' }]);
-    const st = salon.read();
-    const root = $('#salon-root');
-    const now = Date.now();
-    const inc = st.incident;
-    const rerender = () => renderSalon();
-
-    // --- Panne en cours
-    const incidentCard = inc
-      ? h('section', { class: 'panel salon-incident is-running' }, h('div', { class: 'panel__body' },
-          h('div', { class: 'salon-incident__head' },
-            h('span', { class: 'badge badge--high' }, 'Panne en cours'),
-            h('span', { class: 'muted' }, 'signalée à ' + fmtHour(inc.start))),
-          h('div', { class: 'salon-timers' },
-            h('div', { class: 'salon-timer' }, h('span', { class: 'salon-timer__label' }, 'Durée de la panne'),
-              h('span', { class: 'salon-timer__value', 'data-since': String(inc.start), role: 'timer' }, fmtClock(now - inc.start))),
-            h('div', { class: 'salon-timer' + (inc.interventionStart ? '' : ' is-idle') }, h('span', { class: 'salon-timer__label' }, 'Intervention'),
-              inc.interventionStart
-                ? h('span', { class: 'salon-timer__value', 'data-since': String(inc.interventionStart), role: 'timer' }, fmtClock(now - inc.interventionStart))
-                : h('button', { type: 'button', class: 'btn btn--light', onclick: () => { salon.update(s2 => { s2.incident.interventionStart = Date.now(); }); rerender(); } }, 'Je commence l\'intervention'))),
-          inc.symptom ? h('p', { class: 'salon-incident__diag' },
-            h('strong', null, 'Diagnostic : '), inc.symptom,
-            inc.result ? [' → ', h('span', { class: 'badge badge--' + (inc.severity || 'low') }, inc.result)] : ' (en cours)',
-            inc.hash ? [' ', h('a', { href: inc.hash }, 'reprendre')] : null) : h('p', { class: 'muted' }, 'Aucun diagnostic lancé pour cette panne.'),
-          h('div', { class: 'ed-actions' },
-            h('a', { class: 'btn btn--ghost', href: '#/' }, inc.symptom ? 'Nouveau diagnostic' : 'Lancer le diagnostic'),
-            h('button', { type: 'button', class: 'btn btn--success', onclick: () => {
-              salon.update(s2 => {
-                const i = s2.incident; const end = Date.now();
-                s2.log.unshift({ start: i.start, end, interventionStart: i.interventionStart || null, symptom: i.symptom || null, result: i.result || null, severity: i.severity || null });
-                s2.incident = null;
-              });
-              toast('✓ Panne résolue, ajoutée au journal'); rerender();
-            } }, 'Résolu'),
-            h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { salon.update(s2 => { s2.incident = null; }); toast('Panne annulée (non journalisée)'); rerender(); } }, 'Annuler'))))
-      : h('section', { class: 'panel salon-incident' }, h('div', { class: 'panel__body' },
-          h('h2', { class: 'salon-h2' }, 'Une panne ?'),
-          h('p', { class: 'muted' }, 'Démarrez le chrono dès que la panne est signalée. Le diagnostic lancé ensuite y sera rattaché.'),
-          h('button', { type: 'button', class: 'btn btn--light salon-big', onclick: () => { salon.update(s2 => { s2.incident = { start: Date.now() }; }); rerender(); } }, 'Panne signalée — démarrer le chrono')));
-
-    // --- Check-lists
-    const lists = (state.data.checklists || []).map(cl => {
-      const key = localDate() + '|' + cl.id;
-      const done = new Set(st.checks[key] || []);
-      const items = (cl.items || []).filter(it => it && String(it.text || '').trim());
-      const idOf = it => normalize(it.text).slice(0, 80);
-      const count = items.filter(it => done.has(idOf(it))).length;
-      return h('section', { class: 'panel salon-list' }, h('div', { class: 'panel__body' },
-        h('div', { class: 'salon-list__head' },
-          h('h2', { class: 'salon-h2' }, cl.title), draftBadge(cl.status),
-          h('span', { class: 'salon-list__count' + (count === items.length && items.length ? ' is-done' : '') }, count + '/' + items.length)),
-        h('div', { class: 'salon-progress', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(items.length), 'aria-valuenow': String(count), 'aria-label': 'Avancement : ' + cl.title },
-          h('span', { style: 'width:' + (items.length ? Math.round(count / items.length * 100) : 0) + '%' })),
-        h('ul', { class: 'actions salon-items' }, items.map((it, i) => {
-          const cid = 'cl-' + cl.id + '-' + i;
-          const input = h('input', { type: 'checkbox', id: cid });
-          input.checked = done.has(idOf(it));
-          input.addEventListener('change', () => {
-            salon.update(s2 => {
-              const set = new Set(s2.checks[key] || []);
-              if (input.checked) set.add(idOf(it)); else set.delete(idOf(it));
-              s2.checks[key] = [...set];
-            });
-            rerender();
-            const again = document.getElementById(cid); if (again) again.focus();
-          });
-          return h('li', null, h('label', { class: 'action' + (input.checked ? ' is-done' : ''), for: cid }, input,
-            h('span', { class: 'action__box', 'aria-hidden': 'true' }),
-            h('span', { class: 'action__text' }, it.text, it.help ? h('span', { class: 'salon-help' }, it.help) : null)));
-        })),
-        count ? h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { salon.update(s2 => { delete s2.checks[key]; }); rerender(); } }, 'Tout décocher') : null));
-    });
-
-    // --- Journal
-    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
-    const today = st.log.filter(e => e.end >= todayStart.getTime());
-    const journal = h('section', { class: 'panel' }, h('div', { class: 'panel__body' },
-      h('h2', { class: 'salon-h2' }, 'Journal du jour'),
-      today.length ? h('ul', { class: 'salon-log' }, today.map(e => h('li', null,
-        h('span', { class: 'salon-log__time' }, fmtHour(e.start) + ' – ' + fmtHour(e.end)),
-        h('span', { class: 'salon-log__main' },
-          h('strong', null, e.symptom || 'Panne sans diagnostic'),
-          e.result ? h('span', null, ' → ', h('span', { class: 'badge badge--' + (e.severity || 'low') }, e.result)) : null,
-          h('span', { class: 'muted salon-log__dur' }, 'panne ' + fmtDuration(e.end - e.start) + (e.interventionStart ? ' · intervention ' + fmtDuration(e.end - e.interventionStart) : '')))))) :
-        h('p', { class: 'muted' }, 'Aucune panne résolue aujourd\'hui.'),
-      h('div', { class: 'ed-actions' },
-        today.length ? h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => exportJournalPdf(today) }, 'Journal en PDF') : null,
-        st.log.length ? h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { salon.update(s2 => { s2.log = []; }); toast('Journal effacé'); rerender(); } }, 'Effacer le journal') : null)));
-
-    // --- Options
-    const wakeOk = 'wakeLock' in navigator;
-    const wake = h('input', { type: 'checkbox', id: 'salon-wake', disabled: wakeOk ? null : true });
-    wake.checked = wakeOk && st.wake;
-    wake.addEventListener('change', () => { salon.update(s2 => { s2.wake = wake.checked; }); applyWakeLock(wake.checked); });
-    const options = h('section', { class: 'panel' }, h('div', { class: 'panel__body salon-options' },
-      h('label', { class: 'ed-check', for: 'salon-wake' }, wake, ' Garder l\'écran allumé sur cet appareil',
-        wakeOk ? null : h('span', { class: 'muted' }, ' (non pris en charge par ce navigateur)')),
-      h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: prepareOffline }, 'Préparer le hors-ligne'),
-      h('p', { class: 'muted salon-note' }, 'Chrono, cases cochées et journal restent sur cet appareil (journal conservé 7 jours).')));
-
-    root.replaceChildren(
-      h('div', { class: 'phead' }, h('p', { class: 'eyebrow' }, 'Mode salon'), h('h1', { class: 'phead__title' }, 'Salon')),
-      h('div', { class: 'salon-grid' },
-        h('div', { class: 'salon-col' }, incidentCard, journal, options),
-        h('div', { class: 'salon-col' }, lists.length ? lists : h('p', { class: 'muted' }, 'Aucune check-list définie (voir l\'éditeur).'))));
-    if (st.wake) applyWakeLock(true);
-    startTicker();
-  }
-
-  async function exportJournalPdf(entries) {
-    let PDF;
-    try { PDF = await loadScript('pdf.js', 'DIAGSAV_PDF'); } catch (err) { toast('Export PDF indisponible : ' + err.message); return; }
-    const now = new Date();
-    const doc = PDF.create({ title: 'Journal des pannes', footer: 'DIAG·SAV — journal du ' + now.toLocaleDateString('fr-FR') });
-    doc.text('Journal des pannes', { size: 20, bold: true, after: 4 });
-    doc.text(now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }), { size: 12, color: '#555555', after: 8 });
-    const total = entries.reduce((n, e) => n + (e.end - e.start), 0);
-    doc.row('Pannes', String(entries.length));
-    doc.row('Durée cumulée', fmtDuration(total));
-    [...entries].reverse().forEach((e, i) => {
-      doc.heading((i + 1) + '. ' + fmtHour(e.start) + ' – ' + fmtHour(e.end) + '  ·  ' + (e.symptom || 'Panne sans diagnostic'), { size: 12 });
-      if (e.result) doc.row('Résultat', e.result + (e.severity ? ' (gravité ' + severityInfo(e.severity).label.toLowerCase() + ')' : ''));
-      doc.row('Durée de panne', fmtDuration(e.end - e.start));
-      if (e.interventionStart) doc.row('Intervention', fmtDuration(e.end - e.interventionStart) + ' (commencée à ' + fmtHour(e.interventionStart) + ')');
-    });
-    const url = URL.createObjectURL(doc.toBlob());
-    const a = h('a', { href: url, download: 'journal-pannes-' + localDate(now) + '.pdf' });
-    document.body.append(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
-  }
-
-  /* ---------------------------------------------------------------------
      Rapport texte (à coller dans un ticket)
      --------------------------------------------------------------------- */
   function buildReport(node, rootSymptom, active, steps) {
@@ -1826,7 +1587,6 @@
     lines.push('Symptôme  : ' + rootSymptom.title + (active !== rootSymptom ? ' → ' + active.title : ''));
     const focus = state.focusProduct && state.products.get(state.focusProduct);
     if (focus) lines.push('Matériel  : ' + productLabel(focus) + (focus.ref ? ' (réf. ' + focus.ref + ')' : '') + ' — ' + productSourceLabel(focus));
-    for (const [k, v] of incidentReportRows()) lines.push((k + '          ').slice(0, 10) + ': ' + v);
     lines.push('');
     lines.push('Parcours :');
     steps.forEach((s, i) => {
@@ -1879,7 +1639,6 @@
     doc.row('Procédures', 'v' + (meta.version || '?') + (meta.updated ? ' du ' + meta.updated : ''));
     if (focus) doc.row('Matériel', productLabel(focus) + (focus.ref ? ' — réf. ' + focus.ref : '') + ' (' + productSourceLabel(focus) + ')');
     if (state.preview) doc.row('Attention', 'rapport établi en mode test (procédures non publiées)', { color: '#b8741a' });
-    if (typeof incidentReportRows === 'function') incidentReportRows().forEach(([k, v]) => doc.row(k, v));
 
     doc.heading('Résultat');
     doc.band('Gravité ' + severityInfo(sev).label + '  —  ' + node.title, SEV_COLOR[sev]);
@@ -1997,14 +1756,6 @@
     $('#lightbox-close').addEventListener('click', closeLightbox);
     $('#lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') closeLightbox(); });
     $('#btn-prepare-offline').addEventListener('click', prepareOffline);
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        updateIncidentChip();
-        if (salon.read().wake) applyWakeLock(true);   // le navigateur libère le verrou quand l'onglet est caché
-      }
-    });
-    updateIncidentChip();
-    startTicker();
 
     let notesTimer = null;
     $('#notes-input').addEventListener('input', () => {
@@ -2096,7 +1847,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.8.1';
+  const APP_VERSION = '1.9.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;
@@ -2110,6 +1861,7 @@
     return;
   }
   try { sessionStorage.removeItem('diagsav.reload'); } catch { /* ignoré */ }
+  try { localStorage.removeItem('diagsav.salon.v1'); } catch { /* ignoré : ancien mode salon */ }
 
   bindEvents();
   registerServiceWorker();
