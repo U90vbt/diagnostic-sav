@@ -153,10 +153,11 @@
       nodes: diffCollection(E.base.dec.nodes, E.dec.nodes),
       products: diffCollection(E.base.dec.products, E.dec.products),
       families: diffCollection(E.base.dec.families, E.dec.families),
-      facts: diffCollection(E.base.cat.products, E.cat.products)
+      facts: diffCollection(E.base.cat.products, E.cat.products),
+      checklists: diffCollection(byId(E.base.dec.checklists), byId(E.dec.checklists))
     };
     const metaChanged = fmt(E.base.dec.meta) !== fmt(E.dec.meta) || fmt(E.base.dec.categories) !== fmt(E.dec.categories);
-    d.total = ['symptoms', 'nodes', 'products', 'families', 'facts']
+    d.total = ['symptoms', 'nodes', 'products', 'families', 'facts', 'checklists']
       .reduce((n, k) => n + d[k].added.length + d[k].removed.length + d[k].modified.length, 0) + (metaChanged ? 1 : 0);
     d.decChanged = fmt(E.base.dec) !== fmt(E.dec);
     d.catChanged = fmt(E.base.cat) !== fmt(E.cat);
@@ -182,6 +183,7 @@
     if (ref.kind === 'node') return '#/editeur/etape/' + encodeURIComponent(ref.id);
     if (ref.kind === 'product') return '#/editeur/produit/' + encodeURIComponent(ref.id);
     if (ref.kind === 'family') return '#/editeur/famille/' + encodeURIComponent(ref.id);
+    if (ref.kind === 'checklist') return '#/editeur/checklists';
     return null;
   }
 
@@ -292,6 +294,7 @@
       h('nav', { class: 'ed-tabs', 'aria-label': 'Sections de l\'éditeur' },
         tab('symptoms', '#/editeur', 'Symptômes', (E.dec.symptoms || []).length),
         tab('products', '#/editeur/produits', 'Produits', Object.keys(E.dec.products || {}).length),
+        tab('checklists', '#/editeur/checklists', 'Check-lists', (E.dec.checklists || []).length),
         tab('verif', '#/editeur/verif', 'Vérification', iss.length),
         tab('export', '#/editeur/export', 'Exporter', diff.total || null)),
       h('div', { class: 'ed-body' }, content));
@@ -311,8 +314,10 @@
     const iss = issues(), diff = computeDiff();
     el.textContent = statusText(diff, iss);
     const badges = E.root.querySelectorAll('.ed-tab__badge');
-    if (badges[2]) { badges[2].textContent = String(iss.length); badges[2].classList.toggle('is-warn', iss.length > 0); }
-    if (badges[3]) { badges[3].textContent = diff.total ? String(diff.total) : ''; badges[3].hidden = !diff.total; }
+    const tabBadge = href => { const t = E.root.querySelector('.ed-tab[href="' + href + '"] .ed-tab__badge'); return t; };
+    const bv = tabBadge('#/editeur/verif'), be = tabBadge('#/editeur/export');
+    if (bv) { bv.textContent = String(iss.length); bv.classList.toggle('is-warn', iss.length > 0); }
+    if (be) { be.textContent = diff.total ? String(diff.total) : ''; }
   }
 
   /* ---------------------------------------------------------------------
@@ -408,6 +413,51 @@
 
   function notFound(msg, back) {
     return h('div', { class: 'empty' }, msg, ' ', h('a', { href: back }, 'Retour'));
+  }
+
+  /* ---------------------------------------------------------------------
+     Écran : check-lists du mode salon
+     --------------------------------------------------------------------- */
+  function screenChecklists() {
+    const lists = E.dec.checklists || [];
+    let newTitle = '';
+    const card = (cl, i) => {
+      if (!Array.isArray(cl.items)) cl.items = [];
+      // l'éditeur de liste manipule des textes ; on garde l'aide éventuelle de chaque point
+      const texts = cl.items.map(it => it.text || '');
+      const sync = () => {
+        const old = cl.items;
+        cl.items = texts.map((t, k) => {
+          const prev = old.find(o => o.text === t) || old[k] || {};
+          const it = { text: t };
+          if (prev.help && prev.text === t) it.help = prev.help;
+          return it;
+        });
+        changed(false);
+      };
+      return h('section', { class: 'ed-card' },
+        h('div', { class: 'ed-row' },
+          field('Titre', textInput(cl.title, v => { cl.title = v; changed(false); })),
+          field('Statut', selectInput([{ value: '', label: 'Validée' }, { value: 'draft', label: 'À valider (badge affiché)' }], cl.status || '',
+            v => { if (v) cl.status = v; else delete cl.status; changed(false); }))),
+        h('h3', { class: 'ed-h3' }, 'Points à vérifier'),
+        listEditor(texts, sync, { multiline: true, addLabel: 'Ajouter un point', placeholder: 'Une vérification concrète' }),
+        h('div', { class: 'ed-actions' },
+          h('span', { class: 'ed-hint' }, 'Identifiant : ' + cl.id),
+          deleteButton('cl:' + cl.id, 'Supprimer cette check-list', () => { lists.splice(i, 1); changed(true); })));
+    };
+    return h('div', null,
+      h('section', { class: 'ed-card ed-new' },
+        h('h2', { class: 'ed-h2' }, 'Nouvelle check-list'),
+        h('p', { class: 'ed-hint' }, 'Affichées dans l\'onglet Salon. Les techniciens cochent les points ; les cases repartent à zéro chaque jour.'),
+        field('Titre', textInput('', v => { newTitle = v; }, { placeholder: 'ex. Changement de plateau' })),
+        h('button', { type: 'button', class: 'btn btn--light', onclick: () => {
+          if (!newTitle.trim()) { toast('Donnez un titre à la check-list'); return; }
+          E.dec.checklists = E.dec.checklists || [];
+          E.dec.checklists.push({ id: uniqueId(slug(newTitle), k => E.dec.checklists.some(c => c.id === k)), title: newTitle.trim(), items: [{ text: '' }] });
+          changed(true);
+        } }, 'Créer la check-list')),
+      lists.map(card));
   }
 
   /* ---------------------------------------------------------------------
@@ -526,7 +576,7 @@
         h('h2', { class: 'ed-h2' }, 'Modifications à publier'),
         d.total ? h('ul', { class: 'ed-summary' },
           line('Symptômes', d.symptoms), line('Questions et résultats', d.nodes), line('Produits', d.products),
-          line('Familles', d.families), line('Caractéristiques (catalogue)', d.facts))
+          line('Familles', d.families), line('Caractéristiques (catalogue)', d.facts), line('Check-lists', d.checklists))
           : h('p', { class: 'ed-hint' }, 'Aucune modification par rapport aux fichiers publiés.'),
         iss.length ? h('p', { class: 'ed-alert' }, iss.length + ' point' + (iss.length > 1 ? 's' : '') + ' à corriger avant publication. ', h('a', { href: '#/editeur/verif' }, 'Voir la vérification')) : null,
         d.decChanged || d.catChanged ? field('Numéro de version', textInput(version, v => { version = v; }), 'Affiché en haut à droite du site (« Procédures v… ») pour vérifier que les tablettes sont à jour.') : null,
@@ -1088,6 +1138,7 @@
     else if (section === 'produits' && screens.products) { active = 'products'; content = screens.products(); }
     else if (section === 'produit' && screens.product) { active = 'products'; content = screens.product(id); }
     else if (section === 'famille' && screens.products) { active = 'products'; content = screens.products(); }
+    else if (section === 'checklists') { active = 'checklists'; content = screenChecklists(); }
     else if (section === 'verif') { active = 'verif'; content = screenVerif(); }
     else if (section === 'export') { active = 'export'; content = screenExport(); }
     else content = notFound('Cette page de l\'éditeur n\'existe pas.', '#/editeur');

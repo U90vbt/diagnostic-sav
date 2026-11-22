@@ -606,6 +606,51 @@ body.has-lightbox { overflow: hidden; }
 .footer__link { padding: 0; border: 0; background: none; color: var(--text-2); font: inherit; text-decoration: underline; cursor: pointer; }
 @media print { .fig__btn { border: 0; } .lightbox { display: none !important; } }
 
+/* Mode salon */
+.incident-chip {
+  display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: var(--r-pill);
+  background: rgba(239, 91, 82, .16); color: #f6bcb7; text-decoration: none; font-weight: 600; font-size: .85rem; font-variant-numeric: tabular-nums;
+}
+.incident-chip[hidden] { display: none; }
+.incident-chip__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sev-high); box-shadow: 0 0 10px var(--sev-high); animation: led-pulse 1.2s ease-in-out infinite; }
+.salon-grid { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 980px) { .salon-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+.salon-col { display: grid; gap: 20px; }
+.salon-h2 { font-size: 1.35rem; letter-spacing: -.02em; margin: 0; }
+.salon-incident .panel__body { display: grid; gap: 14px; }
+.salon-incident.is-running { box-shadow: var(--shadow), inset 0 3px 0 var(--sev-high); }
+.salon-incident__head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.salon-big { min-height: 64px; font-size: 1.05rem; width: 100%; }
+.salon-timers { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.salon-timer { display: grid; gap: 6px; padding: 16px; border-radius: var(--r); background: var(--surface-2); }
+.salon-timer__label { font-size: .82rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.salon-timer__value { font-family: var(--font-display); font-size: clamp(2rem, 7vw, 2.8rem); font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.salon-timer.is-idle .btn { justify-self: start; }
+.salon-incident__diag { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.salon-list .panel__body { display: grid; gap: 12px; }
+.salon-list__head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.salon-list__count { margin-left: auto; padding: 3px 12px; border-radius: var(--r-pill); background: var(--surface-3); font-weight: 600; font-variant-numeric: tabular-nums; }
+.salon-list__count.is-done { background: var(--green-soft); color: var(--green); }
+.salon-progress { height: 6px; border-radius: var(--r-pill); background: var(--surface-3); overflow: hidden; }
+.salon-progress span { display: block; height: 100%; background: var(--green); transition: width .3s var(--ease); }
+.salon-items { counter-reset: none; }
+.salon-items .action__box::before { content: ""; }
+.salon-items input:checked + .action__box::before { content: "✓"; }
+.salon-help { display: block; margin-top: 4px; font-size: .86rem; color: var(--muted); text-decoration: none; }
+.salon-log { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.salon-log li { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; padding: 12px 14px; border-radius: var(--r); background: var(--surface-2); }
+.salon-log__time { font-variant-numeric: tabular-nums; color: var(--text-2); font-weight: 500; }
+.salon-log__main { display: grid; gap: 4px; }
+.salon-log__dur { font-size: .85rem; }
+.salon-options { display: grid; gap: 12px; }
+.salon-options .btn { justify-self: start; }
+.salon-note { margin: 0; font-size: .82rem; }
+@media (max-width: 420px) { .brand__text { display: none; } .tabs__tab { padding: 6px 10px; } }
+@media (max-width: 640px) {
+  .status:has(.incident-chip:not([hidden])) .status__item { display: none; }
+  .incident-chip { padding: 7px 10px; }
+}
+
 /* Notes du technicien */
 .notes { margin-top: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden; }
 .notes:not([open]) .journal__head::after { transform: rotate(-90deg); }
