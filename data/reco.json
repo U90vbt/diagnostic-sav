@@ -12,17 +12,25 @@
       "label": "Type d'événement",
       "text": "Quel type d'événement préparez-vous ?",
       "options": [
-        { "label": "[EXEMPLE À REMPLACER] Conférence ou plénière", "next": "conf-jauge" },
-        { "label": "[EXEMPLE À REMPLACER] Stand de salon", "next": "stand-jauge" }
+        {
+          "label": "[EXEMPLE À REMPLACER] Conférence ou plénière",
+          "next": "conf-jauge"
+        },
+        {
+          "label": "[EXEMPLE À REMPLACER] Stand de salon",
+          "next": "stand-jauge"
+        }
       ]
     },
-
     "conf-jauge": {
       "type": "question",
       "label": "Jauge",
       "text": "Combien de personnes dans la salle ?",
       "options": [
-        { "label": "[EXEMPLE] 100 à 300 personnes", "next": "conf-budget" }
+        {
+          "label": "[EXEMPLE] 100 à 300 personnes",
+          "next": "conf-budget"
+        }
       ]
     },
     "conf-budget": {
@@ -30,7 +38,10 @@
       "label": "Budget",
       "text": "Quel niveau de budget ?",
       "options": [
-        { "label": "[EXEMPLE] Intermédiaire", "next": "conf-contraintes" }
+        {
+          "label": "[EXEMPLE] Intermédiaire",
+          "next": "conf-contraintes"
+        }
       ]
     },
     "conf-contraintes": {
@@ -39,7 +50,10 @@
       "text": "Quelles contraintes réseau et audio ?",
       "help": "Réseau dédié disponible, diffusion en ligne, traduction, salle réverbérante…",
       "options": [
-        { "label": "[EXEMPLE] Réseau dédié disponible, 4 orateurs simultanés", "next": "reco-conf-exemple" }
+        {
+          "label": "[EXEMPLE] Réseau dédié disponible, 4 orateurs simultanés",
+          "next": "reco-conf-exemple"
+        }
       ]
     },
     "reco-conf-exemple": {
@@ -47,20 +61,38 @@
       "title": "[EXEMPLE À REMPLACER] Pack conférence 300 personnes",
       "summary": "Exemple fictif montrant le format d'une recommandation : remplacez-le par vos propres packs.",
       "items": [
-        { "product": "shure-slxd", "qty": 4, "why": "[EXEMPLE] Un micro HF par orateur simultané." },
-        { "product": "biamp-tesiraforte", "qty": 1, "why": "[EXEMPLE] Mixage automatique et traitement des micros." },
-        { "product": "epson-eb-l890e", "qty": 1, "why": "[EXEMPLE] 8000 lumens pour un grand écran de projection." },
-        { "product": "netgear-gsm4230px", "qty": 1, "why": "[EXEMPLE] Switch PoE+ pour le réseau audio et le pilotage." }
+        {
+          "product": "shure-slxd",
+          "qty": 4,
+          "why": "[EXEMPLE] Un micro HF par orateur simultané."
+        },
+        {
+          "product": "biamp-tesiraforte",
+          "qty": 1,
+          "why": "[EXEMPLE] Mixage automatique et traitement des micros."
+        },
+        {
+          "product": "epson-eb-l890e",
+          "qty": 1,
+          "why": "[EXEMPLE] 8000 lumens pour un grand écran de projection."
+        },
+        {
+          "product": "netgear-gsm4230px",
+          "qty": 1,
+          "why": "[EXEMPLE] Switch PoE+ pour le réseau audio et le pilotage."
+        }
       ],
       "notes": "[EXEMPLE] Prévoir un repérage de la salle et un test HF la veille."
     },
-
     "stand-jauge": {
       "type": "question",
       "label": "Jauge",
       "text": "Quelle surface ou fréquentation pour le stand ?",
       "options": [
-        { "label": "[EXEMPLE] Petit stand, moins de 50 visiteurs simultanés", "next": "stand-budget" }
+        {
+          "label": "[EXEMPLE] Petit stand, moins de 50 visiteurs simultanés",
+          "next": "stand-budget"
+        }
       ]
     },
     "stand-budget": {
@@ -68,7 +100,10 @@
       "label": "Budget",
       "text": "Quel niveau de budget ?",
       "options": [
-        { "label": "[EXEMPLE] Serré", "next": "stand-contraintes" }
+        {
+          "label": "[EXEMPLE] Serré",
+          "next": "stand-contraintes"
+        }
       ]
     },
     "stand-contraintes": {
@@ -76,7 +111,10 @@
       "label": "Contraintes réseau / audio",
       "text": "Quelles contraintes réseau et audio ?",
       "options": [
-        { "label": "[EXEMPLE] Pas de réseau dédié, son d'ambiance faible", "next": "reco-stand-exemple" }
+        {
+          "label": "[EXEMPLE] Pas de réseau dédié, son d'ambiance faible",
+          "next": "reco-stand-exemple"
+        }
       ]
     },
     "reco-stand-exemple": {
@@ -84,9 +122,21 @@
       "title": "[EXEMPLE À REMPLACER] Pack stand affichage dynamique",
       "summary": "Exemple fictif montrant le format d'une recommandation : remplacez-le par vos propres packs.",
       "items": [
-        { "product": "samsung-serie-qhc", "qty": 2, "why": "[EXEMPLE] Écrans 700 nits lisibles sous l'éclairage du hall." },
-        { "product": "brightsign-xc4055-xc2055", "qty": 1, "why": "[EXEMPLE] Lecteur autonome, sans réseau dédié." },
-        { "product": "sonos-era-100-pro", "qty": 2, "why": "[EXEMPLE] Son d'ambiance à faible niveau." }
+        {
+          "product": "samsung-serie-qhc",
+          "qty": 2,
+          "why": "[EXEMPLE] Écrans 700 nits lisibles sous l'éclairage du hall."
+        },
+        {
+          "product": "brightsign-xc4055-xc2055",
+          "qty": 1,
+          "why": "[EXEMPLE] Lecteur autonome, sans réseau dédié."
+        },
+        {
+          "product": "sonos-era-100-pro",
+          "qty": 2,
+          "why": "[EXEMPLE] Son d'ambiance à faible niveau."
+        }
       ]
     }
   }

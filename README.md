@@ -103,8 +103,10 @@ L'onglet **Éditeur** (ou le lien « Éditer les procédures » en pied de page,
 | **Étape (question)** | Texte, aide, réponses : chacune mène à une étape choisie **dans une liste** ou au diagnostic d'un autre symptôme ; **+ Créer une question / un résultat** pour construire la suite ; **Tester à partir d'ici** |
 | **Étape (résultat)** | Titre, gravité, résumé, actions dans l'ordre, mise en garde, escalade, diagnostics liés, **étapes selon le matériel** (marque, produits, statut « À valider ») |
 | **Produits** | Fiche produit et ses caractéristiques (Assistant produit) sur le même écran ; familles et symptôme principal (★) |
+| **Recommandations** | Parcours de recommandation (`reco.json`) : arbre, questions avec intitulé court pour le devis, réponses reliées par liste déroulante, recommandations (produits du catalogue, quantités, justification, remarques) ; **Tester le parcours** |
+| **Veille** | Actualités (`news.json`) : catégorie, date, impact SAV, résumé, action, matériel concerné, source et lien |
 | **Vérification** | Tous les points à corriger, en français courant, avec un bouton **Corriger** qui ouvre le bon formulaire |
-| **Exporter** | Résumé des modifications, numéro de version, téléchargement de `decisions.json` et `catalogue.json` |
+| **Exporter** | Résumé des modifications, numéro de version, téléchargement de `decisions.json`, `catalogue.json`, `reco.json` et `news.json` |
 
 - **Brouillon automatique** : chaque modification est enregistrée sur l'appareil (stockage local du navigateur). On peut fermer la page et reprendre plus tard, sur le même appareil et le même navigateur. Si le fichier publié a changé entre-temps (un collègue a publié), un avertissement s'affiche.
 - **Tester mes modifications** : le site passe en **mode test** (bandeau orange) et fonctionne avec vos modifications, Assistant produit compris, sans rien publier. « Revenir à l'éditeur » rétablit les données publiées.
@@ -113,7 +115,7 @@ L'onglet **Éditeur** (ou le lien « Éditer les procédures » en pied de page,
 
 ### Publier les modifications
 
-1. Dans l'éditeur, onglet **Exporter** : téléchargez `decisions.json` (et `catalogue.json` si des produits ou caractéristiques ont changé).
+1. Dans l'éditeur, onglet **Exporter** : téléchargez les fichiers modifiés (`decisions.json`, `catalogue.json`, `reco.json`, `news.json` : le résumé indique lesquels ont changé).
 2. Sur GitHub, ouvrez le dossier `data` du dépôt.
 3. **Add file → Upload files**, déposez le fichier : il remplace l'ancien (le nom doit rester exactement le même).
 4. Décrivez la modification (ex. « Ajout du symptôme intercom ») puis **Commit changes**.

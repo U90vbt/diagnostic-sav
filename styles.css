@@ -707,6 +707,8 @@ a.reco-item__name:hover { text-decoration: underline; text-underline-offset: 3px
 
 /* ---------- Éditeur ---------- */
 .ed { display: grid; gap: 16px; }
+.ed > *, .ed-body > *, .ed-card > *, .ed-row > *, .ed-sub > *, .ed-option > *, .ed-field > * { min-width: 0; }
+.ed-input, .ed-select { max-width: 100%; }
 .ed-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; margin-top: 10px; }
 .ed-title { font-size: clamp(1.8rem, 5vw, 2.6rem); letter-spacing: -.03em; }
 .ed-head__actions { display: flex; flex-wrap: wrap; gap: 8px; }

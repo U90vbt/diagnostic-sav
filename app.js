@@ -1558,8 +1558,11 @@
   }
 
   /** Mode test : l'application tourne sur les données de l'éditeur, sans rien publier. */
-  function startPreview(decisions, catalogue, hash) {
+  function startPreview(decisions, catalogue, hash, extra = {}) {
     state.preview = true;
+    state.previewReco = extra.reco ? JSON.parse(JSON.stringify(extra.reco)) : null;
+    state.previewNews = extra.news ? JSON.parse(JSON.stringify(extra.news)) : null;
+    state.recoChecked = null; state.newsChecked = null;
     ingest(JSON.parse(JSON.stringify(decisions)));
     if (catalogue) {
       buildCatalogueIndex(JSON.parse(JSON.stringify(catalogue)));
@@ -1575,6 +1578,7 @@
     state.preview = false;
     ingest(JSON.parse(JSON.stringify(state.published)));
     state.pIndex = null; state.catalogue = null; cataloguePromise = null;
+    state.previewReco = null; state.previewNews = null; state.recoChecked = null; state.newsChecked = null;
     $('#preview-banner').hidden = true;
     document.body.classList.remove('is-preview');
     if (goBack) navigate('#/editeur');
@@ -1584,6 +1588,8 @@
   window.DIAGSAV = {
     h, icon, normalize, truncate, toast, jsonErrorPosition, validateDetailed, severityInfo, SEVERITY_ORDER, isLocalImage,
     published: () => state.published,
+    loadPublishedJson: path => loadJson(path).then(o => JSON.parse(JSON.stringify(o))),
+    validateReco, validateNews,
     loadPublishedCatalogue: async () => {
       const res = await fetch(CATALOGUE_URL, { cache: 'no-cache' });
       if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + CATALOGUE_URL);
@@ -1623,7 +1629,7 @@
      Recommander (avant-vente) : arbre de questions → carte de recommandation
      --------------------------------------------------------------------- */
   /** Contrôle de reco.json, messages en français. */
-  function validateReco(data) {
+  function validateReco(data, hasProduct = pid => state.products.has(pid)) {
     const w = [];
     const nodes = (data && data.nodes) || {};
     if (!data || typeof data !== 'object') return ['Le fichier reco.json est vide ou mal formé.'];
@@ -1644,7 +1650,7 @@
         if (!Array.isArray(n.items) || !n.items.length) w.push(cap(name) + ' ne propose aucun produit.');
         (n.items || []).forEach((it, i) => {
           if (!it.product) w.push(cap(name) + ' : la ligne ' + (i + 1) + ' n\'indique pas de produit.');
-          else if (!state.products.has(it.product)) w.push(cap(name) + ' cite un produit inconnu du catalogue (« ' + it.product + ' »).');
+          else if (!hasProduct(it.product)) w.push(cap(name) + ' cite un produit inconnu du catalogue (« ' + it.product + ' »).');
           if (it.qty != null && !(Number.isInteger(it.qty) && it.qty > 0)) w.push(cap(name) + ' : la quantité de la ligne ' + (i + 1) + ' doit être un nombre entier positif.');
         });
       } else {
@@ -1753,7 +1759,7 @@
      --------------------------------------------------------------------- */
   const IMPACT_SEV = { faible: 'low', moyen: 'moderate', eleve: 'high' };
 
-  function validateNews(data) {
+  function validateNews(data, hasProduct = pid => state.products.has(pid)) {
     const w = [];
     if (!data || !Array.isArray(data.items)) return ['news.json : la liste « items » est absente.'];
     const cats = new Set((data.categories || []).map(c => c.id));
@@ -1769,7 +1775,7 @@
       if (!IMPACT_SEV[it.impact]) w.push('L\'actualité ' + name + ' a un impact SAV invalide (« ' + it.impact + ' ») : faible, moyen ou eleve.');
       if (!it.source || !it.source.name) w.push('L\'actualité ' + name + ' n\'indique pas sa source.');
       else if (it.source.url && !/^https:\/\//.test(it.source.url)) w.push('Le lien de la source de ' + name + ' doit commencer par https://.');
-      for (const pid of it.products || []) if (!state.products.has(pid)) w.push('L\'actualité ' + name + ' cite un produit inconnu du catalogue (« ' + pid + ' »).');
+      for (const pid of it.products || []) if (!hasProduct(pid)) w.push('L\'actualité ' + name + ' cite un produit inconnu du catalogue (« ' + pid + ' »).');
     });
     return w;
   }
@@ -2159,7 +2165,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.10.0';
+  const APP_VERSION = '1.11.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

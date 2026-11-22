@@ -6,15 +6,36 @@
     "note": "Saisie manuelle : le site ne va chercher aucune information sur Internet."
   },
   "categories": [
-    { "id": "nouveaute", "label": "Nouveautés" },
-    { "id": "firmware", "label": "Firmware" },
-    { "id": "fin-de-vie", "label": "Fin de vie" },
-    { "id": "securite", "label": "Bulletins sécurité" }
+    {
+      "id": "nouveaute",
+      "label": "Nouveautés"
+    },
+    {
+      "id": "firmware",
+      "label": "Firmware"
+    },
+    {
+      "id": "fin-de-vie",
+      "label": "Fin de vie"
+    },
+    {
+      "id": "securite",
+      "label": "Bulletins sécurité"
+    }
   ],
   "impacts": {
-    "faible": { "label": "Faible", "description": "Pour information, aucune action SAV." },
-    "moyen": { "label": "Moyen", "description": "À planifier : mise à jour, stock de pièces, information des équipes." },
-    "eleve": { "label": "Élevé", "description": "Action rapide : risque de panne ou de sécurité sur du matériel en service." }
+    "faible": {
+      "label": "Faible",
+      "description": "Pour information, aucune action SAV."
+    },
+    "moyen": {
+      "label": "Moyen",
+      "description": "À planifier : mise à jour, stock de pièces, information des équipes."
+    },
+    "eleve": {
+      "label": "Élevé",
+      "description": "Action rapide : risque de panne ou de sécurité sur du matériel en service."
+    }
   },
   "items": [
     {
@@ -25,8 +46,13 @@
       "impact": "moyen",
       "summary": "[EXEMPLE] Entrée fictive montrant le format d'une actualité. Remplacez-la par une information réelle, avec sa source.",
       "action": "[EXEMPLE] Mettre à jour le parc après validation sur un appareil de test.",
-      "products": ["novastar-mctrl4k"],
-      "source": { "name": "[EXEMPLE] Notes de version du constructeur", "url": "https://example.com/" }
+      "products": [
+        "novastar-mctrl4k"
+      ],
+      "source": {
+        "name": "[EXEMPLE] Notes de version du constructeur",
+        "url": "https://example.com/"
+      }
     }
   ]
 }

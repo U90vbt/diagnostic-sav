@@ -114,7 +114,7 @@
     saveTimer = setTimeout(() => {
       try {
         E.savedAt = Date.now();
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 1, savedAt: E.savedAt, baseStamp: stamp(E.base.dec), dec: E.dec, cat: E.cat }));
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 2, savedAt: E.savedAt, baseStamp: stamp(E.base.dec), recoStamp: stamp(E.base.reco), newsStamp: stamp(E.base.news), dec: E.dec, cat: E.cat, reco: E.reco, news: E.news }));
       } catch (err) {
         toast('Brouillon non enregistré : stockage du navigateur indisponible ou plein');
       }
@@ -153,13 +153,19 @@
       nodes: diffCollection(E.base.dec.nodes, E.dec.nodes),
       products: diffCollection(E.base.dec.products, E.dec.products),
       families: diffCollection(E.base.dec.families, E.dec.families),
-      facts: diffCollection(E.base.cat.products, E.cat.products)
+      facts: diffCollection(E.base.cat.products, E.cat.products),
+      reco: diffCollection(E.base.reco.nodes, E.reco.nodes),
+      news: diffCollection(byId(E.base.news.items), byId(E.news.items))
     };
     const metaChanged = fmt(E.base.dec.meta) !== fmt(E.dec.meta) || fmt(E.base.dec.categories) !== fmt(E.dec.categories);
-    d.total = ['symptoms', 'nodes', 'products', 'families', 'facts']
+    d.total = ['symptoms', 'nodes', 'products', 'families', 'facts', 'reco', 'news']
       .reduce((n, k) => n + d[k].added.length + d[k].removed.length + d[k].modified.length, 0) + (metaChanged ? 1 : 0);
     d.decChanged = fmt(E.base.dec) !== fmt(E.dec);
     d.catChanged = fmt(E.base.cat) !== fmt(E.cat);
+    d.recoChanged = fmt(E.base.reco) !== fmt(E.reco);
+    d.newsChanged = fmt(E.base.news) !== fmt(E.news);
+    if (d.recoChanged && !(d.reco.added.length + d.reco.removed.length + d.reco.modified.length)) d.total++;   // départ ou meta modifiés
+    if (d.newsChanged && !(d.news.added.length + d.news.removed.length + d.news.modified.length)) d.total++;
     return d;
   }
 
@@ -168,6 +174,9 @@
      --------------------------------------------------------------------- */
   function issues() {
     const list = A.validateDetailed(E.dec);
+    const has = pid => !!(E.dec.products || {})[pid];
+    for (const msg of A.validateReco(E.reco, has)) list.push({ msg, ref: { kind: 'reco', id: '' } });
+    for (const msg of A.validateNews(E.news, has)) list.push({ msg, ref: { kind: 'news', id: '' } });
     for (const [pid, entry] of Object.entries(E.cat.products || {})) {
       const pr = (E.dec.products || {})[pid];
       if (!pr) list.push({ msg: 'Le catalogue contient des caractéristiques pour un produit qui n\'existe plus (« ' + pid + ' »).', ref: null });
@@ -182,6 +191,8 @@
     if (ref.kind === 'node') return '#/editeur/etape/' + encodeURIComponent(ref.id);
     if (ref.kind === 'product') return '#/editeur/produit/' + encodeURIComponent(ref.id);
     if (ref.kind === 'family') return '#/editeur/famille/' + encodeURIComponent(ref.id);
+    if (ref.kind === 'reco') return '#/editeur/reco';
+    if (ref.kind === 'news') return '#/editeur/veille';
     return null;
   }
 
@@ -283,7 +294,7 @@
           h('p', { class: 'eyebrow' }, 'Procédures v' + ((E.dec.meta && E.dec.meta.version) || '?')),
           h('h1', { class: 'ed-title' }, 'Éditeur des procédures')),
         h('div', { class: 'ed-head__actions' },
-          h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => A.startPreview(E.dec, E.cat, '#/') }, 'Tester mes modifications'),
+          h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => A.startPreview(E.dec, E.cat, '#/', { reco: E.reco, news: E.news }) }, 'Tester mes modifications'),
           h('a', { class: 'btn btn--light', href: '#/editeur/export' }, 'Exporter'))),
       h('p', { class: 'ed-status', id: 'ed-status' }, statusText(diff, iss)),
       E.conflict ? h('p', { class: 'ed-alert' },
@@ -292,6 +303,8 @@
       h('nav', { class: 'ed-tabs', 'aria-label': 'Sections de l\'éditeur' },
         tab('symptoms', '#/editeur', 'Symptômes', (E.dec.symptoms || []).length),
         tab('products', '#/editeur/produits', 'Produits', Object.keys(E.dec.products || {}).length),
+        tab('reco', '#/editeur/reco', 'Recommandations', Object.values(E.reco.nodes).filter(n => n.type === 'result').length),
+        tab('news', '#/editeur/veille', 'Veille', E.news.items.length),
         tab('verif', '#/editeur/verif', 'Vérification', iss.length),
         tab('export', '#/editeur/export', 'Exporter', diff.total || null)),
       h('div', { class: 'ed-body' }, content));
@@ -387,7 +400,7 @@
         h('div', { class: 'ed-actions' },
           h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/etape/' + encodeURIComponent(s.start) }, 'Modifier la question de départ'),
           s.start && E.dec.nodes[s.start] ? h('button', { type: 'button', class: 'btn btn--small btn--ghost',
-            onclick: () => A.startPreview(E.dec, E.cat, diagHref(s.id, [s.start])) }, 'Tester ce symptôme') : null,
+            onclick: () => A.startPreview(E.dec, E.cat, diagHref(s.id, [s.start]), { reco: E.reco, news: E.news }) }, 'Tester ce symptôme') : null,
           deleteButton('sym:' + s.id, 'Supprimer ce symptôme', () => {
             E.dec.symptoms = E.dec.symptoms.filter(x => x !== s);
             changed(false);
@@ -451,6 +464,14 @@
     out.meta.updated = today();
     return fmt(out);
   }
+  function exportedSimple(obj, flag) {
+    if (!computeDiff()[flag]) return fmt(obj);
+    const out = clone(obj);
+    out.meta = out.meta || {};
+    out.meta.updated = today();
+    return fmt(out);
+  }
+
   function exportedCatalogue() {
     const d = computeDiff();
     if (!d.catChanged) return fmt(E.cat);
@@ -477,6 +498,10 @@
       }
       if (Array.isArray(data.symptoms) && data.nodes) {
         E.dec = data; toast('✓ ' + file.name + ' chargé comme procédures (decisions.json)');
+      } else if (data.nodes && 'start' in data && !data.symptoms) {
+        E.reco = data; toast('✓ ' + file.name + ' chargé comme recommandations (reco.json)');
+      } else if (Array.isArray(data.items) && data.categories) {
+        E.news = data; toast('✓ ' + file.name + ' chargé comme veille (news.json)');
       } else if (data.products && !data.nodes) {
         E.cat = data; toast('✓ ' + file.name + ' chargé comme catalogue (catalogue.json)');
       } else {
@@ -528,19 +553,22 @@
         h('h2', { class: 'ed-h2' }, 'Modifications à publier'),
         d.total ? h('ul', { class: 'ed-summary' },
           line('Symptômes', d.symptoms), line('Questions et résultats', d.nodes), line('Produits', d.products),
-          line('Familles', d.families), line('Caractéristiques (catalogue)', d.facts))
+          line('Familles', d.families), line('Caractéristiques (catalogue)', d.facts),
+          line('Recommandations (reco.json)', d.reco), line('Veille (news.json)', d.news))
           : h('p', { class: 'ed-hint' }, 'Aucune modification par rapport aux fichiers publiés.'),
         iss.length ? h('p', { class: 'ed-alert' }, iss.length + ' point' + (iss.length > 1 ? 's' : '') + ' à corriger avant publication. ', h('a', { href: '#/editeur/verif' }, 'Voir la vérification')) : null,
         d.decChanged || d.catChanged ? field('Numéro de version', textInput(version, v => { version = v; }), 'Affiché en haut à droite du site (« Procédures v… ») pour vérifier que les tablettes sont à jour.') : null,
         h('div', { class: 'ed-actions' },
           h('button', { type: 'button', class: 'btn btn--light', onclick: () => download('decisions.json', exportedDecisions(version)) }, 'Télécharger decisions.json'),
           h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => download('catalogue.json', exportedCatalogue()) }, 'Télécharger catalogue.json'),
+          h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => download('reco.json', exportedSimple(E.reco, 'recoChanged')) }, 'Télécharger reco.json'),
+          h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => download('news.json', exportedSimple(E.news, 'newsChanged')) }, 'Télécharger news.json'),
           h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => copy(exportedDecisions(version)) }, 'Copier decisions.json'))),
       newImagesCard(),
       h('section', { class: 'ed-card' },
         h('h2', { class: 'ed-h2' }, 'Publier sur le site'),
         h('ol', { class: 'ed-steps' },
-          h('li', null, 'Téléchargez le ou les fichiers modifiés ci-contre.'),
+          h('li', null, 'Téléchargez le ou les fichiers modifiés ci-contre (decisions.json, catalogue.json, reco.json, news.json).'),
           h('li', null, 'Sur GitHub, ouvrez le dossier ', h('code', null, 'data'), ' du dépôt.'),
           h('li', null, 'Cliquez sur ', h('strong', null, 'Add file → Upload files'), ' et déposez le fichier : il remplace l\'ancien.'),
           h('li', null, 'Décrivez la modification (ex. « Ajout du symptôme intercom ») puis ', h('strong', null, 'Commit changes'), '.'),
@@ -554,7 +582,7 @@
           h('label', { class: 'btn btn--small btn--ghost', for: 'ed-import' }, 'Importer un fichier JSON…'),
           deleteButton('reset', 'Abandonner le brouillon', () => {
             clearDraft();
-            E.dec = clone(E.base.dec); E.cat = clone(E.base.cat); E.savedAt = null; E.conflict = false;
+            E.dec = clone(E.base.dec); E.cat = clone(E.base.cat); E.reco = clone(E.base.reco); E.news = clone(E.base.news); E.savedAt = null; E.conflict = false;
             toast('Brouillon abandonné : retour aux fichiers publiés');
             render(E.route, E.root);
           }))));
@@ -595,6 +623,22 @@
 
   function nodeIssues(id) {
     return issues().filter(x => x.ref && x.ref.kind === 'node' && x.ref.id === id);
+  }
+
+  /** Choix de produits : pastilles + liste déroulante groupée par marque. */
+  function pickProducts(list, redraw) {
+    const products = E.dec.products || {};
+    const byBrand = new Map();
+    for (const [pid, pr] of Object.entries(products)) {
+      if (!byBrand.has(pr.brand)) byBrand.set(pr.brand, []);
+      byBrand.get(pr.brand).push({ value: pid, label: pr.brand + ' ' + pr.model });
+    }
+    const groups = [...byBrand.entries()].sort((a, b) => a[0].localeCompare(b[0], 'fr')).map(([group, options]) => ({ group, options }));
+    return h('div', { class: 'ed-chips' },
+      list.map((pid, i) => h('span', { class: 'chip chip--ghost' },
+        products[pid] ? products[pid].brand + ' ' + products[pid].model : '⚠ ' + pid,
+        h('button', { type: 'button', class: 'ed-chip-x', 'aria-label': 'Retirer ' + pid, onclick: () => { list.splice(i, 1); redraw(); changed(false); } }, '✕'))),
+      selectInput(groups, '', v => { if (v && !list.includes(v)) { list.push(v); redraw(); changed(false); } }, { placeholder: '+ Ajouter un produit…' }));
   }
 
   /* ---------------------------------------------------------------------
@@ -722,7 +766,7 @@
           const path = owner && pathTo(owner, id);
           return path ? h('button', { type: 'button', class: 'btn btn--small btn--ghost',
             title: 'Ouvre le diagnostic sur cette étape, avec vos modifications',
-            onclick: () => A.startPreview(E.dec, E.cat, diagHref(owner.id, path)) }, 'Tester à partir d\'ici') : null;
+            onclick: () => A.startPreview(E.dec, E.cat, diagHref(owner.id, path), { reco: E.reco, news: E.news }) }, 'Tester à partir d\'ici') : null;
         })(),
         deleteButton('node:' + id, 'Supprimer cette étape', () => {
           for (const m of Object.values(E.dec.nodes)) for (const o of m.options || []) if (o.next === id) o.next = '';
@@ -1055,6 +1099,184 @@
   screens.product = screenProduct;
 
   /* ---------------------------------------------------------------------
+     Veille (news.json)
+     --------------------------------------------------------------------- */
+  const IMPACTS = [{ value: 'faible', label: 'Faible' }, { value: 'moyen', label: 'Moyen' }, { value: 'eleve', label: 'Élevé' }];
+
+  function screenNewsList() {
+    const cats = E.news.categories || [];
+    let nt = '', nc = cats[0] ? cats[0].id : '';
+    const items = [...E.news.items].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    return h('div', null,
+      h('section', { class: 'ed-card ed-new' },
+        h('h2', { class: 'ed-h2' }, 'Nouvelle actualité'),
+        h('div', { class: 'ed-row' },
+          field('Titre', textInput('', v => { nt = v; }, { placeholder: 'ex. Fin de commercialisation du modèle X' })),
+          field('Catégorie', selectInput(cats.map(c => ({ value: c.id, label: c.label })), nc, v => { nc = v; }))),
+        h('button', { type: 'button', class: 'btn btn--light', onclick: () => {
+          if (!nt.trim()) { toast('Donnez un titre à l\'actualité'); return; }
+          const id = uniqueId(slug(nt), k => E.news.items.some(x => x.id === k));
+          E.news.items.unshift({ id, category: nc, title: nt.trim(), date: today(), impact: 'faible', summary: '', source: { name: '' } });
+          changed(false);
+          A.navigate('#/editeur/actu/' + encodeURIComponent(id));
+        } }, 'Créer l\'actualité')),
+      h('ul', { class: 'ed-items' }, items.map(it => h('li', null, h('a', { class: 'ed-item', href: '#/editeur/actu/' + encodeURIComponent(it.id) },
+        h('span', { class: 'ed-item__main' },
+          h('span', { class: 'ed-item__title' }, it.title || '(sans titre)'),
+          h('span', { class: 'ed-item__sub' }, [((cats.find(c => c.id === it.category) || {}).label || it.category), it.date, 'impact ' + it.impact].join(' · '))),
+        /\[EXEMPLE/.test(it.title || '') ? h('span', { class: 'ed-pill is-warn' }, 'exemple') : null)))));
+  }
+
+  function screenNewsItem(id) {
+    const it = E.news.items.find(x => x.id === id);
+    if (!it) return notFound('Cette actualité n\'existe pas (ou plus).', '#/editeur/veille');
+    const cats = E.news.categories || [];
+    if (!it.source || typeof it.source !== 'object') it.source = { name: '' };
+    const prods = h('div');
+    const list = it.products || [];
+    const redraw = () => {
+      if (list.length) it.products = list; else delete it.products;
+      prods.replaceChildren(pickProducts(list, redraw));
+    };
+    prods.replaceChildren(pickProducts(list, redraw));
+    const opt = (key, label, hint, rows = 2) => field(label, textInput(it[key], v => { if (v.trim()) it[key] = v; else delete it[key]; changed(false); }, { multiline: true, rows }), hint);
+    return h('div', null,
+      h('p', null, h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/veille' }, '← Toute la veille')),
+      h('section', { class: 'ed-card' },
+        h('h2', { class: 'ed-h2' }, it.title || '(sans titre)'),
+        field('Titre', textInput(it.title, v => { it.title = v; changed(false); })),
+        h('div', { class: 'ed-row' },
+          field('Catégorie', selectInput(cats.map(c => ({ value: c.id, label: c.label })), it.category, v => { it.category = v; changed(false); })),
+          field('Date', textInput(it.date, v => { it.date = v; changed(false); }, { type: 'date' })),
+          field('Impact SAV', selectInput(IMPACTS, it.impact, v => { it.impact = v; changed(false); }))),
+        opt('summary', 'Résumé', 'Deux ou trois phrases : ce qui change.', 3),
+        opt('action', 'À faire (facultatif)', 'L\'action attendue côté SAV : mise à jour, stock, information des équipes…'),
+        field('Matériel concerné (facultatif)', prods),
+        h('div', { class: 'ed-row' },
+          field('Source', textInput(it.source.name, v => { it.source.name = v; changed(false); }, { placeholder: 'ex. Notes de version du constructeur' })),
+          field('Lien de la source', textInput(it.source.url, v => { if (v.trim()) it.source.url = v.trim(); else delete it.source.url; changed(false); }, { type: 'url', placeholder: 'https://…' }))),
+        h('div', { class: 'ed-actions' }, deleteButton('news:' + it.id, 'Supprimer cette actualité', () => {
+          E.news.items = E.news.items.filter(x => x !== it); changed(false); A.navigate('#/editeur/veille');
+        }))));
+  }
+
+  /* ---------------------------------------------------------------------
+     Recommandations (reco.json)
+     --------------------------------------------------------------------- */
+  function recoLabel(id) {
+    const n = E.reco.nodes[id];
+    if (!n) return '⚠ étape introuvable (' + id + ')';
+    return n.type === 'result' ? 'Recommandation · ' + truncate(n.title || '(sans titre)', 70) : 'Question · ' + truncate(n.text || '(sans texte)', 70);
+  }
+
+  function createRecoNode(type) {
+    const prefix = type === 'question' ? 'reco-q' : 'reco-r';
+    const id = uniqueId(prefix + '1', k => !!E.reco.nodes[k]);
+    E.reco.nodes[id] = type === 'question'
+      ? { type: 'question', label: '', text: 'Nouvelle question', options: [{ label: '', next: '' }] }
+      : { type: 'result', title: 'Nouvelle recommandation', items: [{ product: '', qty: 1 }] };
+    return id;
+  }
+
+  function screenReco() {
+    const nodes = E.reco.nodes;
+    const seen = new Set();
+    const branch = (id, depth) => {
+      if (!id) return h('span', { class: 'ed-tree__err' }, 'aucune étape choisie');
+      if (!nodes[id]) return h('span', { class: 'ed-tree__err' }, 'étape introuvable (' + id + ')');
+      const link = h('a', { class: 'ed-tree__node', href: '#/editeur/reco-etape/' + encodeURIComponent(id) },
+        h('span', { class: 'ed-pill' + (nodes[id].type === 'result' ? '' : ' is-q') }, nodes[id].type === 'result' ? 'Reco' : 'Q'), ' ',
+        nodes[id].type === 'result' ? nodes[id].title : nodes[id].text);
+      if (seen.has(id)) return h('span', { class: 'ed-tree__again' }, '↺ ', link, ' (déjà affichée)');
+      seen.add(id);
+      if (nodes[id].type !== 'question' || depth > 30) return link;
+      return h('div', null, link, h('ul', { class: 'ed-tree__opts' }, (nodes[id].options || []).map(o => h('li', null,
+        h('span', { class: 'ed-tree__ans' }, '« ' + (o.label || '?') + ' »'), ' → ', branch(o.next, depth + 1)))));
+    };
+    const questions = Object.keys(nodes).filter(k => nodes[k].type === 'question');
+    const tree = E.reco.start ? branch(E.reco.start, 0) : h('span', { class: 'ed-tree__err' }, 'aucune question de départ');
+    const orphansNow = Object.keys(nodes).filter(k => !seen.has(k));   // calculé après le parcours de l'arbre
+    return h('div', null,
+      h('section', { class: 'ed-card' },
+        h('h2', { class: 'ed-h2' }, 'Parcours de recommandation'),
+        h('div', { class: 'ed-row' },
+          field('Question de départ', selectInput(questions.map(k => ({ value: k, label: recoLabel(k) })), E.reco.start || '', v => { E.reco.start = v; changed(true); }, { placeholder: '— choisir —' })),
+          field('Titre de l\'onglet', textInput((E.reco.meta || {}).title, v => { E.reco.meta = E.reco.meta || {}; E.reco.meta.title = v; changed(false); }))),
+        h('div', { class: 'ed-actions' },
+          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { const id = createRecoNode('question'); if (!E.reco.start) E.reco.start = id; changed(false); A.navigate('#/editeur/reco-etape/' + id); } }, '+ Question'),
+          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { const id = createRecoNode('result'); changed(false); A.navigate('#/editeur/reco-etape/' + id); } }, '+ Recommandation'),
+          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => A.startPreview(E.dec, E.cat, '#/recommander', { reco: E.reco, news: E.news }) }, 'Tester le parcours'))),
+      h('section', { class: 'ed-card' },
+        h('h2', { class: 'ed-h3' }, 'Arbre'),
+        h('div', { class: 'ed-tree' }, tree),
+        orphansNow.length ? h('div', null, h('h3', { class: 'ed-h3' }, 'Étapes non reliées'),
+          h('ul', { class: 'ed-refs' }, orphansNow.map(k => h('li', null, h('a', { href: '#/editeur/reco-etape/' + encodeURIComponent(k) }, recoLabel(k)))))) : null));
+  }
+
+  function screenRecoNode(id) {
+    const n = E.reco.nodes[id];
+    if (!n) return notFound('Cette étape n\'existe pas (ou plus).', '#/editeur/reco');
+    const others = Object.keys(E.reco.nodes).filter(k => k !== id).map(k => ({ value: k, label: recoLabel(k) }));
+    let body;
+    if (n.type === 'question') {
+      if (!Array.isArray(n.options)) n.options = [];
+      const box = h('div', { class: 'ed-options' });
+      const draw = () => box.replaceChildren(...n.options.map((o, i) => h('div', { class: 'ed-option' },
+        h('div', { class: 'ed-option__head' },
+          h('span', { class: 'ed-option__key' }, String(i + 1)),
+          textInput(o.label, v => { o.label = v; changed(false); }, { placeholder: 'Réponse (ex. « 100 à 300 personnes »)' }),
+          h('div', { class: 'ed-list__tools' },
+            h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer la réponse ' + (i + 1), onclick: () => { n.options.splice(i, 1); changed(false); draw(); } }, '✕'))),
+        field('Mène vers', selectInput(others, o.next || '', v => { o.next = v; changed(false); draw(); }, { placeholder: '— choisir —' })),
+        h('div', { class: 'ed-actions' },
+          o.next && E.reco.nodes[o.next] ? h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/reco-etape/' + encodeURIComponent(o.next) }, 'Ouvrir →') : null,
+          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { o.next = createRecoNode('question'); changed(false); A.navigate('#/editeur/reco-etape/' + o.next); } }, '+ Créer une question'),
+          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { o.next = createRecoNode('result'); changed(false); A.navigate('#/editeur/reco-etape/' + o.next); } }, '+ Créer une recommandation')))),
+        h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { n.options.push({ label: '', next: '' }); changed(false); draw(); } }, '+ Ajouter une réponse'));
+      draw();
+      body = [
+        h('div', { class: 'ed-row' },
+          field('Intitulé court (repris dans le devis)', textInput(n.label, v => { if (v.trim()) n.label = v; else delete n.label; changed(false); }, { placeholder: 'ex. Jauge' })),
+          field('Question posée', textInput(n.text, v => { n.text = v; changed(false); }))),
+        field('Aide (facultatif)', textInput(n.help, v => { if (v.trim()) n.help = v; else delete n.help; changed(false); }, { multiline: true, rows: 2 })),
+        h('h3', { class: 'ed-h3' }, 'Réponses'), box];
+    } else {
+      if (!Array.isArray(n.items)) n.items = [];
+      const products = Object.entries(E.dec.products || {}).sort((a, b) => (a[1].brand + a[1].model).localeCompare(b[1].brand + b[1].model, 'fr'));
+      const box = h('div', { class: 'ed-options' });
+      const draw = () => box.replaceChildren(...n.items.map((it, i) => h('div', { class: 'ed-option' },
+        h('div', { class: 'ed-row' },
+          field('Produit', selectInput(products.map(([pid, pr]) => ({ value: pid, label: pr.brand + ' ' + pr.model })), it.product || '', v => { it.product = v; changed(false); }, { placeholder: '— choisir —' })),
+          field('Quantité', textInput(it.qty, v => { const q = parseInt(v, 10); if (q > 0) it.qty = q; else delete it.qty; changed(false); }, { type: 'number', inputmode: 'numeric' }))),
+        field('Pourquoi (facultatif)', textInput(it.why, v => { if (v.trim()) it.why = v; else delete it.why; changed(false); })),
+        h('div', { class: 'ed-actions' }, h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { n.items.splice(i, 1); changed(false); draw(); } }, 'Retirer ce produit')))),
+        h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { n.items.push({ product: '', qty: 1 }); changed(false); draw(); } }, '+ Ajouter un produit'));
+      draw();
+      body = [
+        field('Titre de la recommandation', textInput(n.title, v => { n.title = v; changed(false); })),
+        field('Résumé (facultatif)', textInput(n.summary, v => { if (v.trim()) n.summary = v; else delete n.summary; changed(false); }, { multiline: true, rows: 2 })),
+        h('h3', { class: 'ed-h3' }, 'Matériel recommandé'), box,
+        field('Remarques (facultatif)', textInput(n.notes, v => { if (v.trim()) n.notes = v; else delete n.notes; changed(false); }, { multiline: true, rows: 2 }))];
+    }
+    const incomingRefs = Object.entries(E.reco.nodes).filter(([, m]) => (m.options || []).some(o => o.next === id));
+    return h('div', null,
+      h('p', null, h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/reco' }, '← Parcours de recommandation')),
+      h('section', { class: 'ed-card' },
+        h('div', { class: 'ed-actions' }, h('span', { class: 'ed-pill' + (n.type === 'result' ? '' : ' is-q') }, n.type === 'result' ? 'Recommandation' : 'Question'), h('span', { class: 'ed-hint' }, 'Identifiant : ' + id)),
+        body,
+        h('div', { class: 'ed-actions' }, deleteButton('reco:' + id, 'Supprimer cette étape', () => {
+          for (const m of Object.values(E.reco.nodes)) for (const o of m.options || []) if (o.next === id) o.next = '';
+          if (E.reco.start === id) E.reco.start = '';
+          delete E.reco.nodes[id]; changed(false); A.navigate('#/editeur/reco');
+        }))),
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Mène à cette étape'),
+        (E.reco.start === id || incomingRefs.length) ? h('ul', { class: 'ed-refs' },
+          E.reco.start === id ? h('li', null, 'Question de départ du parcours') : null,
+          incomingRefs.map(([k]) => h('li', null, h('a', { href: '#/editeur/reco-etape/' + encodeURIComponent(k) }, recoLabel(k)))))
+          : h('p', { class: 'ed-hint' }, 'Rien ne mène ici : cette étape n\'est jamais proposée.')));
+  }
+
+  /* ---------------------------------------------------------------------
      Initialisation et routage interne
      --------------------------------------------------------------------- */
   async function init() {
@@ -1062,14 +1284,22 @@
     let pubCat;
     try { pubCat = await A.loadPublishedCatalogue(); }
     catch (err) { console.warn('[DIAG·SAV] Éditeur : catalogue indisponible', err); pubCat = { meta: {}, synonyms: {}, products: {} }; }
-    E.base = { dec: pubDec, cat: pubCat };
+    let pubReco, pubNews;
+    try { pubReco = await A.loadPublishedJson('data/reco.json'); } catch (err) { console.warn('[DIAG·SAV] Éditeur : reco.json indisponible', err); pubReco = { meta: {}, start: '', nodes: {} }; }
+    try { pubNews = await A.loadPublishedJson('data/news.json'); } catch (err) { console.warn('[DIAG·SAV] Éditeur : news.json indisponible', err); pubNews = { meta: {}, categories: [], impacts: {}, items: [] }; }
+    E.base = { dec: pubDec, cat: pubCat, reco: pubReco, news: pubNews };
     const draft = readDraft();
     if (draft) {
       E.dec = draft.dec; E.cat = draft.cat; E.savedAt = draft.savedAt;
-      E.conflict = draft.baseStamp !== stamp(pubDec);
+      E.reco = draft.reco || clone(pubReco); E.news = draft.news || clone(pubNews);
+      E.conflict = draft.baseStamp !== stamp(pubDec)
+        || (draft.reco && draft.recoStamp && draft.recoStamp !== stamp(pubReco))
+        || (draft.news && draft.newsStamp && draft.newsStamp !== stamp(pubNews));
     } else {
-      E.dec = clone(pubDec); E.cat = clone(pubCat);
+      E.dec = clone(pubDec); E.cat = clone(pubCat); E.reco = clone(pubReco); E.news = clone(pubNews);
     }
+    E.reco.nodes = E.reco.nodes || {};
+    E.news.items = E.news.items || [];
     E.dec.nodes = E.dec.nodes || {};
     E.dec.symptoms = E.dec.symptoms || [];
     E.ready = true;
@@ -1090,6 +1320,10 @@
     else if (section === 'produits' && screens.products) { active = 'products'; content = screens.products(); }
     else if (section === 'produit' && screens.product) { active = 'products'; content = screens.product(id); }
     else if (section === 'famille' && screens.products) { active = 'products'; content = screens.products(); }
+    else if (section === 'reco') { active = 'reco'; content = screenReco(); }
+    else if (section === 'reco-etape') { active = 'reco'; content = screenRecoNode(id); }
+    else if (section === 'veille') { active = 'news'; content = screenNewsList(); }
+    else if (section === 'actu') { active = 'news'; content = screenNewsItem(id); }
     else if (section === 'verif') { active = 'verif'; content = screenVerif(); }
     else if (section === 'export') { active = 'export'; content = screenExport(); }
     else content = notFound('Cette page de l\'éditeur n\'existe pas.', '#/editeur');
