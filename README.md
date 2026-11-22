@@ -18,6 +18,7 @@ Site web statique qui remplace les procédures papier par un arbre de décision 
 ├── styles.css             Thème sombre épuré
 ├── app.js                 Navigation, recherche, diagnostic, assistant produit
 ├── editor.js              Éditeur des procédures (chargé seulement à l'ouverture de l'onglet)
+├── pdf.js                 Générateur PDF minimal (chargé seulement à l'export)
 ├── sw.js                  Service worker (mode hors ligne)
 ├── manifest.webmanifest   Installation sur l'écran d'accueil (tablette)
 ├── icon.svg               Icône de l'application
@@ -314,7 +315,7 @@ Sur tablette, utilisez « Ajouter à l'écran d'accueil » pour lancer l'outil c
 - **Filtres** : par catégorie (alimentation, audio, vidéo, réseau, thermique, stabilité, périphériques, firmware).
 - **Fil d'Ariane** : cliquez sur une étape pour y revenir.
 - **Journal** : liste des questions et réponses. Cliquez sur une entrée pour revenir à cette question.
-- **Résultat** : cochez les actions réalisées, puis **Copier le rapport** pour coller un résumé dans un ticket, ou **Imprimer**.
+- **Résultat** : cochez les actions réalisées, puis **Copier le rapport** (texte à coller dans un ticket), **Télécharger le PDF** (fichier `rapport-diagnostic-AAAA-MM-JJ-HHMM.pdf` généré dans le navigateur, même hors ligne : résultat, actions cochées, étapes selon le matériel, parcours, notes) ou **Imprimer**.
 - **Notes du technicien** : champ « Notes » à côté du journal, enregistré automatiquement sur l'appareil (une note par symptôme et par jour, supprimée après 30 jours). Les notes sont reprises dans le rapport copié. Ne pas y saisir de données personnelles.
 - **Liens partageables** : l'URL contient tout le parcours (`#/d/pas-de-son/audio-q1/…`). Envoyer le lien permet à un collègue ou au N2 de voir exactement le même diagnostic.
 - **Raccourcis clavier** : `/` recherche · `1`–`9` répondre · `Retour arrière` étape précédente · `Échap` accueil.

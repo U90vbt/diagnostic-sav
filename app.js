@@ -777,6 +777,13 @@
   function renderDiag(rootSymptom, path) {
     showView('diag');
 
+    // le produit mis en avant ne vaut que pour les symptômes de sa famille
+    if (state.focusProduct) {
+      const fp = state.products.get(state.focusProduct);
+      const fam = fp && state.families.get(fp.family);
+      if (!fam || !(fam.symptoms || []).includes(rootSymptom.id)) state.focusProduct = null;
+    }
+
     const currentId = path[path.length - 1];
     const current = state.nodes[currentId];
     const isResult = current.type === 'result';
@@ -1062,6 +1069,7 @@
 
         h('div', { class: 'result__footer' },
           h('button', { type: 'button', class: 'btn btn--success', onclick: () => copyReport(node, rootSymptom, active, steps) }, 'Copier le rapport'),
+          h('button', { type: 'button', class: 'btn', onclick: () => exportPdf(node, rootSymptom, active, steps) }, 'Télécharger le PDF'),
           h('button', { type: 'button', class: 'btn', onclick: () => window.print() }, 'Imprimer'),
           h('a', { class: 'btn btn--primary', href: '#/' }, 'Nouveau diagnostic')
         )
@@ -1429,21 +1437,23 @@
   /* ---------------------------------------------------------------------
      Éditeur (editor.js, chargé seulement à la demande) et mode test
      --------------------------------------------------------------------- */
-  let editorPromise = null;
-  function loadEditor() {
-    if (window.DIAGSAV_EDITOR) return Promise.resolve(window.DIAGSAV_EDITOR);
-    if (!editorPromise) {
-      editorPromise = new Promise((resolve, reject) => {
+  /** Charge un script du site une seule fois (editor.js, pdf.js) et renvoie l'objet global qu'il définit. */
+  const scriptPromises = {};
+  function loadScript(file, globalName) {
+    if (window[globalName]) return Promise.resolve(window[globalName]);
+    if (!scriptPromises[file]) {
+      scriptPromises[file] = new Promise((resolve, reject) => {
         const sc = document.createElement('script');
-        sc.src = new URL('editor.js', SCRIPT_URL).href;
-        sc.onload = () => window.DIAGSAV_EDITOR ? resolve(window.DIAGSAV_EDITOR) : reject(new Error('editor.js chargé mais inactif'));
-        sc.onerror = () => reject(new Error('editor.js introuvable (' + sc.src + ')'));
+        sc.src = new URL(file, SCRIPT_URL).href;
+        sc.onload = () => window[globalName] ? resolve(window[globalName]) : reject(new Error(file + ' chargé mais inactif'));
+        sc.onerror = () => reject(new Error(file + ' introuvable (' + sc.src + ')'));
         document.head.append(sc);
       });
-      editorPromise.catch(() => { editorPromise = null; });
+      scriptPromises[file].catch(() => { delete scriptPromises[file]; });
     }
-    return editorPromise;
+    return scriptPromises[file];
   }
+  const loadEditor = () => loadScript('editor.js', 'DIAGSAV_EDITOR');
 
   async function renderEditor(route) {
     if (state.preview) stopPreview(false);
@@ -1533,6 +1543,80 @@
     if (node.escalate) lines.push('Escalade  : ' + node.escalate);
     lines.push('', 'Lien : ' + location.href);
     return lines.join('\n');
+  }
+
+  /* ---------------------------------------------------------------------
+     Rapport PDF (pdf.js, généré dans le navigateur, hors ligne)
+     --------------------------------------------------------------------- */
+  const SEV_COLOR = { low: '#4f7a26', moderate: '#b8741a', high: '#c23b33' };
+
+  async function exportPdf(node, rootSymptom, active, steps) {
+    let PDF;
+    try { PDF = await loadScript('pdf.js', 'DIAGSAV_PDF'); }
+    catch (err) { toast('Export PDF indisponible : ' + err.message); return; }
+
+    const now = new Date();
+    const meta = state.data.meta || {};
+    const focus = state.focusProduct && state.products.get(state.focusProduct);
+    const sev = SEVERITY_ORDER.includes(node.severity) ? node.severity : 'moderate';
+    const checks = document.querySelectorAll('#diag-stage .action input');
+    const doc = PDF.create({ title: 'Diagnostic SAV — ' + node.title, footer: 'DIAG·SAV — rapport de diagnostic du ' + now.toLocaleDateString('fr-FR') });
+
+    doc.text('Rapport de diagnostic', { size: 20, bold: true, after: 4 });
+    doc.text(rootSymptom.title + (active !== rootSymptom ? ' → ' + active.title : ''), { size: 12, color: '#555555', after: 8 });
+    doc.row('Date', now.toLocaleString('fr-FR'));
+    doc.row('Procédures', 'v' + (meta.version || '?') + (meta.updated ? ' du ' + meta.updated : ''));
+    if (focus) doc.row('Matériel', productLabel(focus) + (focus.ref ? ' — réf. ' + focus.ref : '') + ' (' + productSourceLabel(focus) + ')');
+    if (state.preview) doc.row('Attention', 'rapport établi en mode test (procédures non publiées)', { color: '#b8741a' });
+    if (typeof incidentReportRows === 'function') incidentReportRows().forEach(([k, v]) => doc.row(k, v));
+
+    doc.heading('Résultat');
+    doc.band('Gravité ' + severityInfo(sev).label + '  —  ' + node.title, SEV_COLOR[sev]);
+    if (node.summary) doc.text(node.summary, { after: 2 });
+    if (severityInfo(sev).description) doc.text(severityInfo(sev).description, { size: 9.5, color: '#666666' });
+
+    doc.heading('Actions recommandées');
+    (node.actions || []).forEach((a, i) => {
+      const done = checks[i] && checks[i].checked;
+      doc.item(done ? '[x]' : '[  ]', (i + 1) + '. ' + a, { markerBold: true, markerColor: done ? '#4f7a26' : '#999999', color: done ? '#555555' : '#111111' });
+    });
+    if (node.warning) { doc.space(4); doc.text('Attention : ' + node.warning, { bold: true, color: '#c23b33' }); }
+    if (node.escalate) { doc.space(4); doc.text('Escalade : ' + node.escalate, { color: '#1f5f86' }); }
+
+    const brands = (node.brandSteps || []).filter(b => !focus || (b.products || []).includes(state.focusProduct) || b.brand.includes(focus.brand));
+    if (brands.length) {
+      doc.heading('Selon le matériel');
+      for (const b of brands) {
+        doc.text(b.brand + (b.status === 'draft' ? ' (procédure à valider)' : ''), { bold: true, after: 2 });
+        (b.actions || []).forEach(a => doc.item('•', a));
+        const prods = (b.products || []).map(pid => state.products.get(pid)).filter(Boolean);
+        if (prods.length) doc.text('Références : ' + prods.map(p => productLabel(p) + (p.page ? ' (p. ' + p.page + ')' : '')).join(', '), { size: 8.5, color: '#777777', after: 6 });
+      }
+    }
+
+    doc.heading('Parcours');
+    steps.forEach((st, i) => {
+      doc.item((i + 1) + '.', st.node.text, { markerBold: true, after: 0 });
+      doc.text('→ ' + (st.option ? st.option.label : '?') + (st.jump ? '  (bascule vers « ' + st.jump.title + ' »)' : ''), { indent: 18, bold: true, color: '#333333', after: 4 });
+    });
+
+    const noteText = notes.get(rootSymptom.id).trim();
+    if (noteText) {
+      doc.heading('Notes du technicien');
+      doc.text(noteText);
+    }
+
+    doc.rule();
+    doc.text('Lien vers ce diagnostic : ' + location.href, { size: 8, color: '#777777' });
+    doc.text((meta.disclaimer || ''), { size: 8, color: '#777777' });
+
+    const pad = n => String(n).padStart(2, '0');
+    const name = 'rapport-diagnostic-' + localDate(now) + '-' + pad(now.getHours()) + pad(now.getMinutes()) + '.pdf';
+    const url = URL.createObjectURL(doc.toBlob());
+    const a = h('a', { href: url, download: name });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('✓ ' + name);
   }
 
   async function copyReport(node, rootSymptom, active, steps) {
