@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "updated": "2026-11-23"
+  },
+  "checklist": [
+    {
+      "titre": "Avant",
+      "items": [
+        "Comprendre le besoin du client : usage, salle, jauge, contraintes réseau",
+        "Choisir le matériel et le scénario de démonstration en conséquence",
+        "Mettre à jour les firmwares et réinitialiser les réglages de la démo précédente",
+        "Vérifier câbles, adaptateurs, alimentations, piles et batteries",
+        "Réserver l'espace de démonstration et prévoir un plan B (vidéo, second appareil)"
+      ]
+    },
+    {
+      "titre": "Pendant",
+      "items": [
+        "Partir du besoin du client, pas de la fiche technique",
+        "Montrer d'abord ce qu'il utilisera tous les jours",
+        "Laisser le client manipuler",
+        "Noter ses questions et objections"
+      ]
+    },
+    {
+      "titre": "Après",
+      "items": [
+        "Ranger, nettoyer, remettre la démo dans son état de départ",
+        "Envoyer un compte rendu avec les réponses aux questions",
+        "Transmettre le besoin et les suites au commercial"
+      ]
+    }
+  ],
+  "etats": [
+    "Bon état",
+    "À vérifier",
+    "En réparation"
+  ]
+}

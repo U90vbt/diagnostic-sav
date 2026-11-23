@@ -537,6 +537,15 @@
       return { view: 'news', filter: f ? decodeURIComponent(f[1]) : 'all' };
     }
     if (parts[0] === 'journal') return { view: 'journal' };
+    if (EXTRA_PAGES.includes(parts[0] && parts[0].split('?')[0])) {
+      const qs = raw.split('?')[1] || '';
+      const params = {};
+      for (const kv of qs.split('&').filter(Boolean)) {
+        const [k, v = ''] = kv.split('=');
+        try { params[k] = decodeURIComponent(v.replace(/\+/g, ' ')); } catch { params[k] = v; }
+      }
+      return { view: 'page', page: parts[0].split('?')[0], sub: parts.slice(1).map(x => x.split('?')[0]), params };
+    }
     if (parts[0] === 'recommander') {
       return { view: 'reco', path: parts.slice(1) };
     }
@@ -585,7 +594,32 @@
     else navigate(hash);
   }
 
+  /** Pages secondaires (portfolio, outils, formation…) : pages.js, chargé à la demande. */
+  const EXTRA_PAGES = ['projet', 'visite', 'outils', 'formation', 'comparer', 'demos'];
+  const loadPages = () => loadScript('pages.js', 'DIAGSAV_PAGES');
+
   function onRoute() {
+    onRouteInner();
+    // visite guidée en cours : la barre de guidage suit la navigation
+    let tour = null;
+    try { tour = sessionStorage.getItem('diagsav.tour'); } catch { /* stockage indisponible */ }
+    if (tour || window.DIAGSAV_PAGES) loadPages().then(P => P.updateTour && P.updateTour()).catch(() => {});
+  }
+
+  function renderPage(route) {
+    showView('page');
+    const root = $('#page-root');
+    loadPages()
+      .then(P => P.render(route, root))
+      .catch(err => {
+        console.error('[DIAG·SAV] pages.js :', err);
+        root.replaceChildren(h('div', { class: 'panel' }, h('h1', null, 'Page indisponible'),
+          h('p', null, 'Le module n\'a pas pu être chargé. ', h('code', null, err.message)),
+          h('a', { class: 'btn btn--ghost', href: '#/' }, '← Accueil')));
+      });
+  }
+
+  function onRouteInner() {
     if (!state.data) return;
     const route = parseHash();
 
@@ -598,6 +632,11 @@
     if (route.view === 'news') {
       trackNav();
       renderNews(route);
+      return;
+    }
+    if (route.view === 'page') {
+      trackNav();
+      renderPage(route);
       return;
     }
     if (route.view === 'journal') {
@@ -661,6 +700,7 @@
     if (r.view === 'products') return 'products:' + (r.productId || '');
     if (r.view === 'reco') return 'reco:' + (r.path || []).join('/');
     if (r.view === 'editor') return 'editor:' + (r.sub || []).join('/');
+    if (r.view === 'page') return 'page:' + r.page + '/' + (r.sub || []).join('/');
     return r.view;
   }
 
@@ -695,7 +735,7 @@
     const entering = name !== state.currentView;
     state.currentView = name;
     if (entering) riseIn($('#view-' + name));
-    for (const v of ['loading', 'error', 'hub', 'home', 'diag', 'products', 'editor', 'reco', 'news', 'journal']) {
+    for (const v of ['loading', 'error', 'hub', 'home', 'diag', 'products', 'editor', 'reco', 'news', 'journal', 'page']) {
       const el = $('#view-' + v);
       if (el) el.hidden = v !== name;
     }
@@ -1834,7 +1874,7 @@
     };
 
     box.replaceChildren(h('article', { class: 'pdetail' },
-      h('div', { class: 'pdetail__nav' }, back),
+      h('div', { class: 'pdetail__nav' }, back, h('a', { class: 'btn btn--small btn--ghost', href: '#/comparer?ids=' + encodeURIComponent(pid) }, 'Comparer avec…')),
       h('header', { class: 'pdetail__head' },
         h('p', { class: 'eyebrow' }, pr.type),
         h('h2', { class: 'pdetail__title', tabindex: '-1', 'data-focus': true }, productLabel(pr)),
@@ -1993,7 +2033,11 @@
       if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + CATALOGUE_URL);
       return res.json();
     },
-    startPreview, stopPreview, navigate
+    startPreview, stopPreview, navigate,
+    // pour pages.js
+    loadJson, loadCatalogue, renderCrumbs, diagHash, productLabel, productSourceLabel, copyText, downloadFile,
+    data: () => ({ products: state.products, families: state.families, symptoms: state.symptoms, nodes: state.nodes, productsBySymptom: state.productsBySymptom, categories: state.categories }),
+    reducedMotion: () => !motionOk()
   };
 
   /* ---------------------------------------------------------------------
@@ -2622,7 +2666,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.17.2';
+  const APP_VERSION = '1.18.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

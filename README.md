@@ -284,6 +284,19 @@ Le journal s'exporte en **CSV** (s'ouvre dans Excel) ou en **JSON**. Le responsa
 - Les **mots-clés** d'un symptôme acceptent le jargon terrain (« ça crache », « plus de HF ») ; la recherche tolère aussi une faute de frappe par mot.
 - `"status": "draft"` sur une étape, un résultat ou une recommandation affiche un badge **À valider**. Le contenu rédigé sans notice constructeur (nouveaux symptômes, recommandations avant-vente) est marqué ainsi : à relire par un technicien, puis à passer en « Validée » dans l'éditeur.
 
+## Portfolio et boîte à outils (pages.js, chargé à la demande)
+
+| Page | Adresse | Données |
+|---|---|---|
+| Le projet (étude de cas, missions du poste → preuves, historique) | `#/projet` | `data/projet.json` |
+| Visite guidée (3 scénarios, barre de guidage sur les vraies pages) | `#/visite` | `data/projet.json` (`visite`) |
+| Outils réseau : budget PoE, débit vidéo, longueurs de liaison | `#/outils` | `data/outils.json` |
+| Formation : tutoriels, quiz, techniciens formés (export CSV) | `#/formation` | `data/formation.json` |
+| Comparer 2 ou 3 produits | `#/comparer?ids=a,b,c` | catalogue |
+| Démos et parc de prêt (checklist, suivi, export CSV) | `#/demos` | `data/demos.json` |
+
+Le nom, le titre et le lien (LinkedIn…) affichés sur la page projet se règlent dans `data/projet.json` (`auteur`). Les listes saisies (techniciens formés, prêts, checklist) restent **sur l'appareil** (localStorage) et ne sont jamais envoyées.
+
 ## Recommander (avant-vente)
 
 L'onglet **Recommander** (`#/recommander`) guide un commercial ou un technicien : **type d'événement → jauge → budget → contraintes réseau / audio**, jusqu'à une **carte de recommandation** (produits du catalogue, quantités, justification). **Copier le devis** produit un texte pré-rempli (besoin exprimé, matériel avec références et pages du catalogue). Les prix ne sont pas dans les données : le devis contient des lignes « à compléter ».

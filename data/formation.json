@@ -1,0 +1,162 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "updated": "2026-11-23"
+  },
+  "tutoriels": [
+    {
+      "id": "plan-frequences-hf",
+      "titre": "Préparer un plan de fréquences HF",
+      "gamme": "Micros HF",
+      "duree": "5 min",
+      "status": "draft",
+      "objectif": "Faire fonctionner plusieurs micros HF sans coupure ni interférence sur un événement.",
+      "etapes": [
+        "Lancer un scan des fréquences sur le récepteur, sur place et le jour même : l'environnement RF change d'un lieu à l'autre.",
+        "Utiliser les groupes et canaux compatibles proposés par le récepteur, ou un logiciel de coordination, plutôt que des fréquences choisies au hasard.",
+        "Synchroniser chaque émetteur avec son récepteur (IR ou bouton sync), puis vérifier le nom et la fréquence affichés.",
+        "Placer les antennes en hauteur, en vue directe de la scène, à distance des écrans LED et des baies réseau.",
+        "Tester tous les micros allumés en même temps, en parcourant la zone de jeu.",
+        "Garder une ou deux fréquences propres en réserve pour un remplacement rapide."
+      ],
+      "liens": {
+        "symptome": "hf-coupures",
+        "produits": [
+          "shure-slxd"
+        ]
+      },
+      "quiz": [
+        {
+          "q": "Quand faut-il scanner les fréquences ?",
+          "choix": [
+            "Une fois pour toutes à l'atelier",
+            "Sur place, le jour de l'événement",
+            "Seulement en cas de panne"
+          ],
+          "bonne": 1
+        },
+        {
+          "q": "Pourquoi utiliser les groupes de fréquences proposés ?",
+          "choix": [
+            "Ils sont plus puissants",
+            "Ils sont compatibles entre eux (pas d'intermodulation)",
+            "Ils consomment moins de piles"
+          ],
+          "bonne": 1
+        },
+        {
+          "q": "Comment valider le plan ?",
+          "choix": [
+            "Tester chaque micro seul",
+            "Tester tous les micros allumés ensemble, dans toute la zone",
+            "Vérifier le niveau des piles"
+          ],
+          "bonne": 1
+        }
+      ]
+    },
+    {
+      "id": "switch-dante",
+      "titre": "Réseau Dante : les réglages du switch",
+      "gamme": "Réseau AV",
+      "duree": "6 min",
+      "status": "draft",
+      "objectif": "Préparer un switch pour transporter de l'audio Dante sans clics ni pertes.",
+      "etapes": [
+        "Utiliser des ports Gigabit et, si possible, un réseau ou un VLAN dédié à l'audio.",
+        "Activer la QoS en mode DSCP strict : l'horloge (DSCP 56) passe avant l'audio (DSCP 46), lui-même avant le reste du trafic.",
+        "Désactiver l'économie d'énergie Ethernet (EEE, 802.3az), qui perturbe la synchronisation.",
+        "Avec des flux multicast : activer l'IGMP snooping et un querier, un seul par VLAN.",
+        "Sur les switchs AV qui en proposent, appliquer le profil Dante intégré plutôt que de tout régler à la main.",
+        "Vérifier dans Dante Controller : horloge maître unique, aucune erreur, latence adaptée au réseau."
+      ],
+      "liens": {
+        "symptome": "latence-reseau",
+        "produits": [
+          "netgear-gsm4230px",
+          "netgear-gsm4352"
+        ]
+      },
+      "quiz": [
+        {
+          "q": "Quel trafic doit avoir la priorité la plus haute ?",
+          "choix": [
+            "L'audio",
+            "L'horloge PTP",
+            "Le contrôle"
+          ],
+          "bonne": 1
+        },
+        {
+          "q": "Que faire de l'économie d'énergie Ethernet (EEE) ?",
+          "choix": [
+            "L'activer partout",
+            "La désactiver",
+            "Ça n'a pas d'effet"
+          ],
+          "bonne": 1
+        },
+        {
+          "q": "Combien de querier IGMP par VLAN ?",
+          "choix": [
+            "Un seul",
+            "Un par switch",
+            "Aucun"
+          ],
+          "bonne": 0
+        }
+      ]
+    },
+    {
+      "id": "partage-sans-fil",
+      "titre": "Mettre en service un système de partage sans fil",
+      "gamme": "Collaboration",
+      "duree": "4 min",
+      "status": "draft",
+      "objectif": "Livrer une salle où le partage d'écran fonctionne du premier coup, et le reste.",
+      "etapes": [
+        "Mettre à jour le firmware de la base avant la mise en service (voir la Veille : correctifs de sécurité).",
+        "Donner à la base le nom de la salle et changer les mots de passe par défaut (administration et Wi-Fi).",
+        "Appairer chaque bouton en le branchant sur la base, puis l'étiqueter au nom de la salle.",
+        "Régler l'écran sur l'entrée de la base et activer la mise en veille et le réveil automatiques si possible.",
+        "Tester avec un portable Windows et un Mac, en bouton et en application.",
+        "Laisser une fiche d'utilisation simple dans la salle."
+      ],
+      "liens": {
+        "symptome": "partage-sans-fil",
+        "produits": [
+          "barco-clickshare-cx-20-cx-30-gen-2"
+        ]
+      },
+      "quiz": [
+        {
+          "q": "Que faire avant la mise en service ?",
+          "choix": [
+            "Rien, c'est prêt à l'emploi",
+            "Mettre à jour le firmware et changer les mots de passe",
+            "Réinitialiser l'écran"
+          ],
+          "bonne": 1
+        },
+        {
+          "q": "Comment appairer un bouton ?",
+          "choix": [
+            "Le brancher sur la base",
+            "Par Bluetooth",
+            "Avec un code envoyé par e-mail"
+          ],
+          "bonne": 0
+        },
+        {
+          "q": "Avec quoi tester ?",
+          "choix": [
+            "Un seul portable",
+            "Un portable Windows et un Mac",
+            "Une tablette uniquement"
+          ],
+          "bonne": 1
+        }
+      ]
+    }
+  ]
+}

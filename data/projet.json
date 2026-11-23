@@ -1,0 +1,200 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "updated": "2026-11-23"
+  },
+  "auteur": {
+    "nom": "Hugo",
+    "titre": "Technicien audiovisuel, salons et événements",
+    "lien": "",
+    "lienLabel": "Profil LinkedIn"
+  },
+  "candidature": {
+    "poste": "Conseiller technique",
+    "entreprise": "Sidev",
+    "texte": "Ce site accompagne ma candidature au poste de Conseiller technique. Plutôt que de décrire mon intérêt pour le métier, j'ai construit un outil qui en couvre les missions : diagnostic SAV de premier niveau, conseil avant-vente, veille technique et formation."
+  },
+  "accroche": "Un assistant de terrain pour le support technique audiovisuel : diagnostiquer, conseiller, rester à jour et former, sur téléphone et même sans réseau.",
+  "besoin": [
+    "Sur un salon ou un événement, une panne se règle en quelques minutes, souvent sans réseau, avec un téléphone dans une main et un câble dans l'autre. Les bonnes informations existent, mais elles sont dispersées entre notices constructeurs, catalogues et expérience des collègues.",
+    "J'ai voulu un outil qui pose les bonnes questions dans le bon ordre, renvoie vers la bonne fiche produit et dit clairement quand passer la main : au niveau 2, à l'atelier ou au constructeur."
+  ],
+  "choix": [
+    {
+      "titre": "Pensé pour le terrain",
+      "texte": "Mobile d'abord, cibles tactiles de 56 px, raccourcis clavier, fonctionnement hors ligne après la première visite."
+    },
+    {
+      "titre": "Données ouvertes à l'équipe",
+      "texte": "Procédures, catalogue, recommandations et veille sont dans des fichiers JSON modifiables avec un éditeur intégré, sans toucher au code."
+    },
+    {
+      "titre": "Aucune donnée collectée",
+      "texte": "Pas de cookie, pas de traçage, aucun appel externe. Le journal des diagnostics reste sur l'appareil et s'exporte à la demande."
+    },
+    {
+      "titre": "Sans dépendance",
+      "texte": "HTML, CSS et JavaScript natifs, sans framework ni étape de compilation : le site se publie tel quel sur GitHub Pages et se maintient facilement."
+    },
+    {
+      "titre": "Savoir passer la main",
+      "texte": "Chaque résultat indique sa gravité et, si besoin, à qui transmettre avec un rapport prêt à copier."
+    },
+    {
+      "titre": "Sources citées",
+      "texte": "Les réponses produit citent la page du catalogue ; chaque actualité de veille renvoie à sa source constructeur."
+    }
+  ],
+  "competences": [
+    {
+      "exigence": "Établir un premier diagnostic pour les retours SAV",
+      "preuve": "Arbre de diagnostic par symptôme, avec niveau de gravité, actions et rapport à copier.",
+      "lien": "#/diagnostic"
+    },
+    {
+      "exigence": "Savoir déléguer au fabricant ou aux équipes commerciales",
+      "preuve": "Chaque résultat sérieux indique à qui transmettre ; « Pas résolu » affiche directement la suite.",
+      "lien": "#/d/hf-coupures/hf-q1/hf-q3/hf-r-sync"
+    },
+    {
+      "exigence": "Conseiller les clients sur le choix d'un produit",
+      "preuve": "Parcours avant-vente par type d'événement, jauge, budget et contraintes, avec devis à copier.",
+      "lien": "#/recommander"
+    },
+    {
+      "exigence": "Contribuer aux propositions techniques",
+      "preuve": "Assistant produit et comparateur : caractéristiques sourcées, page du catalogue.",
+      "lien": "#/comparer"
+    },
+    {
+      "exigence": "Connaissance audio, vidéo et réseau IP",
+      "preuve": "Calculateurs de budget PoE, de débit vidéo et de longueurs de liaison ; procédures Dante et AV sur IP.",
+      "lien": "#/outils"
+    },
+    {
+      "exigence": "Se former en permanence, connaître les équipements actuels",
+      "preuve": "Veille sourcée : firmwares, bulletins de sécurité, fins de vie, nouveautés.",
+      "lien": "#/veille"
+    },
+    {
+      "exigence": "Créer des tutoriels et des modules de formation",
+      "preuve": "Tutoriels courts, quiz et suivi des techniciens formés.",
+      "lien": "#/formation"
+    },
+    {
+      "exigence": "Organiser les démonstrations, entretenir le parc de prêt",
+      "preuve": "Checklist de démonstration et suivi du matériel prêté.",
+      "lien": "#/demos"
+    },
+    {
+      "exigence": "Créer et mettre à jour les outils de formation",
+      "preuve": "Éditeur intégré : l'équipe modifie procédures, produits, recommandations et veille sans développeur.",
+      "lien": "#/editeur"
+    },
+    {
+      "exigence": "Connaissances web",
+      "preuve": "Site statique hors ligne (service worker), accessible, sans dépendance.",
+      "lien": "#/projet"
+    }
+  ],
+  "methode": "Projet conçu et piloté par moi, développé avec l'aide d'un assistant IA (Claude) : j'ai défini les besoins, les contraintes et les contenus métier, testé chaque version et arbitré les choix. Les contenus marqués « À valider » sont rédigés à partir des notices et du catalogue, en attente de relecture par un technicien confirmé.",
+  "versions": [
+    {
+      "date": "2026-11-21",
+      "titre": "Première version",
+      "texte": "Diagnostic par symptômes, recherche, fil d'Ariane, hors ligne."
+    },
+    {
+      "date": "2026-11-21",
+      "titre": "Matériel et assistant produit",
+      "texte": "171 produits du catalogue, étapes par marque, réponses sourcées."
+    },
+    {
+      "date": "2026-11-21",
+      "titre": "Éditeur sans code",
+      "texte": "Modifier procédures et produits, vérifier, tester puis publier."
+    },
+    {
+      "date": "2026-11-22",
+      "titre": "Terrain",
+      "texte": "Notes du technicien, export PDF, photos et schémas, journal Résolu / Pas résolu."
+    },
+    {
+      "date": "2026-11-22",
+      "titre": "Avant-vente et veille",
+      "texte": "Onglets Recommander et Veille, nouveau design."
+    },
+    {
+      "date": "2026-11-23",
+      "titre": "Portfolio",
+      "texte": "Page projet, visite guidée, outils réseau, formation, comparateur, démos et prêt."
+    }
+  ],
+  "visite": [
+    {
+      "id": "sav",
+      "titre": "Un client appelle : ses micros HF coupent",
+      "contexte": "Support technique et premier diagnostic SAV",
+      "etapes": [
+        {
+          "hash": "#/diagnostic",
+          "texte": "On part du symptôme. La recherche comprend le jargon terrain (« plus de HF », « ça coupe »)."
+        },
+        {
+          "hash": "#/d/hf-coupures/hf-q1",
+          "texte": "Une question à la fois, dans l'ordre où on vérifie sur place. Réponse au doigt ou au clavier (touches 1 à 9)."
+        },
+        {
+          "hash": "#/d/hf-coupures/hf-q1/hf-q3/hf-r-sync",
+          "texte": "Le résultat : gravité, actions à cocher, matériel concerné, et à qui transmettre si ça ne suffit pas. Le rapport se copie pour l'ADV ou le constructeur."
+        },
+        {
+          "hash": "#/journal",
+          "texte": "Chaque issue « Résolu / Pas résolu » est notée sur l'appareil : l'équipe repère les procédures à améliorer, sans aucun traçage."
+        }
+      ]
+    },
+    {
+      "id": "avant-vente",
+      "titre": "Une conférence de 300 personnes à équiper",
+      "contexte": "Conseil avant-vente et proposition technique",
+      "etapes": [
+        {
+          "hash": "#/recommander",
+          "texte": "Le parcours avant-vente part du type d'événement."
+        },
+        {
+          "hash": "#/recommander/conf-jauge/conf-grande-budget/conf-grande-confort-contraintes/reco-conf-grande-confort-reseau",
+          "texte": "Jauge, budget et contraintes réseau donnent une configuration argumentée, produit par produit, avec un devis prêt à copier (sans prix)."
+        },
+        {
+          "hash": "#/produits/biamp-tesiraforte",
+          "texte": "Chaque produit renvoie à sa fiche : caractéristiques, page du catalogue, symptômes et actualités liés."
+        },
+        {
+          "hash": "#/outils",
+          "texte": "Les outils réseau vérifient la faisabilité : budget PoE du switch, débit vidéo, longueurs de câble."
+        }
+      ]
+    },
+    {
+      "id": "veille",
+      "titre": "Une faille de sécurité touche un produit installé",
+      "contexte": "Veille technique et information des clients",
+      "etapes": [
+        {
+          "hash": "#/veille?f=securite",
+          "texte": "La veille classe les actualités par type et par impact SAV."
+        },
+        {
+          "hash": "#/produits/barco-clickshare-cx-20-cx-30-gen-2",
+          "texte": "Depuis la fiche produit, on retrouve les actualités qui le concernent et les procédures de dépannage."
+        },
+        {
+          "hash": "#/formation",
+          "texte": "L'information se transmet : tutoriels courts, quiz et suivi des techniciens formés."
+        }
+      ]
+    }
+  ]
+}

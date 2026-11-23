@@ -1,0 +1,248 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "updated": "2026-11-23",
+    "note": "Valeurs de référence des calculateurs. Les puissances PoE sont celles réservées par le switch selon la norme (pire cas), pas la consommation réelle."
+  },
+  "poe": {
+    "normes": [
+      {
+        "id": "poe",
+        "label": "PoE (802.3af)",
+        "watts": 15.4
+      },
+      {
+        "id": "poe+",
+        "label": "PoE+ (802.3at)",
+        "watts": 30
+      },
+      {
+        "id": "poe++3",
+        "label": "PoE++ type 3 (802.3bt)",
+        "watts": 60
+      },
+      {
+        "id": "poe++4",
+        "label": "PoE++ type 4 (802.3bt)",
+        "watts": 90
+      }
+    ],
+    "switchs": [
+      {
+        "product": "netgear-gsm4230px",
+        "budget": 480,
+        "ports": 24
+      },
+      {
+        "product": "netgear-gsm4248px",
+        "budget": 960,
+        "ports": 40
+      },
+      {
+        "product": "netgear-gsm4352",
+        "budget": 1440,
+        "ports": 48,
+        "note": "Budget maximal, selon les alimentations installées."
+      }
+    ],
+    "appareils": [
+      {
+        "product": "shure-mxa901",
+        "norme": "poe"
+      },
+      {
+        "product": "shure-p300",
+        "norme": "poe"
+      },
+      {
+        "product": "shure-aniusb-matrix",
+        "norme": "poe"
+      },
+      {
+        "product": "shure-mxn-amp",
+        "norme": "poe+"
+      },
+      {
+        "product": "soundtube-ipd-cm52-bgm-ii",
+        "norme": "poe+"
+      },
+      {
+        "product": "soundtube-ipd-hub2",
+        "norme": "poe+"
+      },
+      {
+        "product": "soundtube-ipd4-cm52",
+        "norme": "poe"
+      },
+      {
+        "product": "black-box-mediacento-ipx-4k",
+        "norme": "poe"
+      },
+      {
+        "product": "vuwall-pak",
+        "norme": "poe"
+      },
+      {
+        "product": "navori-stix-3800",
+        "norme": "poe"
+      },
+      {
+        "product": "aver-mt300n",
+        "norme": "poe+"
+      },
+      {
+        "product": "panasonic-aw-ue20",
+        "norme": "poe++3"
+      },
+      {
+        "product": "arec-a-pc01-panocam",
+        "norme": "poe"
+      },
+      {
+        "product": "kramer-swt3-31-hu-tr",
+        "norme": "poe"
+      }
+    ],
+    "marge": 0.2
+  },
+  "video": {
+    "resolutions": [
+      {
+        "label": "1080p (1920 × 1080)",
+        "w": 1920,
+        "h": 1080
+      },
+      {
+        "label": "WUXGA (1920 × 1200)",
+        "w": 1920,
+        "h": 1200
+      },
+      {
+        "label": "4K UHD (3840 × 2160)",
+        "w": 3840,
+        "h": 2160
+      },
+      {
+        "label": "4K DCI (4096 × 2160)",
+        "w": 4096,
+        "h": 2160
+      }
+    ],
+    "frequences": [
+      25,
+      30,
+      50,
+      60
+    ],
+    "echantillonnages": [
+      {
+        "label": "4:4:4 8 bits (RGB)",
+        "bpp": 24
+      },
+      {
+        "label": "4:4:4 10 bits",
+        "bpp": 30
+      },
+      {
+        "label": "4:2:2 8 bits",
+        "bpp": 16
+      },
+      {
+        "label": "4:2:2 10 bits",
+        "bpp": 20
+      },
+      {
+        "label": "4:2:0 8 bits",
+        "bpp": 12
+      }
+    ],
+    "liens": [
+      {
+        "label": "Ethernet 1 Gbit/s",
+        "gbps": 1
+      },
+      {
+        "label": "Ethernet 10 Gbit/s",
+        "gbps": 10
+      },
+      {
+        "label": "Ethernet 25 Gbit/s",
+        "gbps": 25
+      }
+    ],
+    "note": "Débit de l'image active, sans les intervalles de suppression ni l'en-tête réseau : prévoir une marge."
+  },
+  "longueurs": {
+    "liaisons": [
+      {
+        "id": "ethernet",
+        "label": "Ethernet cuivre (Cat5e, Cat6, Cat6A)",
+        "max": 100,
+        "source": "Norme Ethernet : 100 m par segment, cordons compris.",
+        "solution": "Au-delà : switch intermédiaire ou fibre optique."
+      },
+      {
+        "id": "dante",
+        "label": "Audio Dante / AES67",
+        "max": 100,
+        "source": "Réseau Ethernet : 100 m entre deux équipements actifs.",
+        "solution": "Au-delà : switch intermédiaire ou liaison fibre entre switchs."
+      },
+      {
+        "id": "hdbaset",
+        "label": "HDBaseT 3.0 (Cat6A) en 4K60",
+        "max": 70,
+        "source": "Extendeurs du catalogue : 70 m en Cat.6A (Lindy 38346).",
+        "produits": [
+          "lindy-38346",
+          "kramer-ext3-h-t"
+        ],
+        "solution": "Au-delà : extendeur fibre ou AV sur IP."
+      },
+      {
+        "id": "hdmi-cat6",
+        "label": "Extendeur HDMI sur Cat.6",
+        "max": 70,
+        "source": "Splitter extendeur du catalogue : 70 m (Lindy 38385).",
+        "produits": [
+          "lindy-38385"
+        ],
+        "solution": "Au-delà : fibre ou AV sur IP."
+      },
+      {
+        "id": "fibre-hdmi",
+        "label": "Extendeur HDMI fibre (OM3)",
+        "max": 100,
+        "source": "Extendeur fibre du catalogue : 100 m en multimode OM3 (Lindy 38360).",
+        "produits": [
+          "lindy-38360"
+        ],
+        "solution": "Au-delà : AV sur IP sur réseau fibre."
+      },
+      {
+        "id": "hdmi",
+        "label": "Câble HDMI passif en 4K60",
+        "max": 5,
+        "source": "Repère usuel pour un câble certifié Premium High Speed ; la longueur réelle dépend du câble.",
+        "solution": "Au-delà : câble HDMI actif ou optique, ou extendeur HDBaseT."
+      },
+      {
+        "id": "usb2",
+        "label": "Câble USB 2.0 passif",
+        "max": 5,
+        "source": "Spécification USB 2.0 : 5 m.",
+        "solution": "Au-delà : extendeur USB sur Cat.6 ou caméra avec injecteur PoE (Huddly : jusqu'à 100 m).",
+        "produits": [
+          "huddly-s1"
+        ]
+      },
+      {
+        "id": "usb3",
+        "label": "Câble USB 3.x passif",
+        "max": 3,
+        "source": "Repère usuel : environ 3 m en USB 3.x.",
+        "solution": "Au-delà : câble USB actif ou optique."
+      }
+    ]
+  }
+}

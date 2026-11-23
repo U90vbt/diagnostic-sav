@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#171b20">
-  <meta name="diagsav-version" content="1.17.2">
+  <meta name="diagsav-version" content="1.18.0">
   <meta name="description" content="Assistant de diagnostic SAV de premier niveau — usage interne.">
   <title>DIAG·SAV — Assistant de diagnostic N1</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -89,6 +89,7 @@
       <div class="hub">
         <h1 id="hub-title" class="hub__title">Assistant SAV</h1>
         <p class="hub__lead">Diagnostiquer, recommander, rester informé.</p>
+        <p class="hub__project">Projet réalisé pour une candidature de Conseiller technique · <a href="#/projet">Découvrir le projet</a> · <a href="#/visite">Visite guidée (3 scénarios)</a></p>
         <form class="search" role="search" id="gsearch-form" autocomplete="off">
           <label for="gsearch-input" class="visually-hidden">Rechercher dans tout le site</label>
           <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -123,6 +124,30 @@
           <svg class="hcard__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 9h8M8 13h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           <span class="hcard__title">Assistant produit</span>
           <span class="hcard__text">171 produits du catalogue, réponses sourcées.</span>
+        </a></li>
+        <li><a class="hcard" href="#/outils">
+          <span class="hcard__num">05</span>
+          <svg class="hcard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M8 7v10M16 7v10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span class="hcard__title">Outils réseau</span>
+          <span class="hcard__text">Budget PoE, débit vidéo, longueurs de liaison.</span>
+        </a></li>
+        <li><a class="hcard" href="#/formation">
+          <span class="hcard__num">06</span>
+          <svg class="hcard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-4 9 4-9 4-9-4zM7 11v5c3 2 7 2 10 0v-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span class="hcard__title">Formation</span>
+          <span class="hcard__text">Tutoriels courts, quiz, techniciens formés.</span>
+        </a></li>
+        <li><a class="hcard" href="#/comparer">
+          <span class="hcard__num">07</span>
+          <svg class="hcard__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M19 4v16M9 8h6M9 12h6M9 16h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span class="hcard__title">Comparer</span>
+          <span class="hcard__text">Deux ou trois produits côte à côte.</span>
+        </a></li>
+        <li><a class="hcard" href="#/demos">
+          <span class="hcard__num">08</span>
+          <svg class="hcard__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 21h8M12 17v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span class="hcard__title">Démos et prêt</span>
+          <span class="hcard__text">Préparer une démonstration, suivre le matériel prêté.</span>
         </a></li>
       </ol>
     </section>
@@ -199,6 +224,11 @@
     </section>
 
     <!-- Journal des diagnostics (sur cet appareil uniquement) -->
+    <!-- Pages secondaires : projet, visite, outils, formation, comparateur, démos (pages.js) -->
+    <section id="view-page" class="view" hidden aria-label="Page">
+      <div id="page-root" aria-live="polite"><p class="pstatus">Chargement…</p></div>
+    </section>
+
     <section id="view-journal" class="view" hidden aria-label="Journal des diagnostics">
       <div id="journal-root"></div>
     </section>
@@ -290,6 +320,8 @@
     <a href="#/produits">Assistant produit</a>
     <span class="footer__sep" aria-hidden="true">|</span>
     <a href="#/journal">Mon journal</a>
+    <span class="footer__sep" aria-hidden="true">|</span>
+    <a href="#/projet">Le projet</a>
     <span class="footer__sep" aria-hidden="true">|</span>
         <a href="#/editeur">Éditer les procédures</a>
     <span id="data-warnings" class="footer__warn" hidden></span>
