@@ -647,7 +647,54 @@
     }
   }
 
+  /* ---------------------------------------------------------------------
+     Animations : fondu entre les pages (View Transitions) et apparition
+     des cartes. Rien si le système demande de réduire les animations.
+     --------------------------------------------------------------------- */
+  const motionOk = () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canTransition = () => typeof document.startViewTransition === 'function' && motionOk();
+  if (canTransition()) document.documentElement.classList.add('has-vt');
+
+  /** Clé de « page » : on n'anime pas une saisie de recherche ni une étape de diagnostic (déjà animée). */
+  function pageKey() {
+    const r = parseHash();
+    if (r.view === 'products') return 'products:' + (r.productId || '');
+    if (r.view === 'reco') return 'reco:' + (r.path || []).join('/');
+    if (r.view === 'editor') return 'editor:' + (r.sub || []).join('/');
+    return r.view;
+  }
+
+  function routeWithTransition() {
+    const key = pageKey();
+    const changed = key !== state.pageKey;
+    state.pageKey = key;
+    if (!changed || !state.data || !canTransition()) { onRoute(); return; }
+    try {
+      const vt = document.startViewTransition(() => { onRoute(); });
+      vt.finished.catch(() => {});
+    } catch { onRoute(); }
+  }
+
+  const RISE = '.hcard, .card, .news, .crow, .option, .presults > li';
+  /** Fait apparaître en cascade les cartes de la vue qu'on vient d'ouvrir. */
+  function riseIn(view) {
+    if (!motionOk() || !view) return;
+    requestAnimationFrame(() => {
+      const items = [...view.querySelectorAll(RISE)].slice(0, 14);
+      items.forEach((el, i) => {
+        el.style.setProperty('--i', String(i));
+        el.classList.remove('rise');
+        void el.offsetWidth;            // relance l'animation
+        el.classList.add('rise');
+        el.addEventListener('animationend', () => el.classList.remove('rise'), { once: true });
+      });
+    });
+  }
+
   function showView(name) {
+    const entering = name !== state.currentView;
+    state.currentView = name;
+    if (entering) riseIn($('#view-' + name));
     for (const v of ['loading', 'error', 'hub', 'home', 'diag', 'products', 'editor', 'reco', 'news', 'journal']) {
       const el = $('#view-' + v);
       if (el) el.hidden = v !== name;
@@ -2396,7 +2443,7 @@
      Événements
      --------------------------------------------------------------------- */
   function bindEvents() {
-    window.addEventListener('hashchange', onRoute);
+    window.addEventListener('hashchange', routeWithTransition);
 
     const input = $('#search-input');
     input.addEventListener('input', () => { state.query = input.value; renderGrid(); });
@@ -2575,7 +2622,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.16.0';
+  const APP_VERSION = '1.17.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;
