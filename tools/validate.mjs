@@ -114,6 +114,7 @@ if (D) {
         if (!Array.isArray(b.actions) || !b.actions.length) err(F, q, 'au moins une action attendue');
       });
     } else err(F, p, `type « ${n.type} » inconnu (question ou result)`);
+    (n.products || []).forEach(pid => { if (!productIds.has(pid)) err(F, p, `produit « ${pid} » introuvable`); });
     (n.images || []).forEach((im, j) => {
       const q = `${p}.images[${j}]`;
       if (!isLocalImage(im.src)) err(F, q, `image « ${im.src} » : fichier local img/… attendu`);

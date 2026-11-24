@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Assistant de diagnostic SAV — Niveau 1",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "updated": "2026-11-22",
     "maintainer": "Équipe SAV",
     "disclaimer": "Diagnostic de premier niveau. Toute intervention à l'intérieur d'un équipement sous tension est réservée au personnel habilité.",
@@ -617,6 +617,106 @@
         "contenu"
       ],
       "start": "aff-q1"
+    },
+    {
+      "id": "ligne-100v",
+      "title": "Sonorisation 100 V : pas de son, son faible ou ampli en protection",
+      "category": "audio",
+      "summary": "Enceintes sur ligne 70 / 100 V muettes, faibles, ou amplificateur qui se met en protection.",
+      "keywords": [
+        "100v",
+        "100 v",
+        "70v",
+        "ligne 100",
+        "transfo",
+        "prise de puissance",
+        "sono",
+        "ampli en protection",
+        "protect",
+        "enceintes plafond",
+        "haute impédance"
+      ],
+      "start": "l100-q1"
+    },
+    {
+      "id": "micro-plafond",
+      "title": "Micro de plafond ou de table réseau : pas de son ou mauvaise captation",
+      "category": "audio",
+      "summary": "Micro multicapsules (Dante, PoE) muet, coupé ou qui capte mal certaines places.",
+      "keywords": [
+        "micro plafond",
+        "mxa",
+        "mxa920",
+        "mxa901",
+        "mxa902",
+        "mxa710",
+        "mxa310",
+        "parlé",
+        "beamtracking",
+        "micro dante",
+        "on ne m'entend pas",
+        "captation",
+        "micro réseau"
+      ],
+      "start": "mp-q1"
+    },
+    {
+      "id": "poe-budget",
+      "title": "Appareil PoE éteint ou qui redémarre",
+      "category": "alimentation",
+      "summary": "Caméra, micro, enceinte ou encodeur alimenté par le switch qui ne s'allume pas ou redémarre.",
+      "keywords": [
+        "poe",
+        "budget poe",
+        "poe+",
+        "poe++",
+        "switch",
+        "redémarre",
+        "s'allume pas",
+        "injecteur",
+        "netgear",
+        "alimentation réseau"
+      ],
+      "start": "poe-q1"
+    },
+    {
+      "id": "ecoute-assistee",
+      "title": "Écoute assistée ou interprétation : pas de réception",
+      "category": "audio",
+      "summary": "Les auditeurs n'entendent rien sur leurs récepteurs, smartphones ou casques (Auracast, Wi-Fi, infrarouge).",
+      "keywords": [
+        "auracast",
+        "auri",
+        "listen",
+        "malentendant",
+        "interprétation",
+        "traduction",
+        "récepteur",
+        "casque",
+        "infrarouge",
+        "ir",
+        "listen wifi",
+        "boucle"
+      ],
+      "start": "ea-q1"
+    },
+    {
+      "id": "conference-poste",
+      "title": "Système de conférence : un poste ne prend pas la parole",
+      "category": "audio",
+      "summary": "Un poste délégué ne s'active pas, ou plusieurs postes ne peuvent pas parler en même temps.",
+      "keywords": [
+        "ccs",
+        "ccs 1000",
+        "dicentis",
+        "poste délégué",
+        "poste président",
+        "conférence",
+        "prise de parole",
+        "micro col de cygne",
+        "mxcw"
+      ],
+      "start": "cf-q1"
     }
   ],
   "nodes": {
@@ -3816,6 +3916,481 @@
       ],
       "status": "draft",
       "escalate": "Service informatique du client si la connexion au calendrier (compte de salle) est en cause."
+    },
+    "l100-q1": {
+      "type": "question",
+      "text": "Que constatez-vous ?",
+      "options": [
+        {
+          "label": "L'ampli se met en protection ou coupe",
+          "next": "l100-q2"
+        },
+        {
+          "label": "Toute la ligne est muette, ampli normal",
+          "next": "l100-r-mode"
+        },
+        {
+          "label": "Une seule enceinte muette ou très faible",
+          "next": "l100-r-prise"
+        }
+      ],
+      "status": "draft",
+      "help": "Repères : catalogue Focus été 2026 p. 70-72 et Guide de l'audio 2025 (prises de transformateur, modes de sortie)."
+    },
+    "l100-q2": {
+      "type": "question",
+      "text": "Avez-vous additionné les puissances réglées sur chaque enceinte de la ligne ?",
+      "options": [
+        {
+          "label": "Le total dépasse la puissance de l'ampli (ou de la sortie)",
+          "next": "l100-r-surcharge"
+        },
+        {
+          "label": "Le total est correct",
+          "next": "l100-r-bypass"
+        }
+      ],
+      "status": "draft"
+    },
+    "l100-r-surcharge": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Ligne 100 V surchargée",
+      "summary": "La somme des prises de puissance des enceintes dépasse ce que la sortie peut fournir.",
+      "actions": [
+        "Relever la prise réglée sur chaque enceinte (ex. 30 / 15 / 7,5 / 3,75 W) et faire le total de la ligne.",
+        "Garder une marge : le total doit rester nettement sous la puissance de la sortie 100 V.",
+        "Baisser la prise des enceintes les moins utiles ou répartir la ligne sur deux sorties.",
+        "Remettre l'ampli en service et vérifier qu'il ne repasse pas en protection à volume normal."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) si l'installation doit être recalculée.",
+      "products": [
+        "electro-voice-evid-c6-2-g2",
+        "electro-voice-evid-ec6-2",
+        "dynacord-u120-1m",
+        "powersoft-mezzo"
+      ]
+    },
+    "l100-r-bypass": {
+      "type": "result",
+      "severity": "high",
+      "title": "Enceinte réglée en 8 Ω sur une ligne 100 V",
+      "summary": "Une enceinte laissée sur la position « bypass 8 Ω » (basse impédance) court-circuite pratiquement la ligne 100 V.",
+      "actions": [
+        "Couper l'ampli avant toute manipulation.",
+        "Vérifier le sélecteur de chaque enceinte : aucune ne doit être sur la position 8 Ω / bypass sur une ligne 100 V.",
+        "Contrôler qu'aucun conducteur de la ligne n'est en court-circuit (vis de bornier, câble pincé).",
+        "Remettre sous tension et monter le volume progressivement."
+      ],
+      "status": "draft",
+      "warning": "Ne pas manipuler les borniers d'une ligne 100 V sous tension.",
+      "escalate": "Mise hors service de la ligne, puis atelier ou responsable technique (N2) si le défaut n'est pas trouvé.",
+      "products": [
+        "electro-voice-evid-c6-2-g2",
+        "electro-voice-evid-ec6-2",
+        "electro-voice-evid-s5-2x"
+      ]
+    },
+    "l100-r-mode": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Mode de sortie de l'ampli ne correspondant pas à la ligne",
+      "summary": "La sortie est réglée en basse impédance (4 / 8 Ω) alors que la ligne est en 70 / 100 V, ou l'inverse.",
+      "actions": [
+        "Vérifier le mode de la sortie de l'ampli : 4 Ω, 8 Ω, 70 V ou 100 V selon le modèle.",
+        "Sur les amplis à détection automatique, contrôler l'impédance affichée par l'ampli.",
+        "Vérifier que les enceintes sont bien des modèles avec transformateur 70 / 100 V.",
+        "Contrôler la continuité de la ligne jusqu'à la première enceinte."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) si la configuration de l'ampli doit être modifiée.",
+      "related": [
+        "pas-de-son"
+      ],
+      "products": [
+        "dynacord-u120-1m",
+        "powersoft-prima",
+        "powersoft-mezzo"
+      ]
+    },
+    "l100-r-prise": {
+      "type": "result",
+      "severity": "low",
+      "title": "Prise de puissance trop basse ou enceinte débranchée",
+      "summary": "Une enceinte réglée sur la plus petite prise, ou mal raccordée, paraît muette à côté des autres.",
+      "actions": [
+        "Vérifier la prise de puissance de l'enceinte et la comparer aux voisines.",
+        "Contrôler le raccordement sur le bornier (+ et − de la ligne).",
+        "Sur une enceinte encastrée, vérifier que le connecteur est bien enfiché derrière la grille."
+      ],
+      "status": "draft",
+      "products": [
+        "electro-voice-evid-c6-2-g2",
+        "focal-gamme-100v-encastree"
+      ]
+    },
+    "mp-q1": {
+      "type": "question",
+      "text": "Le voyant du micro est-il allumé ?",
+      "options": [
+        {
+          "label": "Non, éteint",
+          "next": "mp-r-poe"
+        },
+        {
+          "label": "Oui, rouge ou indiquant le mute",
+          "next": "mp-r-mute"
+        },
+        {
+          "label": "Oui, normal",
+          "next": "mp-q2"
+        }
+      ],
+      "status": "draft",
+      "help": "Repères : Guide de l'audio 2025 p. 178-184 (alimentation PoE, zones de captation)."
+    },
+    "mp-q2": {
+      "type": "question",
+      "text": "Le son du micro arrive-t-il au processeur (DSP) ou à l'ordinateur ?",
+      "options": [
+        {
+          "label": "Non, rien n'arrive",
+          "next": "mp-r-dante"
+        },
+        {
+          "label": "Oui, mais certaines places sont mal captées",
+          "next": "mp-r-zone"
+        },
+        {
+          "label": "Oui, mais les distants entendent de l'écho",
+          "next": "mp-r-aec"
+        }
+      ],
+      "status": "draft"
+    },
+    "mp-r-poe": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Micro non alimenté",
+      "summary": "Le micro n'a pas d'alimentation PoE suffisante.",
+      "actions": [
+        "Vérifier que le port du switch fournit bien du PoE (voyant PoE du port).",
+        "Les micros à haut-parleur intégré (ex. MXA902) demandent du PoE+ : vérifier la classe du port.",
+        "Contrôler le budget PoE restant du switch (voir Outils réseau).",
+        "Tester avec un autre câble et un autre port."
+      ],
+      "status": "draft",
+      "related": [
+        "poe-budget"
+      ],
+      "products": [
+        "shure-mxa920",
+        "shure-mxa902-aniusb",
+        "shure-mxa710",
+        "netgear-gsm4212px"
+      ]
+    },
+    "mp-r-mute": {
+      "type": "result",
+      "severity": "low",
+      "title": "Micro coupé (mute)",
+      "summary": "Le micro est en sourdine, localement ou depuis le système.",
+      "actions": [
+        "Vérifier le bouton mute réseau ou le bouton de la table.",
+        "Vérifier le mute dans l'application de visio et dans le DSP.",
+        "Les états de mute peuvent être synchronisés : couper puis réactiver depuis un seul endroit."
+      ],
+      "status": "draft",
+      "related": [
+        "visio-peripherique"
+      ]
+    },
+    "mp-r-dante": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Flux Dante non reçu",
+      "summary": "Le micro fonctionne mais son canal n'est pas abonné, ou le réseau bloque le flux.",
+      "actions": [
+        "Dans Dante Controller, vérifier l'abonnement du canal du micro vers le DSP ou l'interface.",
+        "Vérifier que micro et DSP sont sur le même réseau / VLAN.",
+        "Contrôler l'horloge Dante (un seul maître) et l'absence d'erreurs.",
+        "Suivre le diagnostic réseau si des décrochages apparaissent."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) avec une capture d'écran de Dante Controller.",
+      "related": [
+        "latence-reseau"
+      ],
+      "products": [
+        "shure-aniusb-matrix",
+        "shure-p300",
+        "biamp-tesiraforte-x"
+      ]
+    },
+    "mp-r-zone": {
+      "type": "result",
+      "severity": "low",
+      "title": "Places hors de la zone de captation",
+      "summary": "La zone couverte par le micro ne correspond pas à la disposition de la table.",
+      "actions": [
+        "Vérifier la couverture annoncée du modèle (ex. zone de 6 x 6 m pour un MXA901 ou MXA902).",
+        "Dans le logiciel du micro, contrôler les zones ou faisceaux actifs et les zones exclues.",
+        "Ajouter un micro d'extension si la table dépasse la couverture."
+      ],
+      "status": "draft",
+      "products": [
+        "shure-mxa901",
+        "shure-mxa920",
+        "biamp-parle-micros"
+      ]
+    },
+    "mp-r-aec": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Écho : référence d'annulation absente",
+      "summary": "L'annulation d'écho (AEC) ne reçoit pas le signal des distants qui sort dans les haut-parleurs.",
+      "actions": [
+        "Vérifier que le signal envoyé aux haut-parleurs est bien utilisé comme référence AEC dans le DSP.",
+        "Vérifier que le modèle intègre l'AEC (ex. MXA310 : sans AEC).",
+        "Baisser le niveau des haut-parleurs s'ils saturent la captation."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) pour le réglage du DSP.",
+      "related": [
+        "visio-peripherique",
+        "larsen"
+      ],
+      "products": [
+        "shure-mxa310",
+        "shure-p300",
+        "biamp-devio-scx"
+      ]
+    },
+    "poe-q1": {
+      "type": "question",
+      "text": "Le problème touche-t-il un seul appareil ou plusieurs ?",
+      "options": [
+        {
+          "label": "Plusieurs appareils, ou les derniers branchés",
+          "next": "poe-r-budget"
+        },
+        {
+          "label": "Un seul appareil",
+          "next": "poe-q2"
+        }
+      ],
+      "status": "draft",
+      "help": "Repères : catalogue Focus été 2026 p. 52-53 et Guide de l'audio 2025 p. 156-158 (budgets PoE)."
+    },
+    "poe-q2": {
+      "type": "question",
+      "text": "L'appareil demande-t-il plus que le port ne fournit (PoE+ ou PoE++ sur un port PoE simple) ?",
+      "options": [
+        {
+          "label": "Oui, ou je ne sais pas",
+          "next": "poe-r-classe"
+        },
+        {
+          "label": "Non, le port est adapté",
+          "next": "poe-r-cable"
+        }
+      ],
+      "status": "draft"
+    },
+    "poe-r-budget": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Budget PoE du switch dépassé",
+      "summary": "Le switch n'a plus assez de puissance PoE pour tous les appareils.",
+      "actions": [
+        "Dans l'interface du switch, consulter la puissance PoE consommée et le budget restant.",
+        "Attention : certains switchs n'ont qu'une petite partie de leur budget sans module d'alimentation (ex. GSM4352 : 236 W de base, 1440 W avec 2 modules).",
+        "Calculer le besoin avec l'outil Budget PoE du site.",
+        "Répartir les appareils sur un second switch ou ajouter un module d'alimentation."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) si un module d'alimentation ou un switch supplémentaire est nécessaire.",
+      "related": [
+        "pas-alimentation"
+      ],
+      "products": [
+        "netgear-gsm4352",
+        "netgear-xsm4340v",
+        "netgear-gsm4328",
+        "netgear-msm4310"
+      ]
+    },
+    "poe-r-classe": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Classe PoE insuffisante",
+      "summary": "L'appareil demande du PoE+ (30 W) ou du PoE++ (60 / 90 W) mais le port fournit moins.",
+      "actions": [
+        "Vérifier la norme demandée par l'appareil (PoE, PoE+, PoE++).",
+        "Brancher l'appareil sur un port PoE++ (ex. switchs UX ou UP) ou utiliser un injecteur adapté.",
+        "Contrôler que le port n'est pas limité en puissance dans la configuration du switch."
+      ],
+      "status": "draft",
+      "products": [
+        "panasonic-aw-ue20",
+        "netgear-gsm4212ux",
+        "netgear-gsm4230up"
+      ]
+    },
+    "poe-r-cable": {
+      "type": "result",
+      "severity": "low",
+      "title": "Câble ou port en défaut",
+      "summary": "Un câble trop long, abîmé ou un port défectueux empêche l'alimentation.",
+      "actions": [
+        "Tester avec un câble court connu et un autre port.",
+        "Vérifier la longueur : 100 m maximum entre le switch et l'appareil.",
+        "Contrôler les connecteurs RJ45 (sertissage, broches)."
+      ],
+      "status": "draft",
+      "related": [
+        "pas-reseau"
+      ]
+    },
+    "ea-q1": {
+      "type": "question",
+      "text": "Quelle technologie de diffusion ?",
+      "options": [
+        {
+          "label": "Bluetooth Auracast (Listen Auri)",
+          "next": "ea-r-auracast"
+        },
+        {
+          "label": "Wi-Fi vers smartphones (Listen Wi-Fi)",
+          "next": "ea-r-wifi"
+        },
+        {
+          "label": "Infrarouge (Listen IR)",
+          "next": "ea-r-ir"
+        }
+      ],
+      "status": "draft",
+      "help": "Repères : catalogue Focus été 2026 p. 75 et Guide de l'audio 2025 p. 138-152."
+    },
+    "ea-r-auracast": {
+      "type": "result",
+      "severity": "low",
+      "title": "Réception Auracast",
+      "summary": "Avec Auracast, il n'y a pas d'appairage : l'auditeur choisit le canal diffusé.",
+      "actions": [
+        "Sur le récepteur ou le téléphone, sélectionner le bon canal Auracast (pas d'appairage à faire).",
+        "Vérifier que l'auditeur est dans la portée de l'émetteur (jusqu'à 100 m annoncés).",
+        "Vérifier que l'émetteur reçoit bien un signal audio (niveau d'entrée).",
+        "Ajouter un émetteur si plus de canaux sont nécessaires."
+      ],
+      "status": "draft",
+      "products": [
+        "listen-listen-auri"
+      ]
+    },
+    "ea-r-wifi": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Réception Wi-Fi",
+      "summary": "Le smartphone doit être sur le même réseau Wi-Fi que le serveur Listen.",
+      "actions": [
+        "Connecter le smartphone au Wi-Fi indiqué pour l'écoute.",
+        "Ouvrir l'application d'écoute et choisir le canal ; saisir le mot de passe si le canal est privé.",
+        "Vérifier que le serveur reçoit un signal audio.",
+        "Si le réseau isole les clients ou bloque la diffusion : contacter le service réseau du lieu."
+      ],
+      "status": "draft",
+      "escalate": "Service réseau du lieu si le Wi-Fi bloque la diffusion.",
+      "products": [
+        "listen-listen-wi-fi"
+      ]
+    },
+    "ea-r-ir": {
+      "type": "result",
+      "severity": "low",
+      "title": "Réception infrarouge",
+      "summary": "L'infrarouge demande une vue directe entre radiateur et récepteur.",
+      "actions": [
+        "Vérifier que les radiateurs sont allumés et alimentés (liaison RJ45).",
+        "Vérifier qu'aucun obstacle ne masque le radiateur et éviter le soleil direct.",
+        "Sélectionner le bon canal sur le récepteur."
+      ],
+      "status": "draft",
+      "products": [
+        "listen-listen-ir"
+      ]
+    },
+    "cf-q1": {
+      "type": "question",
+      "text": "Que se passe-t-il ?",
+      "options": [
+        {
+          "label": "Le poste n'est pas reconnu (éteint ou absent du système)",
+          "next": "cf-r-connexion"
+        },
+        {
+          "label": "Le poste s'allume mais la parole est refusée",
+          "next": "cf-r-limite"
+        },
+        {
+          "label": "Poste sans fil : coupures",
+          "next": "cf-r-sansfil"
+        }
+      ],
+      "status": "draft",
+      "help": "Repères : catalogue Focus été 2026 p. 64 et 68-69 ; Guide de l'audio 2025 p. 52-70."
+    },
+    "cf-r-connexion": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Poste non connecté au système",
+      "summary": "Le poste n'est pas vu par la centrale (chaînage, câble ou licence).",
+      "actions": [
+        "Vérifier le câble de chaînage et l'ordre des postes ; tester en plaçant le poste en tête de chaîne.",
+        "Vérifier dans l'interface web de la centrale que le poste apparaît.",
+        "Sur les systèmes à licences par participant (DICENTIS), vérifier que la licence couvre ce poste."
+      ],
+      "status": "draft",
+      "escalate": "Responsable technique (N2) avec le nombre de postes et le modèle de centrale.",
+      "products": [
+        "bosch-ccs-1000-d",
+        "bosch-dicentis-flush"
+      ]
+    },
+    "cf-r-limite": {
+      "type": "result",
+      "severity": "low",
+      "title": "Nombre maximal d'orateurs atteint",
+      "summary": "La centrale limite le nombre de micros actifs simultanément (mode de discussion).",
+      "actions": [
+        "Vérifier le mode de discussion (ouvert, demande de parole, président seul…).",
+        "Vérifier le nombre maximal de micros actifs (ex. jusqu'à 25 sur CCS 1000 D).",
+        "Le poste président peut couper les autres micros : vérifier qu'il ne l'a pas fait."
+      ],
+      "status": "draft",
+      "products": [
+        "bosch-ccs-1000-d"
+      ]
+    },
+    "cf-r-sansfil": {
+      "type": "result",
+      "severity": "moderate",
+      "title": "Liaison sans fil instable",
+      "summary": "Distance, obstacles ou batterie faible.",
+      "actions": [
+        "Rester dans la portée annoncée (ex. 30 m pour DICENTIS sans fil).",
+        "Vérifier la charge de la batterie du poste.",
+        "Rapprocher le point d'accès ou en ajouter un."
+      ],
+      "status": "draft",
+      "related": [
+        "hf-coupures"
+      ],
+      "products": [
+        "bosch-dicentis-sans-fil",
+        "shure-mxcw640"
+      ]
     }
   },
   "sources": {
@@ -3990,7 +4565,8 @@
       "symptoms": [
         "pas-reseau",
         "latence-reseau",
-        "redemarrages"
+        "redemarrages",
+        "poe-budget"
       ]
     },
     "lecteur-media": {
@@ -4020,7 +4596,8 @@
         "son-degrade",
         "larsen",
         "latence-reseau",
-        "firmware-incompatible"
+        "firmware-incompatible",
+        "micro-plafond"
       ]
     },
     "ampli": {
@@ -4029,7 +4606,8 @@
       "symptoms": [
         "pas-de-son",
         "son-degrade",
-        "surchauffe"
+        "surchauffe",
+        "ligne-100v"
       ]
     },
     "enceinte": {
@@ -4037,7 +4615,8 @@
       "group": "Audio",
       "symptoms": [
         "pas-de-son",
-        "son-degrade"
+        "son-degrade",
+        "ligne-100v"
       ]
     },
     "enceinte-ip": {
@@ -4057,7 +4636,9 @@
         "larsen",
         "son-degrade",
         "latence-reseau",
-        "visio-peripherique"
+        "visio-peripherique",
+        "micro-plafond",
+        "conference-poste"
       ]
     },
     "micro-hf": {
@@ -4075,7 +4656,8 @@
       "symptoms": [
         "appairage-bluetooth",
         "pas-de-son",
-        "pas-reseau"
+        "pas-reseau",
+        "ecoute-assistee"
       ]
     },
     "connectique": {
