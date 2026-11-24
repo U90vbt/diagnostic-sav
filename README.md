@@ -297,6 +297,17 @@ Le journal s'exporte en **CSV** (s'ouvre dans Excel) ou en **JSON**. Le responsa
 
 Le nom, le titre et le lien (LinkedIn…) affichés sur la page projet se règlent dans `data/projet.json` (`auteur`). Les listes saisies (techniciens formés, prêts, checklist) restent **sur l'appareil** (localStorage) et ne sont jamais envoyées.
 
+## Vérification automatique des données
+
+`tools/validate.mjs` (Node, sans dépendance) vérifie tous les fichiers `data/*.json` : syntaxe, champs requis réellement utilisés par le site, identifiants en double ou mal formés, liens orphelins (étapes, symptômes, produits, sources, images), doublons marque + modèle. Les champs facultatifs absents ne sont jamais des erreurs ; les étapes jamais atteintes sont de simples avertissements.
+
+```
+node tools/validate.mjs          # vérifie data/
+node tools/test-validate.mjs     # 16 cas d'erreur volontaires
+```
+
+La GitHub Action `.github/workflows/validate.yml` lance ces deux commandes à chaque push et pull request touchant `data/`, `img/` ou `tools/`. Elle ne compile ni ne publie rien.
+
 ## Recommander (avant-vente)
 
 L'onglet **Recommander** (`#/recommander`) guide un commercial ou un technicien : **type d'événement → jauge → budget → contraintes réseau / audio**, jusqu'à une **carte de recommandation** (produits du catalogue, quantités, justification). **Copier le devis** produit un texte pré-rempli (besoin exprimé, matériel avec références et pages du catalogue). Les prix ne sont pas dans les données : le devis contient des lignes « à compléter ».

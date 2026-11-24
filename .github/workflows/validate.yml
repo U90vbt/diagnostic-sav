@@ -1,0 +1,26 @@
+# Vérifie les fichiers data/*.json à chaque push et pull request.
+# Aucune compilation : le site reste publié tel quel par GitHub Pages.
+name: Vérification des données
+
+on:
+  push:
+    paths: ['data/**', 'img/**', 'tools/**', '.github/workflows/validate.yml']
+  pull_request:
+    paths: ['data/**', 'img/**', 'tools/**', '.github/workflows/validate.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  valider:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Vérifier les JSON
+        run: node tools/validate.mjs data
+      - name: Tester le vérificateur
+        run: node tools/test-validate.mjs
