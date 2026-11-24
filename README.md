@@ -308,6 +308,10 @@ node tools/test-validate.mjs     # 16 cas d'erreur volontaires
 
 La GitHub Action `.github/workflows/validate.yml` lance ces deux commandes à chaque push et pull request touchant `data/`, `img/` ou `tools/`. Elle ne compile ni ne publie rien.
 
+## Thème clair à fort contraste
+
+Pied de page › **Thème : Sombre · Clair · Système**. Sombre reste le thème par défaut ; « Système » suit le réglage de l'appareil. Le choix est mémorisé sur l'appareil (localStorage `diagsav.theme`) et appliqué dès le `<head>`, sans flash. Le bleu #56a7d5 reste l'accent (boutons, soulignements, icônes) ; en clair, le texte bleu utilise une teinte plus foncée (`--blue-ink`) pour atteindre un contraste d'au moins 4,5. Toutes les couleurs passent par des variables CSS (`:root` et `:root[data-theme="light"]`).
+
 ## Recommander (avant-vente)
 
 L'onglet **Recommander** (`#/recommander`) guide un commercial ou un technicien : **type d'événement → jauge → budget → contraintes réseau / audio**, jusqu'à une **carte de recommandation** (produits du catalogue, quantités, justification). **Copier le devis** produit un texte pré-rempli (besoin exprimé, matériel avec références et pages du catalogue). Les prix ne sont pas dans les données : le devis contient des lignes « à compléter ».

@@ -687,6 +687,36 @@
   }
 
   /* ---------------------------------------------------------------------
+     Thème d'affichage : Sombre (défaut), Clair à fort contraste, ou Système.
+     Choix mémorisé sur l'appareil ; appliqué dès le <head> (index.html).
+     --------------------------------------------------------------------- */
+  const THEME_KEY = 'diagsav.theme';
+  const themeChoice = () => { try { return localStorage.getItem(THEME_KEY) || 'dark'; } catch { return 'dark'; } };
+  const systemLight = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+  function applyTheme() {
+    const choice = themeChoice();
+    const effective = choice === 'system' ? (systemLight && systemLight.matches ? 'light' : 'dark') : choice;
+    document.documentElement.setAttribute('data-theme', effective === 'light' ? 'light' : 'dark');
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', effective === 'light' ? '#ffffff' : '#0e0e10');
+    for (const b of document.querySelectorAll('[data-theme-choice]')) b.setAttribute('aria-pressed', String(b.dataset.themeChoice === choice));
+  }
+  function initTheme() {
+    for (const b of document.querySelectorAll('[data-theme-choice]')) {
+      b.addEventListener('click', () => {
+        try { localStorage.setItem(THEME_KEY, b.dataset.themeChoice); } catch { /* stockage indisponible : choix pour cette page seulement */ }
+        applyTheme();
+        toast('Thème : ' + b.textContent.toLowerCase());
+      });
+    }
+    if (systemLight) {
+      const onChange = () => { if (themeChoice() === 'system') applyTheme(); };
+      if (systemLight.addEventListener) systemLight.addEventListener('change', onChange); else systemLight.addListener(onChange);
+    }
+    applyTheme();
+  }
+
+  /* ---------------------------------------------------------------------
      Animations : fondu entre les pages (View Transitions) et apparition
      des cartes. Rien si le système demande de réduire les animations.
      --------------------------------------------------------------------- */
@@ -2492,6 +2522,7 @@
      --------------------------------------------------------------------- */
   function bindEvents() {
     window.addEventListener('hashchange', routeWithTransition);
+    initTheme();
 
     const input = $('#search-input');
     input.addEventListener('input', () => { state.query = input.value; renderGrid(); });
@@ -2670,7 +2701,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.19.0';
+  const APP_VERSION = '1.20.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;
