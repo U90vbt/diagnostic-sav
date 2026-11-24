@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#171b20">
-  <meta name="diagsav-version" content="1.21.0">
+  <meta name="diagsav-version" content="1.21.1">
   <meta name="description" content="Assistant de diagnostic SAV de premier niveau — usage interne.">
   <title>DIAG·SAV — Assistant de diagnostic N1</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -19,6 +19,11 @@
       if (t === 'system') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
     })();
+    // Ouverture du site sans adresse de page (…/diagnostic-sav/) : on arrive sur « Le projet ».
+    // « Accueil » (#/) reste accessible depuis la navigation.
+    if (!location.hash || location.hash === '#') {
+      try { history.replaceState(null, '', location.pathname + location.search + '#/projet'); } catch (e) { location.hash = '#/projet'; }
+    }
     // Adresse sans « / » final (…/diagnostic-sav) : les chemins relatifs ne fonctionneraient pas.
     if (!/\/$|\.[a-z0-9]+$/i.test(location.pathname)) {
       location.replace(location.pathname + '/' + location.search + location.hash);
