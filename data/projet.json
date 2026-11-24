@@ -1,7 +1,7 @@
 {
   "meta": {
-    "version": "1.0.0",
-    "updated": "2026-11-23"
+    "version": "1.1.0",
+    "updated": "2026-11-24"
   },
   "auteur": {
     "nom": "Hugo",
@@ -128,6 +128,11 @@
       "date": "2026-11-23",
       "titre": "Portfolio",
       "texte": "Page projet, visite guidée, outils réseau, formation, comparateur, démos et prêt."
+    },
+    {
+      "date": "2026-11-24",
+      "titre": "Qualité et missions",
+      "texte": "Vérification automatique des données, missions couvertes, trois nouveaux scénarios de visite."
     }
   ],
   "visite": [
@@ -195,6 +200,155 @@
           "texte": "L'information se transmet : tutoriels courts, quiz et suivi des techniciens formés."
         }
       ]
+    },
+    {
+      "id": "demo",
+      "titre": "Un client veut voir le produit avant d'acheter",
+      "contexte": "Démonstration et parc de prêt",
+      "etapes": [
+        {
+          "hash": "#/demos",
+          "texte": "La checklist part du besoin du client : choix du matériel, firmwares à jour, plan B, puis compte rendu au commercial."
+        },
+        {
+          "hash": "#/comparer?ids=barco-clickshare-cx-20-cx-30-gen-2,barco-clickshare-cx-50-gen-2",
+          "texte": "Pour argumenter, le comparateur met deux produits côte à côte, avec la page du catalogue."
+        },
+        {
+          "hash": "#/demos/pret",
+          "texte": "Le matériel laissé au client est suivi : sortie, retour prévu, état, retards signalés, export pour l'équipe."
+        }
+      ]
+    },
+    {
+      "id": "salon",
+      "titre": "Jour de salon : un caisson du mur LED reste noir",
+      "contexte": "Intervention en direct sur un événement",
+      "etapes": [
+        {
+          "hash": "#/d/mur-led/led-q1",
+          "texte": "Sur un salon, le diagnostic doit être rapide et lisible au soleil comme dans le noir : une question, un geste."
+        },
+        {
+          "hash": "#/d/mur-led/led-q1/led-q4",
+          "texte": "Les questions suivent l'ordre de vérification sur place, avec un schéma de chaînage quand il aide."
+        },
+        {
+          "hash": "#/d/larsen/lars-q1",
+          "texte": "Les autres urgences du direct sont couvertes : larsen, micros HF, intercom, régie vidéo."
+        }
+      ]
+    },
+    {
+      "id": "av-ip",
+      "titre": "Distribuer la vidéo et l'audio sur le réseau",
+      "contexte": "Audio, vidéo et réseau IP",
+      "etapes": [
+        {
+          "hash": "#/outils/video",
+          "texte": "Le débit d'un flux 4K non compressé dit tout de suite s'il faut du 10 GbE ou une compression."
+        },
+        {
+          "hash": "#/outils/poe",
+          "texte": "Le budget PoE vérifie qu'un switch alimente bien caméras, micros et enceintes, avec une marge."
+        },
+        {
+          "hash": "#/formation/switch-dante",
+          "texte": "Les réglages du switch pour Dante (QoS, EEE, IGMP) deviennent un tutoriel court avec quiz."
+        },
+        {
+          "hash": "#/d/latence-reseau/lat-q1",
+          "texte": "Et si l'audio décroche, le diagnostic réseau prend le relais."
+        }
+      ]
+    }
+  ],
+  "missions": [
+    {
+      "titre": "Support SAV niveau 1",
+      "texte": "Premier diagnostic guidé, gravité, actions, rapport pour l'ADV et le constructeur, journal des issues.",
+      "liens": [
+        {
+          "label": "Diagnostic",
+          "hash": "#/diagnostic"
+        },
+        {
+          "label": "Mon journal",
+          "hash": "#/journal"
+        }
+      ],
+      "visite": "sav"
+    },
+    {
+      "titre": "Conseil avant-vente",
+      "texte": "Configuration selon l'événement, la jauge, le budget et le réseau ; comparateur et fiches produit sourcées.",
+      "liens": [
+        {
+          "label": "Recommander",
+          "hash": "#/recommander"
+        },
+        {
+          "label": "Comparer",
+          "hash": "#/comparer"
+        }
+      ],
+      "visite": "avant-vente"
+    },
+    {
+      "titre": "Formation",
+      "texte": "Tutoriels courts, quiz, suivi des techniciens formés ; veille pour rester à jour sur les gammes.",
+      "liens": [
+        {
+          "label": "Formation",
+          "hash": "#/formation"
+        },
+        {
+          "label": "Veille",
+          "hash": "#/veille"
+        }
+      ],
+      "visite": "veille"
+    },
+    {
+      "titre": "Démonstrations",
+      "texte": "Préparer une démonstration à partir du besoin client, suivre le matériel prêté et son retour.",
+      "liens": [
+        {
+          "label": "Démos et prêt",
+          "hash": "#/demos"
+        }
+      ],
+      "visite": "demo"
+    },
+    {
+      "titre": "Salons et événements",
+      "texte": "Pannes typiques du direct : mur LED, micros HF, larsen, intercom, régie vidéo.",
+      "liens": [
+        {
+          "label": "Mur LED",
+          "hash": "#/d/mur-led"
+        },
+        {
+          "label": "Larsen",
+          "hash": "#/d/larsen"
+        }
+      ],
+      "visite": "salon"
+    },
+    {
+      "titre": "AV sur IP",
+      "texte": "Budget PoE, débit vidéo, longueurs de liaison, réglages Dante du switch, procédures réseau.",
+      "liens": [
+        {
+          "label": "Outils réseau",
+          "hash": "#/outils"
+        },
+        {
+          "label": "Tutoriel Dante",
+          "hash": "#/formation/switch-dante"
+        }
+      ],
+      "visite": "av-ip"
     }
   ]
 }

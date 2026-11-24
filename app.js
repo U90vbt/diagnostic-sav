@@ -710,8 +710,12 @@
     state.pageKey = key;
     if (!changed || !state.data || !canTransition()) { onRoute(); return; }
     try {
+      if (state.vt) { try { state.vt.skipTransition(); } catch { /* déjà terminée */ } }
       const vt = document.startViewTransition(() => { onRoute(); });
-      vt.finished.catch(() => {});
+      state.vt = vt;
+      // une navigation rapide interrompt la transition précédente : ce n'est pas une erreur
+      for (const pr of [vt.ready, vt.finished, vt.updateCallbackDone]) if (pr) pr.catch(() => {});
+      vt.finished.then(() => { if (state.vt === vt) state.vt = null; }, () => {});
     } catch { onRoute(); }
   }
 
@@ -2666,7 +2670,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.18.0';
+  const APP_VERSION = '1.19.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

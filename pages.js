@@ -97,15 +97,27 @@
           c.poste ? h('span', { class: 'pp-intro__job' }, 'Candidature : ' + c.poste + (c.entreprise ? ' — ' + c.entreprise : '')) : null,
           a.lien ? h('a', { href: a.lien, rel: 'noopener', target: '_blank' }, a.lienLabel || a.lien) : null),
         h('div', { class: 'pp-actions' },
-          h('a', { class: 'btn btn--primary', href: '#/visite' }, 'Visite guidée (3 scénarios)'),
+          h('a', { class: 'btn btn--primary', href: '#/visite' }, 'Visite guidée (6 scénarios)'),
           h('a', { class: 'btn btn--ghost', href: '#/' }, 'Explorer le site'))),
       h('ul', { class: 'pp-stats', 'aria-label': 'Le site en chiffres' },
         stats.map(([n, l]) => h('li', null, h('span', { class: 'pp-stats__n' }, String(n)), h('span', { class: 'pp-stats__l' }, l)))),
+      (P.missions || []).length ? section('Missions couvertes',
+        h('p', { class: 'pp-p' }, 'Les six missions du poste, et où les voir dans le site.'),
+        h('ol', { class: 'pp-grid pp-grid--3 pp-missions' }, P.missions.map((m, i) => {
+          const tour = m.visite && (P.visite || []).find(v => v.id === m.visite);
+          return h('li', { class: 'pp-card' },
+            h('span', { class: 'hcard__num' }, num2(i)),
+            h('h3', { class: 'pp-card__title' }, m.titre),
+            h('p', { class: 'pp-card__text' }, m.texte),
+            h('p', { class: 'pp-card__links' }, (m.liens || []).map((l, j) => [j ? ' · ' : '', h('a', { href: l.hash }, l.label)])),
+            tour ? h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => startTour(tour.id),
+              'aria-label': 'Visite guidée : ' + tour.titre }, 'Visite · ' + tour.etapes.length + ' étapes') : null);
+        }))) : null,
       section('Le besoin', (P.besoin || []).map(t => h('p', { class: 'pp-p' }, t))),
       section('Les choix',
         h('ol', { class: 'pp-grid' }, (P.choix || []).map((x, i) => h('li', { class: 'pp-card' },
           h('span', { class: 'hcard__num' }, num2(i)), h('h3', { class: 'pp-card__title' }, x.titre), h('p', { class: 'pp-card__text' }, x.texte))))),
-      section('Les missions du poste, dans le site',
+      section('Détail, mission par mission',
         h('div', { class: 'pp-table-wrap' },
           h('table', { class: 'pp-table' },
             h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Mission'), h('th', { scope: 'col' }, 'Dans le site'), h('th', { scope: 'col' }, h('span', { class: 'visually-hidden' }, 'Lien')))),
@@ -131,7 +143,7 @@
     let P;
     try { P = await A.loadJson('data/projet.json'); } catch (err) { fill(root, errorBox(err)); return; }
     fill(root, 
-      header('Visite guidée', 'Trois situations du métier, en deux minutes chacune',
+      header('Visite guidée', (P.visite || []).length + ' situations du métier, en deux minutes chacune',
         'Chaque scénario vous emmène sur les vraies pages du site. Une barre en bas de l\'écran explique chaque étape.'),
       h('ol', { class: 'pp-grid pp-grid--3' }, (P.visite || []).map((s, i) => h('li', { class: 'pp-card' },
         h('span', { class: 'hcard__num' }, num2(i)),
