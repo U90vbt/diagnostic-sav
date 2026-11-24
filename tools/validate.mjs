@@ -140,7 +140,7 @@ if (D) {
     if ('source' in pr && !sources[pr.source]) err(F, p, `source « ${pr.source} » non déclarée dans « sources »`);
     if ('page' in pr && !(Number.isInteger(pr.page) && pr.page > 0)) err(F, p, '« page » : entier positif attendu');
     if (pr.status !== undefined && pr.status !== 'draft') err(F, p, '« status » ne peut valoir que "draft"');
-    const key = (pr.brand + ' ' + pr.model).toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const key = (pr.brand + ' ' + pr.model).toLowerCase().replace(/[^a-z0-9+]+/g, '');   // « + » distingue SLX-D et SLX-D+
     if (seenModel.has(key)) err(F, p, `même marque et modèle que « ${seenModel.get(key)} » (doublon)`);
     seenModel.set(key, pid);
   }

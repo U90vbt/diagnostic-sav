@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Assistant de diagnostic SAV — Niveau 1",
-    "version": "1.5.1",
+    "version": "1.6.0",
     "updated": "2026-11-22",
     "maintainer": "Équipe SAV",
     "disclaimer": "Diagnostic de premier niveau. Toute intervention à l'intérieur d'un équipement sous tension est réservée au personnel habilité.",
@@ -3829,6 +3829,18 @@
       "edition": "Juin 2026",
       "publisher": "Sidev (guide distributeur)",
       "note": "Guide distributeur, pas une notice constructeur : toutes les données tirées de ce document sont à valider."
+    },
+    "focus-ete-2026": {
+      "title": "Catalogue Focus",
+      "edition": "Été 2026",
+      "publisher": "Focus (groupe Midwich)",
+      "note": "Catalogue distributeur, pas une notice constructeur : données à valider."
+    },
+    "guide-audio-2025": {
+      "title": "Guide de l'audio",
+      "edition": "2025",
+      "publisher": "Sidev (guide distributeur)",
+      "note": "Guide distributeur, pas une notice constructeur : données à valider."
     }
   },
   "families": {
@@ -5675,6 +5687,681 @@
       "family": "gestion-salle",
       "source": "cata-uc-2026",
       "page": 53,
+      "status": "draft"
+    },
+    "samsung-the-wall-mmf": {
+      "brand": "Samsung",
+      "model": "The Wall MMF",
+      "type": "Mur LED MicroLED",
+      "family": "led-caisson",
+      "source": "focus-ete-2026",
+      "page": 16,
+      "status": "draft"
+    },
+    "samsung-the-wall-mpf": {
+      "brand": "Samsung",
+      "model": "The Wall MPF",
+      "type": "Mur LED haut de gamme",
+      "family": "led-caisson",
+      "source": "focus-ete-2026",
+      "page": 16,
+      "status": "draft"
+    },
+    "absen-serie-po": {
+      "brand": "Absen",
+      "model": "Série PO",
+      "type": "Écran LED portable",
+      "family": "led-caisson",
+      "source": "focus-ete-2026",
+      "page": 18,
+      "status": "draft"
+    },
+    "lg-magnit-laab136": {
+      "brand": "LG",
+      "model": "MAGNIT LAAB136",
+      "type": "Écran Micro LED tout-en-un",
+      "family": "led-tout-en-un",
+      "source": "focus-ete-2026",
+      "page": 21,
+      "status": "draft"
+    },
+    "lg-magnit": {
+      "brand": "LG",
+      "model": "MAGNIT",
+      "type": "Mur Micro LED modulaire",
+      "family": "led-caisson",
+      "source": "focus-ete-2026",
+      "page": 21,
+      "status": "draft"
+    },
+    "aver-vb150": {
+      "brand": "AVer",
+      "model": "VB150",
+      "type": "Barre de visioconférence USB",
+      "family": "visio",
+      "source": "focus-ete-2026",
+      "page": 36,
+      "status": "draft"
+    },
+    "aver-vb342-pro": {
+      "brand": "AVer",
+      "model": "VB342 Pro",
+      "type": "Barre de visioconférence 4K USB",
+      "family": "visio",
+      "source": "focus-ete-2026",
+      "page": 36,
+      "status": "draft"
+    },
+    "neat-neat-board-32": {
+      "brand": "Neat",
+      "model": "Neat Board 32",
+      "type": "Écran de visioconférence tout-en-un 32\"",
+      "family": "visio",
+      "source": "focus-ete-2026",
+      "page": 38,
+      "status": "draft"
+    },
+    "neat-neat-pad-pro": {
+      "brand": "Neat",
+      "model": "Neat Pad Pro",
+      "type": "Contrôleur et écran de réservation de salle",
+      "family": "gestion-salle",
+      "source": "focus-ete-2026",
+      "page": 39,
+      "status": "draft"
+    },
+    "biamp-max-connect": {
+      "brand": "Biamp",
+      "model": "Max Connect",
+      "type": "Système de présentation sans fil",
+      "family": "presentation-sans-fil",
+      "source": "focus-ete-2026",
+      "page": 40,
+      "status": "draft"
+    },
+    "biamp-parle-vbc-2800": {
+      "brand": "Biamp",
+      "model": "Parlé VBC 2800",
+      "type": "Barre de visioconférence",
+      "family": "visio",
+      "source": "focus-ete-2026",
+      "page": 40,
+      "status": "draft"
+    },
+    "yealink-meetingbar-a25": {
+      "brand": "Yealink",
+      "model": "MeetingBar A25",
+      "type": "Barre vidéo tout-en-un, petites salles",
+      "family": "visio",
+      "source": "focus-ete-2026",
+      "page": 42,
+      "status": "draft"
+    },
+    "yealink-meetingbar-a50": {
+      "brand": "Yealink",
+      "model": "MeetingBar A50",
+      "type": "Barre de collaboration, salles moyennes à grandes",
+      "family": "visio",
+      "source": "focus-ete-2026",
+      "page": 42,
+      "status": "draft"
+    },
+    "yealink-meetingboard-c-65-75": {
+      "brand": "Yealink",
+      "model": "MeetingBoard 65C / 75C",
+      "type": "Écran de conférence tout-en-un BYOD",
+      "family": "visio",
+      "source": "focus-ete-2026",
+      "page": 42,
+      "status": "draft"
+    },
+    "yealink-smartvision-80": {
+      "brand": "Yealink",
+      "model": "SmartVision 80",
+      "type": "Caméra de visioconférence grandes salles",
+      "family": "camera-usb",
+      "source": "focus-ete-2026",
+      "page": 42,
+      "status": "draft"
+    },
+    "yealink-mvc-s98": {
+      "brand": "Yealink",
+      "model": "MVC S98",
+      "type": "Système Microsoft Teams Rooms, salles ProAV",
+      "family": "visio",
+      "source": "focus-ete-2026",
+      "page": 43,
+      "status": "draft"
+    },
+    "yealink-meetingdisplay": {
+      "brand": "Yealink",
+      "model": "MeetingDisplay",
+      "type": "Écran pour Microsoft Teams Rooms",
+      "family": "ecran",
+      "source": "focus-ete-2026",
+      "page": 43,
+      "status": "draft"
+    },
+    "huddly-c1": {
+      "brand": "Huddly",
+      "model": "C1",
+      "type": "Barre de visioconférence",
+      "family": "visio",
+      "source": "focus-ete-2026",
+      "page": 44,
+      "status": "draft"
+    },
+    "huddly-c1-crew": {
+      "brand": "Huddly",
+      "model": "C1 Crew",
+      "type": "Système multi-caméras de visioconférence",
+      "family": "visio",
+      "source": "focus-ete-2026",
+      "page": 44,
+      "status": "draft"
+    },
+    "lindy-39347": {
+      "brand": "Lindy",
+      "model": "39347",
+      "type": "Extendeur HDBaseT 3.0 USB-C 4K60",
+      "family": "av-ip",
+      "source": "focus-ete-2026",
+      "page": 48,
+      "status": "draft"
+    },
+    "lindy-38434": {
+      "brand": "Lindy",
+      "model": "38434",
+      "type": "Matrice HDMI 8 x 8 multi-view 4K60",
+      "family": "commutateur-video",
+      "source": "focus-ete-2026",
+      "page": 49,
+      "status": "draft"
+    },
+    "lindy-38422": {
+      "brand": "Lindy",
+      "model": "38422",
+      "type": "Caméra PTZ 4K USB",
+      "family": "camera-usb",
+      "source": "focus-ete-2026",
+      "page": 49,
+      "status": "draft"
+    },
+    "kramer-mtx3-42-hu": {
+      "brand": "Kramer",
+      "model": "MTX3-42-HU",
+      "type": "Matrice AV et USB",
+      "family": "commutateur-video",
+      "source": "focus-ete-2026",
+      "page": 50,
+      "status": "draft"
+    },
+    "kramer-swt3-22-hu-wp-t": {
+      "brand": "Kramer",
+      "model": "SWT3-22-HU-WP-T",
+      "type": "Transmetteur commutateur mural HDBaseT 3.0",
+      "family": "commutateur-video",
+      "source": "focus-ete-2026",
+      "page": 50,
+      "status": "draft"
+    },
+    "kramer-swt3-21-hu-tr": {
+      "brand": "Kramer",
+      "model": "SWT3-21-HU-TR",
+      "type": "Auto-commutateur HDBaseT 3.0",
+      "family": "commutateur-video",
+      "source": "focus-ete-2026",
+      "page": 50,
+      "status": "draft"
+    },
+    "kramer-c-hm-hm-pro": {
+      "brand": "Kramer",
+      "model": "C-HM/HM/PRO",
+      "type": "Câble HDMI haut débit avec Ethernet",
+      "family": "connectique",
+      "source": "focus-ete-2026",
+      "page": 51,
+      "status": "draft"
+    },
+    "kramer-c-mhm-mhm": {
+      "brand": "Kramer",
+      "model": "C-MHM/MHM",
+      "type": "Câble HDMI flexible haut débit",
+      "family": "connectique",
+      "source": "focus-ete-2026",
+      "page": 51,
+      "status": "draft"
+    },
+    "kramer-cls-aocu32-ff": {
+      "brand": "Kramer",
+      "model": "CLS-AOCU32/FF",
+      "type": "Câble USB-C actif hybride optique",
+      "family": "connectique",
+      "source": "focus-ete-2026",
+      "page": 51,
+      "status": "draft"
+    },
+    "netgear-gsm4212px": {
+      "brand": "Netgear",
+      "model": "GSM4212PX",
+      "type": "Switch manageable AV 8 ports PoE+",
+      "family": "switch-reseau",
+      "source": "focus-ete-2026",
+      "page": 52,
+      "status": "draft"
+    },
+    "netgear-gsm4248ux": {
+      "brand": "Netgear",
+      "model": "GSM4248UX",
+      "type": "Switch manageable 40 ports PoE++",
+      "family": "switch-reseau",
+      "source": "focus-ete-2026",
+      "page": 52,
+      "status": "draft"
+    },
+    "netgear-gsm4328": {
+      "brand": "Netgear",
+      "model": "GSM4328",
+      "type": "Switch manageable 24 ports PoE+ et 4 SFP+",
+      "family": "switch-reseau",
+      "source": "focus-ete-2026",
+      "page": 53,
+      "status": "draft"
+    },
+    "netgear-msm4310": {
+      "brand": "Netgear",
+      "model": "MSM4310",
+      "type": "Switch AV PoE++ avec uplinks 25G",
+      "family": "switch-reseau",
+      "source": "focus-ete-2026",
+      "page": 53,
+      "status": "draft"
+    },
+    "visionary-d5000": {
+      "brand": "Visionary",
+      "model": "D5000",
+      "type": "Décodeur AV sur IP 4K",
+      "family": "av-ip",
+      "source": "focus-ete-2026",
+      "page": 54,
+      "status": "draft"
+    },
+    "visionary-duete5-wp-c": {
+      "brand": "Visionary",
+      "model": "DuetE5-WP-C / DuetE5-WP-C-BT",
+      "type": "Encodeur AV sur IP mural",
+      "family": "av-ip",
+      "source": "focus-ete-2026",
+      "page": 54,
+      "status": "draft"
+    },
+    "pixelhue-p80": {
+      "brand": "PixelHue",
+      "model": "P80",
+      "type": "Mélangeur de présentation (master switcher)",
+      "family": "regie-captation",
+      "source": "focus-ete-2026",
+      "page": 56,
+      "status": "draft"
+    },
+    "pixelhue-p20-ds": {
+      "brand": "PixelHue",
+      "model": "P20-DS",
+      "type": "Mélangeur de présentation 12 entrées 4K",
+      "family": "regie-captation",
+      "source": "focus-ete-2026",
+      "page": 56,
+      "status": "draft"
+    },
+    "pixelhue-u5": {
+      "brand": "PixelHue",
+      "model": "U5",
+      "type": "Contrôleur événementiel",
+      "family": "regie-captation",
+      "source": "focus-ete-2026",
+      "page": 56,
+      "status": "draft"
+    },
+    "pixelhue-s16": {
+      "brand": "PixelHue",
+      "model": "S16",
+      "type": "Mélangeur de production tout-en-un",
+      "family": "regie-captation",
+      "source": "focus-ete-2026",
+      "page": 56,
+      "status": "draft"
+    },
+    "pixelhue-pd3-2k-4k": {
+      "brand": "PixelHue Pro AV",
+      "model": "PD3-2K / PD3-4K",
+      "type": "Processeur vidéo AV sur IP",
+      "family": "av-ip",
+      "source": "focus-ete-2026",
+      "page": 57,
+      "status": "draft"
+    },
+    "pixelhue-pd3-s10-s20": {
+      "brand": "PixelHue Pro AV",
+      "model": "PD3-S10 / PD3-S20",
+      "type": "Décodeur AV sur IP et contrôleur LED",
+      "family": "led-controleur",
+      "source": "focus-ete-2026",
+      "page": 57,
+      "status": "draft"
+    },
+    "biamp-bma360d-i": {
+      "brand": "Biamp",
+      "model": "BMA360D-I",
+      "type": "Dalle micro de plafond multi-capsules",
+      "family": "micro-conference",
+      "source": "focus-ete-2026",
+      "page": 61,
+      "status": "draft"
+    },
+    "shure-mxa925": {
+      "brand": "Shure",
+      "model": "MXA925",
+      "type": "Micro de plafond multicapsules",
+      "family": "micro-conference",
+      "source": "focus-ete-2026",
+      "page": 65,
+      "status": "draft"
+    },
+    "shure-mxa320": {
+      "brand": "Shure",
+      "model": "MXA320",
+      "type": "Micro de table multicapsules",
+      "family": "micro-conference",
+      "source": "focus-ete-2026",
+      "page": 65,
+      "status": "draft"
+    },
+    "shure-slxd-plus": {
+      "brand": "Shure",
+      "model": "SLX-D+",
+      "type": "Système micro HF numérique",
+      "family": "micro-hf",
+      "source": "focus-ete-2026",
+      "page": 67,
+      "status": "draft"
+    },
+    "bosch-dicentis-multimedia": {
+      "brand": "Bosch",
+      "model": "DICENTIS Multimedia",
+      "type": "Poste de conférence multimédia",
+      "family": "micro-conference",
+      "source": "focus-ete-2026",
+      "page": 69,
+      "status": "draft"
+    },
+    "electro-voice-evid-s5-2x": {
+      "brand": "Electro-Voice",
+      "model": "EVID-S5.2X",
+      "type": "Enceinte 2 voies intérieur / extérieur",
+      "family": "enceinte",
+      "source": "focus-ete-2026",
+      "page": 70,
+      "status": "draft"
+    },
+    "electro-voice-evid-ec6-2": {
+      "brand": "Electro-Voice",
+      "model": "EVID-EC6.2",
+      "type": "Enceinte de plafond coaxiale 6,5\"",
+      "family": "enceinte",
+      "source": "focus-ete-2026",
+      "page": 70,
+      "status": "draft"
+    },
+    "electro-voice-lrc-1060": {
+      "brand": "Electro-Voice",
+      "model": "LRC-1060",
+      "type": "Enceinte colonne passive",
+      "family": "enceinte",
+      "source": "focus-ete-2026",
+      "page": 70,
+      "status": "draft"
+    },
+    "electro-voice-evid-c6-2-g2": {
+      "brand": "Electro-Voice",
+      "model": "EVID-C6.2-G2",
+      "type": "Enceinte de plafond coaxiale 6,5\"",
+      "family": "enceinte",
+      "source": "focus-ete-2026",
+      "page": 71,
+      "status": "draft"
+    },
+    "dynacord-u120-1m": {
+      "brand": "Dynacord",
+      "model": "U120:1M",
+      "type": "Amplificateur mélangeur 120 W",
+      "family": "ampli",
+      "source": "focus-ete-2026",
+      "page": 71,
+      "status": "draft"
+    },
+    "dynacord-vzx-8": {
+      "brand": "Dynacord",
+      "model": "VZX-8",
+      "type": "Matrice audio 8 zones avec DSP",
+      "family": "dsp",
+      "source": "focus-ete-2026",
+      "page": 71,
+      "status": "draft"
+    },
+    "powersoft-prima": {
+      "brand": "Powersoft",
+      "model": "Prima",
+      "type": "Amplificateur d'installation compact",
+      "family": "ampli",
+      "source": "focus-ete-2026",
+      "page": 72,
+      "status": "draft"
+    },
+    "soundtube-ipd-rs62-ez": {
+      "brand": "SoundTube",
+      "model": "IPD-RS62-EZ-BK",
+      "type": "Enceinte suspendue Dante PoE",
+      "family": "enceinte-ip",
+      "source": "focus-ete-2026",
+      "page": 74,
+      "status": "draft"
+    },
+    "listen-listentalk": {
+      "brand": "Listen",
+      "model": "ListenTALK",
+      "type": "Système de communication de groupe sans fil",
+      "family": "diffusion-audio",
+      "source": "focus-ete-2026",
+      "page": 75,
+      "status": "draft"
+    },
+    "yealink-cs10-d": {
+      "brand": "Yealink",
+      "model": "CS10-D",
+      "type": "Haut-parleur de plafond Dante",
+      "family": "enceinte-ip",
+      "source": "focus-ete-2026",
+      "page": 76,
+      "status": "draft"
+    },
+    "aver-hub30": {
+      "brand": "AVer",
+      "model": "HUB30",
+      "type": "Commutateur matriciel 4K BYOM",
+      "family": "commutateur-video",
+      "source": "focus-ete-2026",
+      "page": 77,
+      "status": "draft"
+    },
+    "aver-ptz310uv2": {
+      "brand": "AVer",
+      "model": "PTZ310UV2",
+      "type": "Caméra PTZ 4K",
+      "family": "camera-ptz",
+      "source": "focus-ete-2026",
+      "page": 77,
+      "status": "draft"
+    },
+    "aver-tr615": {
+      "brand": "AVer",
+      "model": "TR615",
+      "type": "Caméra broadcast à suivi automatique",
+      "family": "camera-ptz",
+      "source": "focus-ete-2026",
+      "page": 77,
+      "status": "draft"
+    },
+    "aver-mt500": {
+      "brand": "AVer",
+      "model": "MT500",
+      "type": "Matrice d'audio-tracking 4K",
+      "family": "regie-captation",
+      "source": "focus-ete-2026",
+      "page": 77,
+      "status": "draft"
+    },
+    "panasonic-aw-rp60": {
+      "brand": "Panasonic",
+      "model": "AW-RP60",
+      "type": "Pupitre de commande de caméras PTZ",
+      "family": "camera-ptz",
+      "source": "focus-ete-2026",
+      "page": 78,
+      "status": "draft"
+    },
+    "vaddio-easyip-dock": {
+      "brand": "Vaddio",
+      "model": "EasyIP Dock",
+      "type": "Commutateur AV sur IP avec matrice audio",
+      "family": "av-ip",
+      "source": "focus-ete-2026",
+      "page": 79,
+      "status": "draft"
+    },
+    "vaddio-intellishot-m": {
+      "brand": "Vaddio",
+      "model": "IntelliSHOT-M",
+      "type": "Caméra à suivi automatique",
+      "family": "camera-usb",
+      "source": "focus-ete-2026",
+      "page": 79,
+      "status": "draft"
+    },
+    "shure-mxa710": {
+      "brand": "Shure",
+      "model": "MXA710",
+      "type": "Micro multicapsules linéaire",
+      "family": "micro-conference",
+      "source": "guide-audio-2025",
+      "page": 178,
+      "status": "draft"
+    },
+    "shure-mxa310": {
+      "brand": "Shure",
+      "model": "MXA310",
+      "type": "Micro de table multicapsules",
+      "family": "micro-conference",
+      "source": "guide-audio-2025",
+      "page": 182,
+      "status": "draft"
+    },
+    "shure-mxn5-c": {
+      "brand": "Shure",
+      "model": "MXN5-C",
+      "type": "Haut-parleur de plafond amplifié Dante",
+      "family": "enceinte-ip",
+      "source": "guide-audio-2025",
+      "page": 182,
+      "status": "draft"
+    },
+    "netgear-gsm4210pd": {
+      "brand": "Netgear",
+      "model": "GSM4210PD",
+      "type": "Switch AV 10 ports PoE+",
+      "family": "switch-reseau",
+      "source": "guide-audio-2025",
+      "page": 156,
+      "status": "draft"
+    },
+    "netgear-gsm4210px": {
+      "brand": "Netgear",
+      "model": "GSM4210PX",
+      "type": "Switch AV 10 ports PoE+",
+      "family": "switch-reseau",
+      "source": "guide-audio-2025",
+      "page": 156,
+      "status": "draft"
+    },
+    "netgear-gsm4212p": {
+      "brand": "Netgear",
+      "model": "GSM4212P",
+      "type": "Switch AV 12 ports PoE+",
+      "family": "switch-reseau",
+      "source": "guide-audio-2025",
+      "page": 156,
+      "status": "draft"
+    },
+    "netgear-gsm4212ux": {
+      "brand": "Netgear",
+      "model": "GSM4212UX",
+      "type": "Switch AV 12 ports PoE++",
+      "family": "switch-reseau",
+      "source": "guide-audio-2025",
+      "page": 156,
+      "status": "draft"
+    },
+    "netgear-gsm4230p": {
+      "brand": "Netgear",
+      "model": "GSM4230P",
+      "type": "Switch AV 30 ports PoE+",
+      "family": "switch-reseau",
+      "source": "guide-audio-2025",
+      "page": 156,
+      "status": "draft"
+    },
+    "netgear-gsm4230up": {
+      "brand": "Netgear",
+      "model": "GSM4230UP",
+      "type": "Switch AV 30 ports PoE++",
+      "family": "switch-reseau",
+      "source": "guide-audio-2025",
+      "page": 156,
+      "status": "draft"
+    },
+    "netgear-gsm4248p": {
+      "brand": "Netgear",
+      "model": "GSM4248P",
+      "type": "Switch AV 48 ports PoE+",
+      "family": "switch-reseau",
+      "source": "guide-audio-2025",
+      "page": 156,
+      "status": "draft"
+    },
+    "listen-listen-ir": {
+      "brand": "Listen",
+      "model": "Listen IR",
+      "type": "Système de diffusion par infrarouge",
+      "family": "diffusion-audio",
+      "source": "guide-audio-2025",
+      "page": 148,
+      "status": "draft"
+    },
+    "shure-ua844-swb": {
+      "brand": "Shure",
+      "model": "UA844+SWB",
+      "type": "Distributeur d'antennes actif",
+      "family": "micro-hf",
+      "source": "guide-audio-2025",
+      "page": 204,
+      "status": "draft"
+    },
+    "shure-ua874": {
+      "brand": "Shure",
+      "model": "UA874",
+      "type": "Antenne directive active",
+      "family": "micro-hf",
+      "source": "guide-audio-2025",
+      "page": 204,
       "status": "draft"
     }
   }

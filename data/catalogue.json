@@ -217,6 +217,18 @@
         "Mur LED tout-en-un",
         "Contrôleur intégré préconfiguré",
         "HDR10 / HDR10+"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 17,
+          "status": "draft",
+          "facts": [
+            "Version The Wall MMF-A 136 : 136\", pitch 1,56 mm, 500 nits",
+            "Tout-en-un sans équipement externe",
+            "Structure Quick Build : installation annoncée en 2 h environ"
+          ]
+        }
       ]
     },
     "samsung-the-wall-serie-iab": {
@@ -248,6 +260,20 @@
         "Pitch 0,9 / 1,2 / 1,5 mm",
         "Panneau 600 x 337,5 x 39,3 mm",
         "Résolutions FHD, 4K, 8K"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 18,
+          "status": "draft",
+          "facts": [
+            "Pitchs de 0,7 à 1,5 mm",
+            "Petit cabinet 150 x 337,5 mm pour assemblages incurvés",
+            "Montage empilé, mural, suspendu ou à 90°",
+            "Consommation annoncée réduite de 30 % (Flip Chip)",
+            "Résistance annoncée à la poussière, à l'humidité et aux chocs"
+          ]
+        }
       ]
     },
     "absen-pl-v2": {
@@ -266,6 +292,18 @@
         "Tailles 108\", 136\", 163\"",
         "Résolution FHD",
         "Kit complet : contrôleur, audio, alimentation"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 19,
+          "status": "draft",
+          "facts": [
+            "Version Icon X136F : 136\", COB pliable, pitch 1,56 mm",
+            "Audio et processeur d'image intégrés",
+            "Livré avec flight case, pieds électriques et pièces de rechange"
+          ]
+        }
       ]
     },
     "absen-serie-nx": {
@@ -295,6 +333,17 @@
         "Angle de vision 150°",
         "Haut-parleurs 2 x 9 W",
         "Contrôleur webOS intégré"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 20,
+          "status": "draft",
+          "facts": [
+            "LAPA136 : pitch 1,56 mm ; LAPA163 : pitch 1,88 mm",
+            "Full HD 1920 x 1080, 500 nits"
+          ]
+        }
       ]
     },
     "lg-lscc": {
@@ -502,17 +551,58 @@
         "Présentation sans fil, petites et moyennes salles",
         "BYOD : AirPlay, Miracast, Google Cast, application Barco",
         "Garantie 5 ans après enregistrement"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 33,
+          "status": "draft",
+          "facts": [
+            "C-5 : 1 bouton, petits espaces ; C-10 : 1 ou 2 boutons",
+            "C-10 : TouchBack, annotation, tableau blanc, 2 sources à l'écran",
+            "Gestion cloud et mises à jour à distance",
+            "Garantie annoncée 5 ans"
+          ]
+        }
       ]
     },
     "barco-clickshare-cx-20-cx-30-gen-2": {
       "facts": [
         "Conférence sans fil, petites et moyennes salles",
         "BYOD : AirPlay, Miracast, Google Cast, application Barco"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 33,
+          "status": "draft",
+          "facts": [
+            "CX-20 : compatible plateformes UC&C et périphériques USB",
+            "Sécurité certifiée ISO 27001, gestion XMS Cloud",
+            "CX-30 : annotation, tableau blanc, TouchBack",
+            "CX-30 : prêt en moins de 7 secondes (annoncé)",
+            "Garantie annoncée 5 ans"
+          ]
+        }
       ]
     },
     "barco-clickshare-cx-50-gen-2": {
       "facts": [
         "Conférence sans fil, dernière génération"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 34,
+          "status": "draft",
+          "facts": [
+            "Double écran",
+            "Sans fil et filaire jusqu'à 4K",
+            "Un seul câble USB-C : alimentation et vidéo",
+            "BYOD et BYOM",
+            "Garantie annoncée 5 ans ; certification ANSSI annoncée"
+          ]
+        }
       ]
     },
     "barco-clickshare-bar-pro-core": {
@@ -520,6 +610,18 @@
         "Barre de visioconférence tout-en-un",
         "ClickShare intégré",
         "Versions Core ou Pro"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 34,
+          "status": "draft",
+          "facts": [
+            "Bar Core : caméra 4K avec IA, son stéréo",
+            "Bar Pro : barre vidéo tout-en-un avec ClickShare intégré",
+            "Garantie annoncée 5 ans"
+          ]
+        }
       ]
     },
     "aver-vb370a": {
@@ -533,42 +635,130 @@
     "aver-vc520-pro3": {
       "facts": [
         "Caméra et haut-parleur de conférence"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 36,
+          "status": "draft",
+          "facts": [
+            "Caméra PTZ Full HD 1080p, zoom x36",
+            "Haut-parleur et micro duplex à 360°, annulation d'écho et du bruit",
+            "Smart Composition (cadrage IA), presets Audio Tracking"
+          ]
+        }
       ]
     },
     "aver-fone700-cam570": {
       "facts": [
         "Haut-parleur de plafond avec hub de connectivité",
         "Caméra USB 4K CAM570 : double objectif, zoom x36, suivi audio"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 36,
+          "status": "draft",
+          "facts": [
+            "Haut-parleurs et micros de plafond, hub de connectivité pour la caméra",
+            "Audio-tracking avec une CAM550 via un switch réseau",
+            "Extensible avec des speakerphones supplémentaires"
+          ]
+        }
       ]
     },
     "neat-neat-bar-byod": {
       "facts": [
         "Barre de visioconférence BYOD",
         "Neat Pad en option"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 37,
+          "status": "draft",
+          "facts": [
+            "USB plug & play, modes Neat Open et BYOD",
+            "Neat Symmetry (cadrage équitable)",
+            "Salles jusqu'à 10 personnes",
+            "Gestion à distance Neat Pulse, capteurs environnementaux"
+          ]
+        }
       ]
     },
     "neat-neat-bar-2": {
       "facts": [
         "Barre de visioconférence, petites et moyennes salles",
         "Certifiée Zoom et Teams"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 37,
+          "status": "draft",
+          "facts": [
+            "Caméra 4K 50 MP, champ de vision 113°",
+            "Certifiée Zoom, Microsoft Teams et Google Meet ; modes Neat Open et BYOD",
+            "Salles jusqu'à 10 personnes"
+          ]
+        }
       ]
     },
     "neat-neat-bar-pro": {
       "facts": [
         "Barre de visioconférence, moyennes et grandes salles",
         "2 écrans (Zoom et Teams)"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 37,
+          "status": "draft",
+          "facts": [
+            "Jusqu'à 3 écrans (Zoom)",
+            "2 caméras 50 MP, zoom numérique x16, 16 micros",
+            "Certifiée Zoom, Microsoft Teams et Google Meet",
+            "Compatible avec des solutions audio externes"
+          ]
+        }
       ]
     },
     "neat-neat-center": {
       "facts": [
         "Caméra 360° d'appoint pour système Neat",
         "16 micros omnidirectionnels"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 39,
+          "status": "draft",
+          "facts": [
+            "3 caméras grand angle, couverture 360°",
+            "16 micros omnidirectionnels, bascule audio automatique avec l'appareil principal",
+            "Compagnon des Neat Board et Neat Bar",
+            "Pose au plafond ou sur table"
+          ]
+        }
       ]
     },
     "neat-neat-board-50": {
       "facts": [
         "Écran de collaboration tout-en-un 50\"",
         "Stylet Neat Active Marker fourni"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 38,
+          "status": "draft",
+          "facts": [
+            "Écran 50\" 4K multitouch sur support réglable en hauteur",
+            "Caméra grand angle, champ horizontal 113°",
+            "Certifié Zoom et Microsoft Teams",
+            "Stylet Neat Active Marker fourni"
+          ]
+        }
       ]
     },
     "neat-neat-board-pro": {
@@ -577,6 +767,20 @@
         "Teams et Zoom, mode BYOD",
         "Partage par USB-C et HDMI",
         "Stylet fourni"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 38,
+          "status": "draft",
+          "facts": [
+            "Écran multitouch 4K 65\"",
+            "Double capteur 50 MP, zoom hybride x16",
+            "Annulation d'écho, suppression du bruit et de la réverbération",
+            "Partage USB-C et HDMI, stylet Neat Active Marker fourni",
+            "Capteurs environnementaux (air, température, luminosité)"
+          ]
+        }
       ]
     },
     "biamp-vidi-280": {
@@ -585,6 +789,27 @@
         "USB-C",
         "Cadrage automatique",
         "Certification Microsoft"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 41,
+          "status": "draft",
+          "facts": [
+            "Traitement 4K30, double caméra ePTZ 50 MP + 8 MP",
+            "USB-C, cadrage automatique par IA, zoom numérique 16x",
+            "Micro 5 éléments, voyant d'activité et de confidentialité",
+            "Certifiée Microsoft Teams"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 18,
+          "status": "draft",
+          "facts": [
+            "Supports VMA 200 compatibles Vidi 250 et 280, pas Vidi 150"
+          ]
+        }
       ]
     },
     "biamp-bundle-mpx250-mrb-mx400c": {
@@ -592,12 +817,36 @@
         "Kit audio pour salles jusqu'à 6 x 6 m",
         "DSP TesiraFORTÉ X 400, micros Parlé, enceintes Desono C-IC6",
         "Déploiement Biamp Launch"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 41,
+          "status": "draft",
+          "facts": [
+            "EasyConnect MPX 250 USB-C : deux écrans, connexion Internet partagée",
+            "Recharge jusqu'à 100 W en USB-C, câbles rétractables",
+            "Sans logiciel ; compatible Teams, Zoom, Google Meet"
+          ]
+        }
       ]
     },
     "biamp-parle-cbc-2500": {
       "facts": [
         "Barre de visioconférence plafond (ABC 2500 + support)",
         "Deux points de fixation"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 40,
+          "status": "draft",
+          "facts": [
+            "Barre Parlé ABC 2500 et support plafond CBC 2500 CM",
+            "Beamtracking, haut-parleurs, USB, Biamp Launch",
+            "Deux points de fixation"
+          ]
+        }
       ]
     },
     "biamp-parle-vbc-2500a": {
@@ -605,6 +854,28 @@
         "Barres audio / vidéo de conférence tout-en-un",
         "VBC 2800 avec caméra 4K",
         "Teams et Zoom, configuration Biamp Launch"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 40,
+          "status": "draft",
+          "facts": [
+            "Gamme Parlé : ABC 2500 (audio), VBC 2500, VBC 2800",
+            "Extension Parlé N100 : réseau et ports USB pour superviser et connecter",
+            "Certifiés Microsoft Teams et Zoom, configuration automatique Biamp Launch"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 18,
+          "status": "draft",
+          "facts": [
+            "VBC 2500a : captation préconisée jusqu'à 6 m",
+            "VBC 2800 : captation préconisée jusqu'à 8,5 m",
+            "ABC 2500a : barre audio sans caméra, captation jusqu'à 7 m"
+          ]
+        }
       ]
     },
     "yealink-a40": {
@@ -640,6 +911,18 @@
       "facts": [
         "Écran tout-en-un 65\"",
         "Garantie 2 ans"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 43,
+          "status": "draft",
+          "facts": [
+            "Gamme en 65\", 75\" et 86\"",
+            "Modes Teams, Zoom et général (BYOD, H.323, SIP)",
+            "4 stylets fournis, garantie annoncée 2 ans"
+          ]
+        }
       ]
     },
     "dten-d7x-55-75": {
@@ -679,6 +962,18 @@
         "Réalisation automatique (Director)",
         "Jusqu'à 2 caméras supplémentaires",
         "Certifié Teams"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 44,
+          "status": "draft",
+          "facts": [
+            "Modes Speaker et Collaboration",
+            "USB plug-and-play, sans configuration",
+            "Certifié Teams, Zoom, Google Meet jusqu'à 5 caméras"
+          ]
+        }
       ]
     },
     "huddly-l1": {
@@ -686,6 +981,18 @@
         "Caméra 6K grand angle, grandes salles",
         "USB-C via injecteur PoE (jusqu'à 100 m)",
         "Certifiée Teams et Zoom"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 44,
+          "status": "draft",
+          "facts": [
+            "Capteur 6K, optique grand angle",
+            "USB-C via injecteur PoE inclus, jusqu'à 100 m",
+            "Certifiée Microsoft Teams, Zoom et Google Meet"
+          ]
+        }
       ]
     },
     "huddly-iq": {
@@ -700,11 +1007,33 @@
         "Kit de prises USB-C de table",
         "Double écran et Ethernet",
         "Jusqu'à 4 prises : USB-C, HDMI, USB-A"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 45,
+          "status": "draft",
+          "facts": [
+            "O-PC-4 : double écran, Ethernet, recharge 100 W, USB 3.0",
+            "Avec O-PC-4-EU-NODE : jusqu'à 16 prises Ochno dans les grandes salles"
+          ]
+        }
       ]
     },
     "ochno-o-ph-4-eu": {
       "facts": [
         "Chargeur intelligent avec gestion cloud"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 45,
+          "status": "draft",
+          "facts": [
+            "4 ports USB-C jusqu'à 140 W chacun, 240 W au total",
+            "Gestion cloud Ochno Operated"
+          ]
+        }
       ]
     },
     "black-box-mediacento-ipx-4k": {
@@ -726,6 +1055,18 @@
         "Auto-commutateur",
         "PoE",
         "Contrôle à distance sécurisé"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 50,
+          "status": "draft",
+          "facts": [
+            "Fiche Focus 2026 au nom SWT3-31-HU (à rapprocher)",
+            "Entrée USB-C et 2 entrées HDMI/USB, sortie HDMI",
+            "Station d'accueil USB-C intégrée, alimentation PoE"
+          ]
+        }
       ]
     },
     "kramer-kds-en7": {
@@ -783,6 +1124,26 @@
         "Budget PoE 960 W",
         "8 slots SFP+",
         "Connexion automatique avec les M4250"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 52,
+          "status": "draft",
+          "facts": [
+            "40 ports Gigabit PoE+ et 2 ports Gigabit, 8 slots SFP+",
+            "Ports montables en façade ou à l'arrière du rack",
+            "Profils de préconfiguration AV"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 156,
+          "status": "draft",
+          "facts": [
+            "48 ports (40 x 1G, 8 x SFP+), 40 PoE+ à 30 W par port, 960 W au total"
+          ]
+        }
       ]
     },
     "netgear-gsm4352": {
@@ -791,6 +1152,18 @@
         "4 ports SFP+ 10 Gbit/s",
         "Budget PoE jusqu'à 1440 W",
         "Alimentation modulaire redondante"
+      ],
+      "extra": [
+        {
+          "source": "guide-audio-2025",
+          "page": 158,
+          "status": "draft",
+          "facts": [
+            "52 ports : 48 x 1G PoE+, 4 x SFP+ 10G",
+            "Budget PoE de base 236 W (alimentation interne)",
+            "Jusqu'à 1440 W avec 2 modules APS2000W-100NES ; 750 W redondant 1+1 avec 2 APS920W-100NES"
+          ]
+        }
       ]
     },
     "netgear-xsm4340v": {
@@ -798,6 +1171,18 @@
         "Switch manageable 10 Gbit/s",
         "24 ports PoE++",
         "4 ports SFP28, 4 ports 10G SFP+"
+      ],
+      "extra": [
+        {
+          "source": "guide-audio-2025",
+          "page": 157,
+          "status": "draft",
+          "facts": [
+            "40 ports : 24 x 10G PoE++ 90 W, 8 x SFP+ 10G, 8 x SFP28 25G",
+            "Budget PoE de base 290 W (alimentation interne)",
+            "650 W avec un module APS600W-300NES, 1770 W avec un APS2000W-200NES"
+          ]
+        }
       ]
     },
     "netgear-gsm4230px": {
@@ -806,11 +1191,44 @@
         "4 slots SFP+",
         "Budget PoE 480 W",
         "Connexion automatique avec les M4250"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 52,
+          "status": "draft",
+          "facts": [
+            "24 ports Gigabit PoE+ et 2 ports Gigabit, 4 slots SFP+",
+            "Ports montables en façade ou à l'arrière du rack",
+            "Profils de préconfiguration AV"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 156,
+          "status": "draft",
+          "facts": [
+            "30 ports (26 x 1G, 4 x SFP+), 24 PoE+ à 30 W par port, 480 W au total",
+            "AVB sans licence sur la gamme M4250"
+          ]
+        }
       ]
     },
     "visionary-e5100-d5100": {
       "facts": [
         "Encodeur / décodeur 4K UHD sur réseau 1 Gbit/s"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 54,
+          "status": "draft",
+          "facts": [
+            "Vidéo 4K60 4:4:4, latence annoncée 2 ms, un seul port PoE 1 Gbit/s",
+            "Commutation indépendante vidéo, audio et USB ; USB isochrone (webcams, barres vidéo)",
+            "Mur d'images ou matrice côté écran"
+          ]
+        }
       ]
     },
     "visionary-duet5": {
@@ -845,6 +1263,18 @@
         "Contrôleur multi-écrans",
         "Versions HDMI, DisplayPort, HDR, SDI",
         "Configuration Wall Designer (gratuit)"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 55,
+          "status": "draft",
+          "facts": [
+            "FX4-HDR : 1 entrée HDMI 2.0 et 2 entrées HDMI 1.4 sélectionnables",
+            "FX4-HDR : 4 sorties HDMI 1.4 et 1 sortie HDMI 2.0 de chaînage",
+            "Compatible HDCP 2.2, audio pris en charge"
+          ]
+        }
       ]
     },
     "datapath-vsn-mini-300": {
@@ -852,11 +1282,33 @@
         "Contrôleur de mur vidéo multi-entrées / sorties",
         "Processeur Intel 12e gén. (i5, i7, i9)",
         "Silencieux, vertical ou horizontal"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 55,
+          "status": "draft",
+          "facts": [
+            "3 emplacements PCIe Gen3 x8",
+            "Configurations 8 entrées / 4 sorties, 4 / 8, ou 8 / 16 avec splitters IQS4"
+          ]
+        }
       ]
     },
     "datapath-aetria": {
       "facts": [
         "Solution AV sur IP complète"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 55,
+          "status": "draft",
+          "facts": [
+            "Partage de centaines de sources entre murs vidéo et opérateurs",
+            "KVM vers les sources distantes jusqu'à 4K60, latence annoncée inférieure à 1 ms"
+          ]
+        }
       ]
     },
     "vuwall-pak": {
@@ -864,6 +1316,19 @@
         "Encodeurs VuStream 150/350 : PoE, 4K, faible latence",
         "HDMI, KVM, multicast",
         "Gestion via TRx, tablette Control-Vu"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 58,
+          "status": "draft",
+          "facts": [
+            "Bundles 1 à 4 : 1 à 4 décodeurs PAK, mini-serveur TRx, licence TRx (3 ans de maintenance)",
+            "Architecture 100 % IP, sans châssis central",
+            "API ouverte, plugin VMS Genetec / Milestone",
+            "Fonctionnement local, sans abonnement cloud"
+          ]
+        }
       ]
     },
     "roomz-display": {
@@ -871,17 +1336,52 @@
         "Écran de réservation de salle sans câblage",
         "Wi-Fi, basse consommation",
         "Cloud ou sur site"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 46,
+          "status": "draft",
+          "facts": [
+            "Sans câblage, Wi-Fi, autonomie moyenne annoncée 4 ans",
+            "Compatible Teams, Exchange, Office 365, Google Workspace",
+            "Installation cloud ou sur site"
+          ]
+        }
       ]
     },
     "roomz-sensors": {
       "facts": [
         "Capteur de présence pour salles de réunion",
         "Données d'occupation"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 46,
+          "status": "draft",
+          "facts": [
+            "Détecte la présence et libère la salle inoccupée",
+            "Données d'occupation des salles"
+          ]
+        }
       ]
     },
     "evoko-liso": {
       "facts": [
         "Système de réservation de salle"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 47,
+          "status": "draft",
+          "facts": [
+            "Écran 8\"",
+            "Réservation depuis l'écran ou le calendrier ; vert libre, rouge réservée",
+            "Licence 1 an incluse, compatible supervision Biamp"
+          ]
+        }
       ]
     },
     "evoko-naso": {
@@ -889,6 +1389,18 @@
         "Gestionnaire de salle",
         "Licence 1 an",
         "Compatible Biamp Workplace"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 47,
+          "status": "draft",
+          "facts": [
+            "Intégré à Microsoft 365",
+            "Gestion des visiteurs, analyse des salles",
+            "Licence 1 an incluse, compatible Biamp Workspace"
+          ]
+        }
       ]
     },
     "evoko-kleeo": {
@@ -916,6 +1428,18 @@
         "Enceintes encastrables coaxiales 4\", 6\", 8\", caisson 10\"",
         "Basse impédance et ligne 100 V",
         "Vendues par paire"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 61,
+          "status": "draft",
+          "facts": [
+            "Coaxiales 4\", 6\", 8\" et caisson 10\"",
+            "Basse impédance et ligne 100 V",
+            "Vendues par paire"
+          ]
+        }
       ]
     },
     "biamp-serie-cm": {
@@ -923,6 +1447,17 @@
         "Haut-parleurs de plafond",
         "Grille magnétique amovible",
         "Connecteur Euroblock"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 61,
+          "status": "draft",
+          "facts": [
+            "Version Round Design : grille magnétique à bord fin",
+            "Connecteur Euroblock, attaches pour élingue de sécurité"
+          ]
+        }
       ]
     },
     "biamp-desono-ex": {
@@ -930,6 +1465,19 @@
         "Haut-parleurs en surface",
         "Fixation Clickmount ou lyre",
         "Noir ou blanc"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 61,
+          "status": "draft",
+          "facts": [
+            "Enceintes 6\", 8\", 10\" et caisson 10\"",
+            "IP54, certifiées EN 54",
+            "Basse impédance ou 100 V avec sélecteur de puissance (caisson : basse impédance)",
+            "Supports Clickmount (CM) ou lyres (UB), noir ou blanc"
+          ]
+        }
       ]
     },
     "biamp-sdq5pir": {
@@ -943,6 +1491,18 @@
       "facts": [
         "Amplificateurs",
         "Configuration par Tesira ou VenueTune"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 63,
+          "status": "draft",
+          "facts": [
+            "AVB et Dante",
+            "1200 W ou 2400 W répartis sur 4 ou 8 canaux, format 1U",
+            "Configuration par Tesira ou Biamp VenueTune"
+          ]
+        }
       ]
     },
     "biamp-tesiraforte-x": {
@@ -952,6 +1512,30 @@
         "5 ports Ethernet dont 4 PoE+",
         "AVB et Dante",
         "Configuration Biamp Launch"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 62,
+          "status": "draft",
+          "facts": [
+            "Modèles TFX400, TFX800, TFX1600",
+            "4 à 16 canaux d'AEC",
+            "5 ports Ethernet dont 4 PoE+, AVB et Dante",
+            "Configuration Biamp Launch, supervision Biamp Workplace"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 10,
+          "status": "draft",
+          "facts": [
+            "AEC : X400 4 canaux, X800 8, X1600 16",
+            "2 entrées / 2 sorties analogiques, VoIP 1 ligne, USB",
+            "AVB 128 x 128, Dante 32 x 32",
+            "Switch intégré : 4 ports PoE+ Dante/AVB et 1 port de contrôle"
+          ]
+        }
       ]
     },
     "biamp-tesiraforte": {
@@ -960,6 +1544,19 @@
         "Versions AVB (128x128) ou Dante (32x32)",
         "Analogique 4x4 à 12x8",
         "AEC selon modèle (4 ou 12 canaux)"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 62,
+          "status": "draft",
+          "facts": [
+            "DAN AI : Dante 32x32, analogique 12x8 (matriçage)",
+            "DAN VT4 : Dante 32x32, analogique 4x4, 4 AEC ; AVB VT4 : AVB 128x128, 4x4, 4 AEC",
+            "DAN CI : Dante 32x32, 4x4, 12 AEC ; AVB CI : AVB 128x128, 4x4, 12 AEC",
+            "AEC intégré sauf versions AI"
+          ]
+        }
       ]
     },
     "biamp-devio-scx": {
@@ -968,12 +1565,46 @@
         "4 à 8 micros Parlé",
         "Configuration Biamp Launch, supervision SageVue",
         "Certifié Teams"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 62,
+          "status": "draft",
+          "facts": [
+            "De 1 à 8 micros, compatible Biamp Parlé",
+            "Configuration automatique Biamp Launch",
+            "Supervision Biamp Workplace et SageVue",
+            "Configurations certifiées Microsoft Teams"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 16,
+          "status": "draft",
+          "facts": [
+            "SCX 400 : jusqu'à 4 micros Parlé ; SCX 800 : jusqu'à 8",
+            "VoIP 1 ligne, USB, AVB, switch 4 ports PoE+",
+            "Avec des équipements tiers à configurer manuellement (liaisons HF…), préférer Tesira X"
+          ]
+        }
       ]
     },
     "biamp-parle-micros": {
       "facts": [
         "Micros de plafond et de table Parlé",
         "Configuration simplifiée"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 62,
+          "status": "draft",
+          "facts": [
+            "Micros Beamtracking plafond, table ou suspendus, 4 zones de 90°",
+            "Extension Parlé N100 : supervision, mises à jour et configuration via Workplace"
+          ]
+        }
       ]
     },
     "shure-mxw-next-2": {
@@ -982,6 +1613,29 @@
         "DSP intégré (AEC, réduction de bruit)",
         "Connexion USB, base de charge",
         "2 micros (versions 4 et 8)"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 64,
+          "status": "draft",
+          "facts": [
+            "DSP intégré : AEC, réduction de bruit, EQ, compression ; USB et base de charge",
+            "Jusqu'à 2 micros MXW neXt ; versions neXt 4 et neXt 8",
+            "Compatible avec les bases col-de-cygne MXW8x"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 198,
+          "status": "draft",
+          "facts": [
+            "Base DECT, DSP IntelliMix et chargeur ; jusqu'à 2 émetteurs",
+            "2 entrées / 4 sorties Dante, 2 sorties analogiques, USB bidirectionnel",
+            "Émetteurs main, de surface et bodypack : chiffrement AES-256, canal de retour",
+            "Non compatible avec les micros MXW classiques"
+          ]
+        }
       ]
     },
     "shure-mxcw640": {
@@ -990,12 +1644,36 @@
         "Rôle président, délégué, auditeur ou ambiant",
         "Écran tactile, touches parole et mute",
         "Lecteur NFC, batterie incluse"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 64,
+          "status": "draft",
+          "facts": [
+            "Configurable en poste président, délégué, auditeur ou micro ambiant",
+            "Écran tactile couleur, touches parole et mute avec LED",
+            "Lecteur de carte NFC, batterie incluse"
+          ]
+        }
       ]
     },
     "shure-mxa920": {
       "facts": [
         "Micro multicapsules de plafond",
         "8 lobes de captation, 8 sorties audio"
+      ],
+      "extra": [
+        {
+          "source": "guide-audio-2025",
+          "page": 178,
+          "status": "draft",
+          "facts": [
+            "8 canaux directs + 1 mix, AEC intégré",
+            "Alimentation PoE classe 0, consommation max 10,1 W",
+            "Versions ronde et carrée 60 x 60 cm (dalle de faux plafond)"
+          ]
+        }
       ]
     },
     "shure-mxa901": {
@@ -1003,6 +1681,26 @@
         "Micro multicapsules de plafond",
         "Couvre 6 x 6 m",
         "Alimenté en PoE"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 65,
+          "status": "draft",
+          "facts": [
+            "Format rond, 34 cm de diamètre",
+            "Single-zone Automatic Coverage, DSP IntelliMix",
+            "Couvre une zone de 6 x 6 m, alimenté en PoE"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 178,
+          "status": "draft",
+          "facts": [
+            "1 zone dynamique de 6 x 6 m, 1 mix, AEC"
+          ]
+        }
       ]
     },
     "shure-mxa902-aniusb": {
@@ -1010,6 +1708,26 @@
         "Kit visioconférence : MXA902 (micro plafond + enceinte) et ANIUSB-MATRIX",
         "Préconfiguré",
         "Teams, Zoom Rooms, Google Meet"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 65,
+          "status": "draft",
+          "facts": [
+            "Kit MXA902 (micro plafond avec enceinte) et ANIUSB-MATRIX préconfigurés",
+            "Certifiés Microsoft Teams et Zoom Rooms, fonctionnent avec Google Meet"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 178,
+          "status": "draft",
+          "facts": [
+            "MXA902 : micro 60 x 60 cm avec haut-parleur 2,5\" intégré",
+            "1 zone dynamique de 6 x 6 m, alimentation PoE+"
+          ]
+        }
       ]
     },
     "shure-p300": {
@@ -1017,6 +1735,18 @@
         "Processeur audio de conférence avec DSP",
         "Alimentation PoE",
         "Format compact, sans rack"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 66,
+          "status": "draft",
+          "facts": [
+            "8 canaux de traitement micro : AEC, réduction de bruit, IntelliMix",
+            "10 entrées Dante, 2 analogiques, 1 USB, 1 appareil mobile",
+            "Alimentation PoE, sans rack"
+          ]
+        }
       ]
     },
     "shure-aniusb-matrix": {
@@ -1024,12 +1754,38 @@
         "Interface audio réseau Dante 4 entrées / 2 sorties",
         "Matrice de mixage, USB",
         "Euroblock, alimentation PoE"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 66,
+          "status": "draft",
+          "facts": [
+            "4 canaux Microflex Advance ou Wireless via Dante (4 entrées / 2 sorties)",
+            "Entrée analogique pour système de visio, port USB",
+            "Euroblock, alimentation PoE"
+          ]
+        }
       ]
     },
     "shure-slxd": {
       "facts": [
         "Système de micros HF numériques",
         "Micros main, cravate ou serre-tête"
+      ],
+      "extra": [
+        {
+          "source": "guide-audio-2025",
+          "page": 200,
+          "status": "draft",
+          "facts": [
+            "Bandes : G59 471-514, H56 518-562, J53 562-606, K59 606-650, L56 650-694 MHz",
+            "Jusqu'à 32 systèmes compatibles par bande de 44 MHz",
+            "Scan et Group Scan automatiques des fréquences",
+            "Batterie SB903 avec temps restant, station de charge SBC203",
+            "Récepteurs simple SLXD4E et double SLXD4DE ; kit rack et déport d'antennes inclus"
+          ]
+        }
       ]
     },
     "shure-mxn-amp": {
@@ -1038,6 +1794,29 @@
         "14,5 W au total",
         "4 entrées Dante, entrée analogique",
         "DSP et presets pour enceintes MXP"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 67,
+          "status": "draft",
+          "facts": [
+            "Jusqu'à 4 enceintes MXP en 8 Ω ou 8 MXP-5 / MXP-6 en 70 V, 14,5 W au total",
+            "DSP : égaliseur, retard, limiteur, générateur de signal",
+            "4 entrées et 4 sorties Dante, entrée analogique stéréo",
+            "Montage rack CRT-1, mur ou plafond ; certifié UL 2043"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 184,
+          "status": "draft",
+          "facts": [
+            "4 sorties 4/8 Ω ou 1 sortie 70 V",
+            "Dante 4 x 4 et 1 entrée analogique TRS",
+            "Plateau CRT-1 en option pour le rack"
+          ]
+        }
       ]
     },
     "shure-mxrk30-mxrk70": {
@@ -1050,6 +1829,28 @@
     "shure-mxp3": {
       "facts": [
         "Enceinte murale passive Microflex"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 67,
+          "status": "draft",
+          "facts": [
+            "MXP-3W murale : driver BMR et 2 radiateurs passifs",
+            "70 V / 100 V, ou 8 Ω avec le MXN-AMP",
+            "Chiffrement audio Shure",
+            "Montage horizontal, vertical ou plafond, support inclus"
+          ]
+        },
+        {
+          "source": "guide-audio-2025",
+          "page": 184,
+          "status": "draft",
+          "facts": [
+            "28 W sous 4 Ω ; 15 / 7,5 / 3,75 / 1,875 W en 70 V",
+            "MXP-3 : 283,5 x 90 x 48,5 mm"
+          ]
+        }
       ]
     },
     "bosch-ccs-1000-d": {
@@ -1060,12 +1861,37 @@
         "Enregistreur MP3 (mémoire ou USB)",
         "Anti-larsen intégré",
         "Pilotage jusqu'à 6 caméras HD"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 68,
+          "status": "draft",
+          "facts": [
+            "Jusqu'à 25 micros actifs simultanément et 80 postes",
+            "Contrôle et enregistrement par navigateur, enregistreur MP3 intégré",
+            "Anti-larsen numérique, contrôle jusqu'à 6 caméras HD",
+            "Postes à poser et encastrés combinables (centrale CCU ou CCURD)"
+          ]
+        }
       ]
     },
     "bosch-dicentis-sans-fil": {
       "facts": [
         "Système de conférence sans fil",
         "Réunions hybrides"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 69,
+          "status": "draft",
+          "facts": [
+            "Wi-Fi, portée 30 m",
+            "Poste simple ou avec écran tactile 4,3\" et lecteur NFC",
+            "Compatible DICENTIS filaire"
+          ]
+        }
       ]
     },
     "bosch-dicentis-flush": {
@@ -1079,6 +1905,18 @@
         "Amplificateurs DSP demi-rack",
         "100 V / basse impédance",
         "Versions Dante"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 72,
+          "status": "draft",
+          "facts": [
+            "600 W ou 320 W, 2 ou 4 canaux",
+            "100 V et basse impédance",
+            "Versions Dante ; accessoires rack et mur inclus"
+          ]
+        }
       ]
     },
     "powersoft-unica": {
@@ -1087,6 +1925,18 @@
         "3 ports Ethernet, alimentation PoE, GPIO",
         "70/100 V et basse impédance",
         "Supervision Universo"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 72,
+          "status": "draft",
+          "facts": [
+            "Modèles 2K8, 4K8, 8K8, 9K4, 12K4, 16K4 ; nouveaux 1K8 et 5K4",
+            "3 ports Ethernet, alimentation PoE, GPIO programmable",
+            "70 / 100 V et basse impédance ; supervision Universo"
+          ]
+        }
       ]
     },
     "powersoft-verso": {
@@ -1100,6 +1950,18 @@
       "facts": [
         "Amplificateur ultra-compact",
         "USB et AES67 (compatible source Dante)"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 72,
+          "status": "draft",
+          "facts": [
+            "Nota 142 : alimenté en PoE/PoE+, 2 x 70 W (4 Ω) en PoE+",
+            "USB, analogique ou AES67 (compatible source Dante)",
+            "Bouton SET, configuration Armonia+, supervision MyUniverso via Verso"
+          ]
+        }
       ]
     },
     "focal-gamme-100v-murale": {
@@ -1107,16 +1969,49 @@
         "Enceinte murale 100 V intérieur / extérieur",
         "IP66",
         "100 V / 70 V / 8 Ω par commutateur"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 73,
+          "status": "draft",
+          "facts": [
+            "Médium/grave Polyglass 16,5 cm, tweeter aluminium 25 mm",
+            "Certifiée IP66",
+            "Noir ou blanc"
+          ]
+        }
       ]
     },
     "focal-littora": {
       "facts": [
         "Pack extérieur : 4 satellites 5\" et caisson 12\" enterré"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 73,
+          "status": "draft",
+          "facts": [
+            "Membranes Fiber IP et Iris IP certifiées IP65"
+          ]
+        }
       ]
     },
     "focal-gamme-300": {
       "facts": [
         "Enceintes encastrables mur / plafond"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 73,
+          "status": "draft",
+          "facts": [
+            "Membranes Flax, tweeter orientable et réglable",
+            "Kit de prémontage vendu séparément"
+          ]
+        }
       ]
     },
     "focal-gamme-100v-encastree": {
@@ -1124,6 +2019,18 @@
         "Enceinte encastrée",
         "100 V / 70 V par commutateur",
         "Faible profondeur d'encastrement"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 73,
+          "status": "draft",
+          "facts": [
+            "Faible profondeur d'encastrement",
+            "100 V / 70 V par commutateur",
+            "Grilles ronde et carrée fournies"
+          ]
+        }
       ]
     },
     "sonos-port": {
@@ -1155,6 +2062,17 @@
         "Haut-parleurs paraboliques directifs",
         "Filtre passe-haut commutable",
         "Options détecteur de mouvement et éclairage LED"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 74,
+          "status": "draft",
+          "facts": [
+            "FP6030-II : dispersion Dual-Parabolic, 2 tailles, passe-haut commutable",
+            "Options : détecteur FP-Motion, carte lumineuse FP-Light"
+          ]
+        }
       ]
     },
     "soundtube-ipd-hub2": {
@@ -1162,6 +2080,18 @@
         "Amplificateur Dante 2 canaux, DSP",
         "12 W / 8 Ω par canal",
         "Alimentation PoE / PoE+"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 74,
+          "status": "draft",
+          "facts": [
+            "Entrées locales et Dante, priorités, entrées de pagination",
+            "DSP intégré, 12 W / 8 Ω par canal",
+            "PoE (40 W) et PoE+"
+          ]
+        }
       ]
     },
     "soundtube-ipd-cm52-bgm-ii": {
@@ -1193,12 +2123,36 @@
         "Diffusion audio multicanal en Wi-Fi",
         "Serveurs 2, 4, 8 ou 16 canaux",
         "Récepteurs LWR-1050"
+      ],
+      "extra": [
+        {
+          "source": "guide-audio-2025",
+          "page": 146,
+          "status": "draft",
+          "facts": [
+            "Diffusion vers les smartphones (Android, iOS) ou récepteurs LWR-1050",
+            "Application personnalisable, canaux privés protégés par mot de passe",
+            "Balises LA-450 pour changer de canal automatiquement"
+          ]
+        }
       ]
     },
     "listen-listen-auri": {
       "facts": [
         "Diffusion audio Bluetooth Auracast",
         "Sans appairage"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 75,
+          "status": "draft",
+          "facts": [
+            "Bluetooth Auracast : récepteurs illimités, sans appairage",
+            "Émetteur TX2N : portée 100 m, 2 canaux mono ou 1 stéréo",
+            "Latence de 30 ms selon les réglages de diffusion"
+          ]
+        }
       ]
     },
     "aver-mt300n": {
@@ -1232,12 +2186,36 @@
     "panasonic-aw-ue50": {
       "facts": [
         "Caméra PTZ 4K"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 78,
+          "status": "draft",
+          "facts": [
+            "Sortie 3G-SDI, zoom optique 24x",
+            "Moteur magnétique",
+            "Blanc ou noir"
+          ]
+        }
       ]
     },
     "panasonic-aw-ue20": {
       "facts": [
         "Caméra PTZ 4K compacte",
         "PoE++ (alimentation, contrôle et vidéo sur un câble)"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 78,
+          "status": "draft",
+          "facts": [
+            "PoE++ : alimentation, contrôle et vidéo sur un câble",
+            "Grand angle 71°, zoom optique 12x",
+            "Sorties simultanées 3G-SDI, HDMI, USB et IP"
+          ]
+        }
       ]
     },
     "panasonic-aw-ue30": {
@@ -1275,6 +2253,17 @@
         "Barre de visioconférence 4K",
         "Sorties USB et HDMI",
         "Suivi, gestion à distance"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 79,
+          "status": "draft",
+          "facts": [
+            "Caméra 4K, zoom x5",
+            "Micros et haut-parleurs intégrés, suivi des intervenants"
+          ]
+        }
       ]
     },
     "arec-ds-9cu": {
@@ -1374,6 +2363,16 @@
         "Double affichage",
         "Géré dans le cloud, plateforme MDEP",
         "Complété par un panneau de contrôle tactile 10\" (Microsoft Teams)"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 35,
+          "status": "draft",
+          "facts": [
+            "Produit certifié Barco Eco A+"
+          ]
+        }
       ]
     },
     "barco-clickshare-hub-core": {
@@ -1381,6 +2380,17 @@
         "Partage de contenu 4K sans fil, 1 bouton fourni",
         "Bouton ClickShare nouvelle génération : Wi-Fi 6E et USB-C DisplayPort",
         "Géré dans le cloud, plateforme MDEP"
+      ],
+      "extra": [
+        {
+          "source": "focus-ete-2026",
+          "page": 35,
+          "status": "draft",
+          "facts": [
+            "Bouton Wi-Fi 6E, USB-C DisplayPort et DP-Alt Mode",
+            "Produit certifié Barco Eco A+"
+          ]
+        }
       ]
     },
     "yealink-en300": {
@@ -1417,6 +2427,611 @@
         "Fonctions étendues : capteurs, intégrations tierces",
         "Alimentation PoE ou DC ; fixation murale, sur verre ou boîte électrique",
         "Gestion centralisée Yealink MCS ; compatible Microsoft Teams et Zoom Rooms"
+      ]
+    },
+    "samsung-the-wall-mmf": {
+      "facts": [
+        "MicroLED COB Flip Chip, pitch 1,25 mm",
+        "Cabinet 27\", 5,1 kg",
+        "Contraste jusqu'à 10 000:1",
+        "600 nits, vidéo 60 Hz, rafraîchissement 3840 Hz",
+        "Traitement 20 bits, HDR / HDR10+",
+        "Certification TÜV Eye Comfort"
+      ]
+    },
+    "samsung-the-wall-mpf": {
+      "facts": [
+        "Technologie Black Seal+",
+        "Processeur NQM AI Gen2, traitement 20 bits",
+        "HDR10 / HDR10+ et LED HDR",
+        "1200 nits, contraste 43 000:1",
+        "Couleurs validées PANTONE, certification TÜV Eye Comfort"
+      ]
+    },
+    "absen-serie-po": {
+      "facts": [
+        "Pitch 1,53 mm ou 1,86 mm",
+        "Écran 640 x 1920 mm, épaisseur 62 mm, 51 kg",
+        "Assemblage jusqu'à 6 unités",
+        "Format pliable, plug-and-play",
+        "MicroLED avec réduction du moiré"
+      ]
+    },
+    "lg-magnit-laab136": {
+      "facts": [
+        "Micro LED tout-en-un 136\"",
+        "Fidélité des couleurs certifiée TÜV",
+        "Conception tout-en-un"
+      ]
+    },
+    "lg-magnit": {
+      "facts": [
+        "Pitch 0,93 mm",
+        "Luminosité jusqu'à 1500 nits",
+        "Revêtement noir intégré, structure FLAT",
+        "Sans câbles internes entre modules"
+      ]
+    },
+    "aver-vb150": {
+      "facts": [
+        "Caméra 4K, champ de vision 120°, cadrage automatique",
+        "Micros longue portée et haut-parleurs intégrés",
+        "Suppression de l'écho et du bruit",
+        "USB plug-and-play, compatible Teams et Zoom"
+      ]
+    },
+    "aver-vb342-pro": {
+      "facts": [
+        "Capteur CMOS 4K Sony Exmor RMC 1/2,5\"",
+        "10 micros, portée 7 m",
+        "Suivi de la voix, suppression de l'écho et du bruit",
+        "Salles moyennes"
+      ]
+    },
+    "neat-neat-board-32": {
+      "facts": [
+        "Écran tactile 32\" 4K",
+        "Caméra grand angle 140°, 4 micros",
+        "4 connecteurs USB (station d'accueil intégrée)",
+        "Certifications Teams (MDEP), Zoom et Google Meet en cours",
+        "Capteurs environnementaux"
+      ]
+    },
+    "neat-neat-pad-pro": {
+      "facts": [
+        "Écran tactile 10\", barre lumineuse RGB",
+        "Contrôleur en salle ou écran de réservation à l'extérieur",
+        "Micros intégrés",
+        "Gestion Neat Pulse, plateforme P2",
+        "Capteurs : qualité de l'air, température, luminosité"
+      ]
+    },
+    "biamp-max-connect": {
+      "facts": [
+        "Jusqu'à 6 contributeurs à la fois",
+        "Connexion par application MAX Connect, navigateur web ou HDMI filaire",
+        "Tableau blanc virtuel",
+        "Télécommande incluse ; tablette Apprimo Touch 8 MAX en option"
+      ]
+    },
+    "biamp-parle-vbc-2800": {
+      "facts": [
+        "Caméra 4K 50 MP et 8 MP",
+        "27 micros",
+        "Biamp Audio Intelligence et Video Intelligence",
+        "Certifiée Microsoft Teams et Zoom, configuration Biamp Launch"
+      ]
+    },
+    "yealink-meetingbar-a25": {
+      "facts": [
+        "Triple objectif 4K, champ de vision 151°",
+        "IntelliFocus, clôture vidéo, réduction du bruit, full duplex",
+        "Un câble Cat5e pour alimentation et réseau ; console CTP25 incluse",
+        "Microsoft Teams Rooms (Android), Zoom",
+        "Garantie annoncée 2 ans"
+      ]
+    },
+    "yealink-meetingbar-a50": {
+      "facts": [
+        "Caméra 4K, IntelliFocus, clôture vidéo, full duplex",
+        "Console tactile CTP25 incluse",
+        "Microsoft Teams Rooms Android et Windows (MVC S50 en MTR-W)",
+        "Garantie annoncée 2 ans"
+      ]
+    },
+    "yealink-meetingboard-c-65-75": {
+      "facts": [
+        "Écran 65\" ou 75\", certifié Google EDLA",
+        "Caméra grand angle 50 MP, cadrage automatique",
+        "HDMI IN, boîtier sans fil, Miracast, AirPlay",
+        "Tableau blanc interactif, 2 stylets",
+        "Garantie annoncée 2 ans"
+      ]
+    },
+    "yealink-smartvision-80": {
+      "facts": [
+        "4 objectifs 4K dont une PTZ à zoom optique 20x",
+        "IntelliFocus, suivi du présentateur, Multi-Stream IntelliFrame",
+        "Volet de confidentialité automatique, micros intégrés",
+        "Certifiée Microsoft Teams"
+      ]
+    },
+    "yealink-mvc-s98": {
+      "facts": [
+        "Plusieurs caméras SmartVision 80, mini-PC MCore 4, écran MTouch Plus",
+        "IntelliFocus, suivi du présentateur, Multi-Stream IntelliFrame",
+        "Gestion centralisée YMCS / YDMP"
+      ]
+    },
+    "yealink-meetingdisplay": {
+      "facts": [
+        "Tailles 55\", 65\", 75\" et 86\"",
+        "Compatible barres MTR, caméras UVC et unités MCore",
+        "Installation sans perçage",
+        "Gestion YMCS / YDMP ; veille et allumage synchronisés avec les périphériques MTR"
+      ]
+    },
+    "huddly-c1": {
+      "facts": [
+        "Caméra 4K, champ de vision 150°",
+        "16 micros, haut-parleurs stéréo",
+        "USB-C plug-and-play ; extensible avec des caméras Huddly Crew",
+        "Certifiée Microsoft Teams, Zoom et Google Meet"
+      ]
+    },
+    "huddly-c1-crew": {
+      "facts": [
+        "Barre C1 et 2 caméras additionnelles, IA de réalisation embarquée",
+        "16 micros, suppression du bruit et de l'écho",
+        "Liaison Ethernet entre les appareils",
+        "Certifié Microsoft Teams, Zoom et Google Meet"
+      ]
+    },
+    "lindy-39347": {
+      "facts": [
+        "4K60 4:4:4",
+        "70 m en 4K60, 100 m en 4K30 (Cat.6A ou supérieur)",
+        "USB-C DisplayPort Alt Mode, alimentation jusqu'à 100 W",
+        "Alimentation par le câble réseau (PoC)"
+      ]
+    },
+    "lindy-38434": {
+      "facts": [
+        "8 sources HDMI vers 8 écrans, jusqu'à 4K60",
+        "16 modes multi-view (quad, PiP, plein écran…)",
+        "Commutation annoncée inférieure à 0,1 ms",
+        "Gestion EDID, extraction audio stéréo",
+        "Contrôle IR, LAN, RS-232 ou boutons"
+      ]
+    },
+    "lindy-38422": {
+      "facts": [
+        "Double objectif 4K, zoom optique 3x",
+        "Grand angle 120°, suivi par IA",
+        "Modes PiP et Smart Gallery",
+        "Compatible Zoom et Microsoft Teams"
+      ]
+    },
+    "kramer-mtx3-42-hu": {
+      "facts": [
+        "2 entrées USB-C, 2 entrées HDMI/USB, 2 sorties HDMI",
+        "Routage indépendant AV 4K60 4:4:4 et USB 3.2",
+        "HDMI 2.0, HDR, HDCP 2.3",
+        "USB-C en mode DP Alt"
+      ]
+    },
+    "kramer-swt3-22-hu-wp-t": {
+      "facts": [
+        "Entrées : 1 USB-C et 1 HDMI/USB",
+        "Extension HDBaseT 3.0 : vidéo 4K60 4:4:4, USB 2.0, Ethernet, RS-232, IR, alimentation",
+        "Périphériques USB attribués automatiquement à l'hôte actif"
+      ]
+    },
+    "kramer-swt3-21-hu-tr": {
+      "facts": [
+        "1 entrée USB-C, 1 entrée HDMI/USB, 1 sortie HDMI, 1 port HDBaseT 3.0",
+        "HDMI 4K60 4:4:4, USB 2.0, RS-232, IR et I/O sur 40 m de paire torsadée",
+        "USB-C BYOD avec alimentation jusqu'à 60 W"
+      ]
+    },
+    "kramer-c-hm-hm-pro": {
+      "facts": [
+        "4K60 4:4:4, débit 18 Gbit/s",
+        "Deep Color 24 à 48 bits, audio multicanal",
+        "Connecteurs K-Lock, triple blindage",
+        "Longueurs de 0,9 m à 19,8 m"
+      ]
+    },
+    "kramer-c-mhm-mhm": {
+      "facts": [
+        "4K60 4:4:4 pour les longueurs de 0,3 à 4,6 m",
+        "18 Gbit/s, HDR, Deep Color",
+        "Connecteurs K-Lock (retenue 15 lbs)",
+        "Longueurs de 0,3 m à 10,7 m"
+      ]
+    },
+    "kramer-cls-aocu32-ff": {
+      "facts": [
+        "USB 3.2 Gen 2, jusqu'à 10 Gbit/s",
+        "Vidéo jusqu'à 4K60, alimentation jusqu'à 60 W",
+        "Verrouillage K-Lock sur les longueurs 15, 25 et 35 pieds"
+      ]
+    },
+    "netgear-gsm4212px": {
+      "facts": [
+        "8 ports Gigabit PoE+ (240 W), 2 ports Gigabit, 2 slots SFP+",
+        "Interface web AV : Dante, AES67, AVB, NVX, NDI, ST 2110, Art-Net, sACN",
+        "Multicast automatique NETGEAR IGMP Plus"
+      ],
+      "extra": [
+        {
+          "source": "guide-audio-2025",
+          "page": 156,
+          "status": "draft",
+          "facts": [
+            "12 ports (10 x 1G, 2 x SFP+), 8 PoE+ à 30 W par port, 240 W au total"
+          ]
+        }
+      ]
+    },
+    "netgear-gsm4248ux": {
+      "facts": [
+        "40 ports Gigabit PoE++ et 2 ports Gigabit, 8 slots SFP+",
+        "Budget PoE 2880 W",
+        "Connexion automatique avec les M4250, montage en rack"
+      ],
+      "extra": [
+        {
+          "source": "guide-audio-2025",
+          "page": 156,
+          "status": "draft",
+          "facts": [
+            "48 ports (40 x 1G, 8 x SFP+), 40 PoE++ à 90 W par port, 2880 W au total"
+          ]
+        }
+      ]
+    },
+    "netgear-gsm4328": {
+      "facts": [
+        "24 ports 1G PoE+ (jusqu'à 30 W par port) et 4 ports 10G SFP+",
+        "Budget PoE 648 W, extensible à 720 W",
+        "Interface web AV (Dante, AES67, AVB, NDI, ST 2110…)",
+        "Multicast automatique NETGEAR IGMP Plus"
+      ],
+      "extra": [
+        {
+          "source": "guide-audio-2025",
+          "page": 157,
+          "status": "draft",
+          "facts": [
+            "Budget PoE de base 648 W (alimentation interne)",
+            "720 W maximum avec un module APS600W-200NES"
+          ]
+        }
+      ]
+    },
+    "netgear-msm4310": {
+      "facts": [
+        "8 ports PoE++, 2 ports SFP28 25G",
+        "Budget PoE 522 W, extensible à 2520 W avec alimentations APS",
+        "IGMP Plus, AV OS, contrôleur Engage ; routage de niveau 3",
+        "SMPTE ST 2110, AES67, ST 2059-2 ; Grand Master et Boundary Clock intégrés"
+      ]
+    },
+    "visionary-d5000": {
+      "facts": [
+        "4K60 4:4:4, latence annoncée 2 ms, réseau PoE Gigabit",
+        "CEC, mise à l'échelle, mur vidéo",
+        "API ouverte pour le contrôle"
+      ]
+    },
+    "visionary-duete5-wp-c": {
+      "facts": [
+        "4K60 4:4:4 sur un port Ethernet Gigabit, faible latence",
+        "USB-C DP Alt Mode et USB bidirectionnel sur IP (KVM)",
+        "AES67 / Dante",
+        "Version BT : récepteur Bluetooth audio"
+      ]
+    },
+    "pixelhue-p80": {
+      "facts": [
+        "Jusqu'à 20 entrées 4K",
+        "8 sorties principales HDMI 2.0",
+        "8 calques principaux et 4 calques PiP 4K, 256 préréglages",
+        "Écran tactile 7\", intégration PixelFlow, compatible murs LED"
+      ]
+    },
+    "pixelhue-p20-ds": {
+      "facts": [
+        "12 entrées 4K, 2 sorties 4K",
+        "Traitement 4K60 4:4:4 10 bits (FPGA)",
+        "12 ou 8 calques, jusqu'à 128 préréglages",
+        "Écran LCD 5\", contrôle Stream Deck"
+      ]
+    },
+    "pixelhue-u5": {
+      "facts": [
+        "Écrans tactiles 21,5\" et 8\"",
+        "87 boutons LCD, 8 faders, 4 encodeurs",
+        "Pilote murs LED, processeurs et serveurs (logiciel PixelFlow)"
+      ]
+    },
+    "pixelhue-s16": {
+      "facts": [
+        "16 entrées SDI et 4 entrées HDMI, UVC/RTMP",
+        "Streaming, enregistrement, mixage audio, multiviewer",
+        "4 incrustateurs amont et 2 aval",
+        "Écran LCD 10,25\", sortie UVC jusqu'à 1080p"
+      ]
+    },
+    "pixelhue-pd3-2k-4k": {
+      "facts": [
+        "3 modes : encodeur, décodeur de mur d'image, décodeur KVM",
+        "PD3-4K : jusqu'à 24 calques (encodeurs ou flux H.264/H.265)",
+        "KVM : 4 sources par décodeur, poste opérateur jusqu'à 8 moniteurs",
+        "Serveur web intégré, gestion des droits utilisateurs"
+      ]
+    },
+    "pixelhue-pd3-s10-s20": {
+      "facts": [
+        "Décodeur AV sur IP avec contrôleur LED intégré",
+        "S10 : 10 ports RJ45, jusqu'à 6,5 millions de pixels",
+        "S20 : 20 ports RJ45, jusqu'à 13 millions de pixels"
+      ]
+    },
+    "biamp-bma360d-i": {
+      "facts": [
+        "Dalle de plafond 60 x 60 cm",
+        "Dante : faisceaux individuels non traités et mix global",
+        "Amplification intégrée 4 x 15 W ou 2 x 30 W",
+        "Suivi caméra ; compatible DSP Biamp Tesira"
+      ]
+    },
+    "shure-mxa925": {
+      "facts": [
+        "Reprend les fonctions du MXA920",
+        "Couverture automatique jusqu'à 30 x 30 pieds",
+        "Suivi caméra, renforcement sonore ; sorties mix automatique ou jusqu'à 8 canaux",
+        "DSP IntelliMix : AEC, réduction du bruit et de la réverbération",
+        "2 ports RJ45 (redondance)"
+      ]
+    },
+    "shure-mxa320": {
+      "facts": [
+        "Steerable Coverage (zones de captation orientables)",
+        "DSP IntelliMix : AEC, réduction du bruit",
+        "Directivités cardioïde, omnidirectionnelle, stéréo",
+        "Barre LED d'état ; Dante et PoE"
+      ]
+    },
+    "shure-slxd-plus": {
+      "facts": [
+        "Bande large de 138 MHz",
+        "Audio numérique 24 bits, plage dynamique supérieure à 118 dB",
+        "ShowLink Ease : fréquence, puissance et mises à jour à distance",
+        "Anti-larsen automatique, chiffrement AES-256",
+        "Jusqu'à 8 h d'autonomie (piles AA ou batterie)"
+      ]
+    },
+    "bosch-dicentis-multimedia": {
+      "facts": [
+        "Écran tactile 10\" orientable à 180° (ou station d'accueil pour tablettes 10\" et 14\")",
+        "Caméra et 2 micros intégrés",
+        "Bouton de sélection de langue, 5 touches de vote"
+      ]
+    },
+    "electro-voice-evid-s5-2x": {
+      "facts": [
+        "2 voies : HP 5,25\" et tweeter ; IP65",
+        "60 Hz – 20 kHz (-10 dB), 90 dB SPL (1 W / 1 m)",
+        "75 W sous 8 Ω ; 7,5 / 15 / 30 / 60 W en 70 / 100 V",
+        "Certifiée EN 54-24, support en U orientable sur 80°"
+      ]
+    },
+    "electro-voice-evid-ec6-2": {
+      "facts": [
+        "Coaxial 6,5\", vendue par paire",
+        "30 / 15 / 7,5 / 3,75 W en 100 V ; 40 W sous 8 Ω",
+        "80 Hz – 20 kHz, 92 dB SPL",
+        "Découpe Ø 272 mm, profondeur 149 mm ; EN 54-24"
+      ]
+    },
+    "electro-voice-lrc-1060": {
+      "facts": [
+        "Colonne de 58 cm : 6 HP 63,5 mm et 2 radiateurs passifs",
+        "Transformateur 70 / 100 V",
+        "Couverture verticale symétrique de 20°",
+        "EN 54-24, IP56 ; 122 dB SPL crête ; 75 Hz – 15 kHz"
+      ]
+    },
+    "electro-voice-evid-c6-2-g2": {
+      "facts": [
+        "Coaxial 6,5\", vendue par paire, système EZ-Install",
+        "30 / 15 / 7,5 / 3,75 W en 100 V ; 70 W sous 8 Ω",
+        "65 Hz – 20 kHz, 90 dB SPL",
+        "Découpe 272 mm, profondeur 149 mm"
+      ]
+    },
+    "dynacord-u120-1m": {
+      "facts": [
+        "120 W (version 240 W dans la série U)",
+        "4 entrées dont 2 micro/ligne avec alimentation fantôme",
+        "Sorties 4 Ω, 8 Ω, 70 V et 100 V ; entrée EMG pour messages prioritaires",
+        "VOX ducking, filtre passe-haut 20 / 120 Hz"
+      ]
+    },
+    "dynacord-vzx-8": {
+      "facts": [
+        "Jusqu'à 8 zones, DSP et interface web",
+        "8 entrées micro/ligne, 4 entrées RCA, lecteur microSD",
+        "Automixeur, EQ, AGC, filtres FIR ; presets Electro-Voice",
+        "Pupitres d'appel VCS-8 et contrôleurs muraux VWP"
+      ]
+    },
+    "powersoft-prima": {
+      "facts": [
+        "4 canaux : PRIMA 164 et PRIMA 324",
+        "Partage de puissance, LED d'état et de signal",
+        "Sélection du mode d'impédance avec configuration automatique et affichage de l'impédance détectée"
+      ]
+    },
+    "soundtube-ipd-rs62-ez": {
+      "facts": [
+        "2 voies, coaxial 165 mm, technologie BroadBeamHP",
+        "Dante, PoE / PoE+ ou alimentation 24 V CC",
+        "Kit de suspension en acier galvanisé inclus"
+      ]
+    },
+    "listen-listentalk": {
+      "facts": [
+        "Émetteur-récepteur LK1 : push-to-talk bidirectionnel chiffré",
+        "Récepteur LKR-12 : écoute seule, appairage NFC",
+        "Batterie Li-ion rechargeable, écouteur fourni"
+      ]
+    },
+    "yealink-cs10-d": {
+      "facts": [
+        "Haut-parleur de plafond 2 voies, Dante",
+        "DAC et alimentation PoE intégrés",
+        "Traitement numérique à faible latence"
+      ]
+    },
+    "aver-hub30": {
+      "facts": [
+        "Entrées : 2 USB-C (dont 1 avec charge), 2 HDMI/USB ; 4 ports USB pour caméras et visualiseurs",
+        "2 sorties HDMI (double écran)",
+        "Partage de 2 caméras AVer (USB et IP), sélection par IA",
+        "Tablette de contrôle CP10 G2 en option"
+      ]
+    },
+    "aver-ptz310uv2": {
+      "facts": [
+        "Capteur Exmor CMOS 8 MP, 4K jusqu'à 60 i/s",
+        "Zoom optique 12x",
+        "RS-232, RS-422, PoE+",
+        "Blanc ou noir, garantie annoncée 5 ans"
+      ]
+    },
+    "aver-tr615": {
+      "facts": [
+        "Capteur Sony Exmor RS 1\", 4K, zoom optique 19x",
+        "Suivi par IA",
+        "12G-SDI, Genlock, NDI HX3, Dante AV-H, Free-D"
+      ]
+    },
+    "aver-mt500": {
+      "facts": [
+        "Commutation automatique multi-caméras par suivi vocal",
+        "Dante audio ; AV-H (licence requise) ; NDI HX3",
+        "2 sorties 4K indépendantes (écrans et streaming)",
+        "Salles modulables et amphithéâtres"
+      ]
+    },
+    "panasonic-aw-rp60": {
+      "facts": [
+        "Jusqu'à 200 caméras IP et 5 en RS-422",
+        "Écran LCD 3,5\" (960 x 540), joystick",
+        "Alimentation PoE (802.3af) ou 12 V CC",
+        "210 x 92 x 177 mm, 1,5 kg"
+      ]
+    },
+    "vaddio-easyip-dock": {
+      "facts": [
+        "Matrices audio 15 x 13 et Dante 8 x 8",
+        "Vidéo 1080p60, audio Dante, alimentation PoE+",
+        "Contrôle web, Telnet ou UVC ; pilotage des caméras PTZ",
+        "Connexion USB à l'ordinateur pour Teams et Zoom"
+      ]
+    },
+    "vaddio-intellishot-m": {
+      "facts": [
+        "Cadrage IntelliFrame, sans reconnaissance faciale",
+        "ePTZ HD, zoom x30, champ jusqu'à 70,2°",
+        "USB 3.0, certifiée Microsoft Teams Rooms",
+        "Capteur Exmor 8,51 MP, 1080p30"
+      ]
+    },
+    "shure-mxa710": {
+      "facts": [
+        "Versions 60 cm et 120 cm",
+        "Dante, IntelliMix, mixage automatique et AEC intégrés",
+        "Alimentation PoE classe 0, consommation max 10 W"
+      ]
+    },
+    "shure-mxa310": {
+      "facts": [
+        "4 canaux directs + 1 mix, sans AEC",
+        "Dante, mixage automatique",
+        "Alimentation PoE classe 0, consommation max 4 W",
+        "Flasque d'encastrement A310-FM en option"
+      ]
+    },
+    "shure-mxn5-c": {
+      "facts": [
+        "Haut-parleur plafond 5\" amplifié",
+        "Dante, alimentation PoE / PoE+",
+        "Supports pour plafond suspendu ou cloison sèche"
+      ]
+    },
+    "netgear-gsm4210pd": {
+      "facts": [
+        "10 ports (9 x 1G, 1 x SFP)",
+        "8 ports PoE+ à 30 W, 110 W au total"
+      ]
+    },
+    "netgear-gsm4210px": {
+      "facts": [
+        "10 ports (8 x 1G, 2 x SFP+)",
+        "8 ports PoE+ à 30 W, 220 W au total"
+      ]
+    },
+    "netgear-gsm4212p": {
+      "facts": [
+        "12 ports (10 x 1G, 2 x SFP)",
+        "8 ports PoE+ à 30 W, 125 W au total"
+      ]
+    },
+    "netgear-gsm4212ux": {
+      "facts": [
+        "12 ports (10 x 1G, 2 x SFP+)",
+        "8 ports PoE++ à 90 W, 720 W au total"
+      ]
+    },
+    "netgear-gsm4230p": {
+      "facts": [
+        "30 ports (26 x 1G, 4 x SFP)",
+        "24 ports PoE+ à 30 W, 300 W au total"
+      ]
+    },
+    "netgear-gsm4230up": {
+      "facts": [
+        "30 ports (26 x 1G, 4 x SFP)",
+        "24 ports PoE++ à 90 W, 1440 W au total"
+      ]
+    },
+    "netgear-gsm4248p": {
+      "facts": [
+        "48 ports (40 x 1G, 8 x SFP)",
+        "40 ports PoE+ à 30 W, 480 W au total"
+      ]
+    },
+    "listen-listen-ir": {
+      "facts": [
+        "Diffusion sans fil par radiateurs infrarouges, jusqu'à 4 canaux",
+        "Radiateurs compacts, liaison RJ45 pour le signal et l'alimentation",
+        "Interprétation et aide aux malentendants, en fixe ou en prestation mobile"
+      ]
+    },
+    "shure-ua844-swb": {
+      "facts": [
+        "4 sorties et une sortie de cascade",
+        "470 – 952 MHz",
+        "Version avec alimentation et câbles BNC"
+      ]
+    },
+    "shure-ua874": {
+      "facts": [
+        "Antenne directive active, 470 – 698 MHz"
       ]
     }
   }
