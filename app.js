@@ -296,11 +296,16 @@
     return prod.brand + ' ' + prod.model;
   }
 
-  function productSourceLabel(prod) {
-    const src = state.sources[prod.source];
+  function sourceLabel(sourceId, page) {
+    const src = state.sources[sourceId];
     const name = src ? src.title + (src.edition ? ' ' + src.edition.toLowerCase() : '') : '';
-    return [name, prod.page ? 'p. ' + prod.page : ''].filter(Boolean).join(', ');
+    return [name, page ? 'p. ' + page : ''].filter(Boolean).join(', ');
   }
+  function productSourceLabel(prod) { return sourceLabel(prod.source, prod.page); }
+  /** Petite mention « À valider » pour un produit ou une caractéristique tirés d'une source non constructeur. */
+  const draftMark = (title) => h('span', { class: 'badge badge--draft', title: title || 'Donnée issue d\'un guide distributeur : à vérifier sur la notice constructeur.' }, 'À valider');
+  const factItem = (f, cls) => h('li', { class: cls || null }, f.text,
+    f.draft ? [' ', h('span', { class: 'fact__src' }, '(' + f.src + ')'), ' ', draftMark()] : null);
 
   function ingest(data) {
     data = migrate(data);
@@ -1631,6 +1636,14 @@
         const tokens = pNormalize(text, syn);
         return { text, tokens, nums: extractNumbers(tokens) };
       });
+      // compléments tirés d'une autre source (champ facultatif « extra »), signalés « à valider »
+      for (const ex of entry.extra || []) {
+        const src = sourceLabel(ex.source, ex.page);
+        for (const text of ex.facts || []) {
+          const tokens = pNormalize(text, syn);
+          facts.push({ text, tokens, nums: extractNumbers(tokens), draft: ex.status === 'draft', src });
+        }
+      }
       state.pIndex.push({
         id, pr, facts,
         fields: [
@@ -1701,11 +1714,10 @@
     return h('li', null,
       h('article', { class: 'pcard' },
         h('header', { class: 'pcard__head' },
-          h('h3', { class: 'pcard__title' }, h('a', { href: '#/produits/' + encodeURIComponent(id) }, productLabel(pr))),
+          h('h3', { class: 'pcard__title' }, h('a', { href: '#/produits/' + encodeURIComponent(id) }, productLabel(pr)), pr.status === 'draft' ? [' ', draftMark()] : null),
           h('p', { class: 'pcard__type' }, pr.type + (fam ? ' · ' + fam.label : ''))
         ),
-        h('ul', { class: 'pcard__facts' }, facts.map((f, i) =>
-          h('li', { class: r.matchedFacts.has(i) ? 'is-match' : null }, f.text))),
+        h('ul', { class: 'pcard__facts' }, facts.map((f, i) => factItem(f, r.matchedFacts.has(i) ? 'is-match' : null))),
         h('p', { class: 'pcard__src' },
           'Source : ' + productSourceLabel(pr) + (pr.ref ? ' · réf. ' + pr.ref : '')),
         h('div', { class: 'pcard__actions' },
@@ -1758,7 +1770,7 @@
     const fams = [...byFam.keys()].sort((x, y) => famOrder.indexOf(x) - famOrder.indexOf(y));
     const row = (x) => h('li', null,
       h('a', { class: 'crow', href: '#/produits/' + encodeURIComponent(x.id) },
-        h('span', { class: 'crow__name' }, h('span', { class: 'crow__brand' }, x.pr.brand), ' ', x.pr.model),
+        h('span', { class: 'crow__name' }, h('span', { class: 'crow__brand' }, x.pr.brand), ' ', x.pr.model, x.pr.status === 'draft' ? [' ', draftMark()] : null),
         h('span', { class: 'crow__type' }, x.pr.type),
         h('span', { class: 'crow__page' }, x.pr.page ? 'p. ' + x.pr.page : '')));
     const sections = fams.map(fid => {
@@ -1912,6 +1924,7 @@
       h('header', { class: 'pdetail__head' },
         h('p', { class: 'eyebrow' }, pr.type),
         h('h2', { class: 'pdetail__title', tabindex: '-1', 'data-focus': true }, productLabel(pr)),
+        pr.status === 'draft' ? h('p', { class: 'pdetail__draft' }, draftMark(), ' Fiche créée à partir d\'un guide distributeur : caractéristiques à vérifier sur la notice constructeur.') : null,
         h('dl', { class: 'pdetail__meta' },
           h('dt', null, 'Famille'), h('dd', null, fam ? fam.label : '—'),
           pr.ref ? [h('dt', null, 'Référence'), h('dd', null, pr.ref)] : null,
@@ -1923,7 +1936,10 @@
           entry && entry.facts && entry.facts.length
             ? h('ul', { class: 'pcard__facts' }, entry.facts.map(f => h('li', null, f)))
             : h('p', { class: 'muted' }, 'Aucune caractéristique saisie pour ce produit.'),
-          h('p', { class: 'pcard__src' }, 'Source : ' + productSourceLabel(pr) + (pr.ref ? ' · réf. ' + pr.ref : '')))),
+          h('p', { class: 'pcard__src' }, 'Source : ' + productSourceLabel(pr) + (pr.ref ? ' · réf. ' + pr.ref : '')),
+          ((entry && entry.extra) || []).map(ex => [
+            h('h4', { class: 'pdetail__extra' }, 'Complément — ' + sourceLabel(ex.source, ex.page), ex.status === 'draft' ? [' ', draftMark()] : null),
+            h('ul', { class: 'pcard__facts' }, (ex.facts || []).map(f => h('li', null, f)))]))),
       h('section', { class: 'pdetail__block' },
         h('h3', { class: 'section-title' }, 'Diagnostiquer ce produit'),
         symptomIds.length
@@ -2069,7 +2085,7 @@
     },
     startPreview, stopPreview, navigate,
     // pour pages.js
-    loadJson, loadCatalogue, renderCrumbs, diagHash, productLabel, productSourceLabel, copyText, downloadFile,
+    loadJson, loadCatalogue, renderCrumbs, sourceLabel, diagHash, productLabel, productSourceLabel, copyText, downloadFile,
     data: () => ({ products: state.products, families: state.families, symptoms: state.symptoms, nodes: state.nodes, productsBySymptom: state.productsBySymptom, categories: state.categories }),
     reducedMotion: () => !motionOk()
   };
@@ -2701,7 +2717,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.20.0';
+  const APP_VERSION = '1.21.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

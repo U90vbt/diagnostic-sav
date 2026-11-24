@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Assistant de diagnostic SAV — Niveau 1",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "updated": "2026-11-22",
     "maintainer": "Équipe SAV",
     "disclaimer": "Diagnostic de premier niveau. Toute intervention à l'intérieur d'un équipement sous tension est réservée au personnel habilité.",
@@ -3823,6 +3823,12 @@
       "title": "Catalogue Focus",
       "edition": "Été 2025",
       "publisher": "Focus (groupe Midwich)"
+    },
+    "cata-uc-2026": {
+      "title": "Guide Communication unifiée",
+      "edition": "Juin 2026",
+      "publisher": "Sidev (guide distributeur)",
+      "note": "Guide distributeur, pas une notice constructeur : toutes les données tirées de ce document sont à valider."
     }
   },
   "families": {
@@ -5551,6 +5557,125 @@
       "ref": "A-PC01",
       "source": "focus-ete-2025",
       "page": 88
+    },
+    "yealink-rch40-e2": {
+      "brand": "Yealink",
+      "model": "RCH40 E2",
+      "type": "Switch PoE pour salle de réunion",
+      "family": "switch-reseau",
+      "source": "cata-uc-2026",
+      "page": 20,
+      "status": "draft"
+    },
+    "yealink-cm20": {
+      "brand": "Yealink",
+      "model": "CM20",
+      "type": "Micro plafond à formation de faisceau",
+      "family": "micro-conference",
+      "source": "cata-uc-2026",
+      "page": 36,
+      "status": "draft"
+    },
+    "yealink-cm50": {
+      "brand": "Yealink",
+      "model": "CM50",
+      "type": "Micro plafond à formation de faisceau",
+      "family": "micro-conference",
+      "source": "cata-uc-2026",
+      "page": 35,
+      "status": "draft"
+    },
+    "yealink-ap08": {
+      "brand": "Yealink",
+      "model": "AP08",
+      "type": "Processeur audio (DSP) de salle de réunion",
+      "family": "dsp",
+      "source": "cata-uc-2026",
+      "page": 35,
+      "status": "draft"
+    },
+    "yealink-mvc-s40": {
+      "brand": "Yealink",
+      "model": "MVC S40",
+      "type": "Système Microsoft Teams Rooms, petites et moyennes salles",
+      "family": "visio",
+      "source": "cata-uc-2026",
+      "page": 19,
+      "status": "draft"
+    },
+    "yealink-mvc-s50": {
+      "brand": "Yealink",
+      "model": "MVC S50",
+      "type": "Système Microsoft Teams Rooms, salles moyennes à grandes",
+      "family": "visio",
+      "source": "cata-uc-2026",
+      "page": 19,
+      "status": "draft"
+    },
+    "yealink-mvc-s80": {
+      "brand": "Yealink",
+      "model": "MVC S80",
+      "type": "Système Microsoft Teams Rooms, grandes salles",
+      "family": "visio",
+      "source": "cata-uc-2026",
+      "page": 19,
+      "status": "draft"
+    },
+    "barco-clickshare-hub-pro": {
+      "brand": "Barco",
+      "model": "ClickShare Hub Pro",
+      "type": "Système de visioconférence sans fil modulaire",
+      "family": "presentation-sans-fil",
+      "ref": "R9461810EU",
+      "source": "cata-uc-2026",
+      "page": 17,
+      "status": "draft"
+    },
+    "barco-clickshare-hub-core": {
+      "brand": "Barco",
+      "model": "ClickShare Hub Core",
+      "type": "Système de visioconférence sans fil modulaire",
+      "family": "presentation-sans-fil",
+      "ref": "R9461811EU",
+      "source": "cata-uc-2026",
+      "page": 17,
+      "status": "draft"
+    },
+    "yealink-en300": {
+      "brand": "Yealink",
+      "model": "EN300",
+      "type": "Encodeur AV sur IP 4K",
+      "family": "av-ip",
+      "source": "cata-uc-2026",
+      "page": 49,
+      "status": "draft"
+    },
+    "yealink-de300": {
+      "brand": "Yealink",
+      "model": "DE300",
+      "type": "Décodeur AV sur IP 4K",
+      "family": "av-ip",
+      "source": "cata-uc-2026",
+      "page": 49,
+      "status": "draft"
+    },
+    "yealink-roompanel-e2": {
+      "brand": "Yealink",
+      "model": "RoomPanel E2",
+      "type": "Panneau de réservation de salle 8\"",
+      "family": "gestion-salle",
+      "source": "cata-uc-2026",
+      "page": 53,
+      "status": "draft"
+    },
+    "yealink-roompanel-plus-e2": {
+      "brand": "Yealink",
+      "model": "RoomPanel Plus E2",
+      "type": "Panneau de réservation de salle 10,1\"",
+      "family": "gestion-salle",
+      "source": "cata-uc-2026",
+      "page": 53,
+      "status": "draft"
     }
   }
 }

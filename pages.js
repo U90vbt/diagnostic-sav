@@ -450,7 +450,11 @@
       s.addEventListener('change', () => { const next = [...ids]; next[i] = s.value; setIds(next); });
       return s;
     });
-    const cols = ids.map(id => ({ id, p: d.products.get(id), facts: (cat.products[id] && cat.products[id].facts) || [] }));
+    const cols = ids.map(id => {
+      const entry = cat.products[id] || {};
+      const extra = (entry.extra || []).flatMap(ex => (ex.facts || []).map(f => f + ' (' + A.sourceLabel(ex.source, ex.page) + (ex.status === 'draft' ? ', à valider' : '') + ')'));
+      return { id, p: d.products.get(id), facts: (entry.facts || []).concat(extra) };
+    });
     const row = (label, fn) => h('tr', null, h('th', { scope: 'row' }, label), cols.map(c => h('td', null, fn(c))));
     const symLinks = (c) => {
       const fam = d.families.get(c.p.family);
@@ -465,7 +469,8 @@
       header('Assistant produit', 'Comparer des produits', 'Choisissez deux ou trois produits du catalogue : caractéristiques sourcées, diagnostics et actualités liés.'),
       h('div', { class: 'pp-cmp-pick' }, slots),
       cols.length ? h('div', { class: 'pp-table-wrap' }, h('table', { class: 'pp-table pp-cmp' },
-        h('thead', null, h('tr', null, h('td', null), cols.map(c => h('th', { scope: 'col' }, h('a', { href: '#/produits/' + encodeURIComponent(c.id) }, A.productLabel(c.p)))))),
+        h('thead', null, h('tr', null, h('td', null), cols.map(c => h('th', { scope: 'col' }, h('a', { href: '#/produits/' + encodeURIComponent(c.id) }, A.productLabel(c.p)),
+          c.p.status === 'draft' ? [' ', h('span', { class: 'badge badge--draft' }, 'À valider')] : null)))),
         h('tbody', null,
           row('Famille', c => (d.families.get(c.p.family) || {}).label || '—'),
           row('Type', c => c.p.type),

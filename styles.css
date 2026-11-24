@@ -1158,3 +1158,7 @@ body.has-tour .toast { bottom: 200px; }
 .pp-card__links a { color: var(--text); text-underline-offset: 4px; text-decoration-color: var(--line-strong); display: inline-flex; align-items: center; min-height: 44px; }
 .pp-card__links a:hover { text-decoration-color: var(--blue); }
 .pp-card .btn--ghost { border: 1px solid var(--line-strong); }
+
+.fact__src { color: var(--muted); font-size: .85em; }
+.pdetail__draft { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 0; color: var(--text-2); font-size: .92rem; }
+.pdetail__extra { margin: 18px 0 8px; font-size: .95rem; font-weight: 500; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }

@@ -312,6 +312,10 @@ La GitHub Action `.github/workflows/validate.yml` lance ces deux commandes à ch
 
 Pied de page › **Thème : Sombre · Clair · Système**. Sombre reste le thème par défaut ; « Système » suit le réglage de l'appareil. Le choix est mémorisé sur l'appareil (localStorage `diagsav.theme`) et appliqué dès le `<head>`, sans flash. Le bleu #56a7d5 reste l'accent (boutons, soulignements, icônes) ; en clair, le texte bleu utilise une teinte plus foncée (`--blue-ink`) pour atteindre un contraste d'au moins 4,5. Toutes les couleurs passent par des variables CSS (`:root` et `:root[data-theme="light"]`).
 
+## Sources multiples et données « à valider »
+
+`decisions.json › sources` déclare chaque document source (ex. `focus-ete-2025`, `cata-uc-2026`). Un produit indique sa `source` et sa `page` ; `"status": "draft"` affiche un badge **À valider** (catalogue, fiche, comparateur). Dans `catalogue.json`, le champ facultatif `extra` ajoute à un produit existant des caractéristiques tirées d'une autre source, affichées à part avec leur page : `"extra": [{ "source": "cata-uc-2026", "page": 47, "status": "draft", "facts": [ … ] }]`. Dans l'éditeur (fiche produit), le statut se change en « Validé » et un complément vérifié s'intègre aux caractéristiques d'un clic.
+
 ## Recommander (avant-vente)
 
 L'onglet **Recommander** (`#/recommander`) guide un commercial ou un technicien : **type d'événement → jauge → budget → contraintes réseau / audio**, jusqu'à une **carte de recommandation** (produits du catalogue, quantités, justification). **Copier le devis** produit un texte pré-rempli (besoin exprimé, matériel avec références et pages du catalogue). Les prix ne sont pas dans les données : le devis contient des lignes « à compléter ».

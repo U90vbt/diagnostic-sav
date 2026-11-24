@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "updated": "2026-11-21",
+    "updated": "2026-11-24",
     "source": "focus-ete-2025",
     "note": "Caractéristiques reformulées depuis le catalogue (aucun texte commercial, aucun prix). L'identité des produits (marque, modèle, page, famille) est dans decisions.json."
   },
@@ -824,6 +824,20 @@
         "Encodeur / décodeur AV sur IP 4K60 4:4:4",
         "USB-C (UVC/UAC)",
         "Audio AES67 et Dante"
+      ],
+      "extra": [
+        {
+          "source": "cata-uc-2026",
+          "page": 47,
+          "status": "draft",
+          "facts": [
+            "Un seul câble USB-C vers le portable : vidéo 4K60, audio, Ethernet et recharge jusqu'à 100 W",
+            "Plug-and-play sous Windows, macOS et ChromeOS (UVC/UAC), sans logiciel à installer",
+            "Fonctions d'encodeur, décodeur, switch vidéo, interface audio et extendeur USB",
+            "Configuration par serveur web intégré",
+            "Livré avec une alimentation supplémentaire pour la charge 100 W et un câble USB-C"
+          ]
+        }
       ]
     },
     "datapath-serie-fx4": {
@@ -1291,6 +1305,118 @@
         "RTMP et RTSP",
         "ONVIF S, VISCA sur IP",
         "PoE"
+      ]
+    },
+    "yealink-rch40-e2": {
+      "facts": [
+        "4 ports Gigabit PoE (802.3af)",
+        "Budget PoE total annoncé : 90 W",
+        "Compatible Yealink CM20, CS10 et systèmes Microsoft Teams Rooms",
+        "Voyants d'alimentation et de budget PoE",
+        "Format compact pour plafond ou mur"
+      ]
+    },
+    "yealink-cm20": {
+      "facts": [
+        "16 microphones omnidirectionnels, 8 zones de captation indépendantes",
+        "Rayon de captation annoncé : 3 à 4,5 m",
+        "Indice STIPA annoncé jusqu'à 0,78",
+        "Format discret (80 mm annoncés), couvercle magnétique amovible",
+        "Réduction du bruit et de la réverbération par IA"
+      ]
+    },
+    "yealink-cm50": {
+      "facts": [
+        "127 micros, rayon de captation annoncé : 5 m",
+        "Zones de prise personnalisables, clôture acoustique",
+        "Compatible Dante",
+        "Suivi des intervenants, Auto EQ",
+        "Compatible systèmes multi-caméras Yealink (MVC S90)"
+      ]
+    },
+    "yealink-ap08": {
+      "facts": [
+        "16 x 16 canaux Dante, dont 8 avec AEC dynamique",
+        "4 x 4 canaux analogiques, 2 ports USB 3.0 Type-B",
+        "Alimentation PoE+ pour jusqu'à 3 périphériques audio",
+        "Réduction du bruit et de la réverbération",
+        "Configuration automatique avec Yealink Room Designer"
+      ]
+    },
+    "yealink-mvc-s40": {
+      "facts": [
+        "Caméra SmartVision 40, mini-PC MCore 4, écran tactile MTouch Plus",
+        "Audio intégré annoncé jusqu'à 6 m (micros MEMS, haut-parleurs stéréo)",
+        "MCore 4 : processeur Intel Core Ultra 5 avec NPU",
+        "Fonctions IntelliFocus, Video Fence, arrière-plan virtuel",
+        "Gestion centralisée YMCS / YDMP, partage sans fil via PA20"
+      ]
+    },
+    "yealink-mvc-s50": {
+      "facts": [
+        "Barre MeetingBar A50 (mode USB), mini-PC MCore 4, écran tactile MTouch Plus",
+        "Système triple caméra 50 MP avec cadrage par IA"
+      ]
+    },
+    "yealink-mvc-s80": {
+      "facts": [
+        "Caméra SmartVision 80 : quad-lens 4K, zoom optique 20x",
+        "Fonctions IntelliFocus, suivi du présentateur, Multi-Stream IntelliFrame",
+        "Mini-PC MCore 4 : Intel Core Ultra 5, NPU 34 TOPS",
+        "Console tactile MTouch Plus 11,6\"",
+        "Compatible audio Yealink CM50, CS10-D, AP08"
+      ]
+    },
+    "barco-clickshare-hub-pro": {
+      "facts": [
+        "Partage de contenu 4K sans fil, 2 boutons fournis",
+        "Boutons ClickShare nouvelle génération : Wi-Fi 6E et USB-C DisplayPort Alt-mode",
+        "Double affichage",
+        "Géré dans le cloud, plateforme MDEP",
+        "Complété par un panneau de contrôle tactile 10\" (Microsoft Teams)"
+      ]
+    },
+    "barco-clickshare-hub-core": {
+      "facts": [
+        "Partage de contenu 4K sans fil, 1 bouton fourni",
+        "Bouton ClickShare nouvelle génération : Wi-Fi 6E et USB-C DisplayPort",
+        "Géré dans le cloud, plateforme MDEP"
+      ]
+    },
+    "yealink-en300": {
+      "facts": [
+        "4K 60 Hz 4:4:4, latence annoncée d'environ 16 ms",
+        "Dante AV-A (licence requise)",
+        "USB-C : BYOM, partage 4K, charge PC 60 W",
+        "Entrées HDMI et USB-C, commutation automatique",
+        "Réseau Gigabit, PoE+"
+      ]
+    },
+    "yealink-de300": {
+      "facts": [
+        "4K 60 Hz 4:4:4, latence annoncée d'environ 16 ms",
+        "Matrice vidéo 2 x 2 intégrée",
+        "HDCP 2.3",
+        "Interfaces HDMI, USB, RS-232, IR",
+        "Réseau Gigabit, PoE+"
+      ]
+    },
+    "yealink-roompanel-e2": {
+      "facts": [
+        "Écran tactile 8\" (1280 x 800), Android 13",
+        "Barres LED RGB d'occupation visibles à distance",
+        "Wi-Fi, Bluetooth, NFC/RFID",
+        "Alimentation PoE ou DC ; fixation murale, sur verre ou boîte électrique",
+        "Gestion centralisée Yealink MCS ; compatible Microsoft Teams et Zoom Rooms"
+      ]
+    },
+    "yealink-roompanel-plus-e2": {
+      "facts": [
+        "Écran tactile 10,1\", Android 13",
+        "Barres LED RGB d'occupation visibles à distance",
+        "Fonctions étendues : capteurs, intégrations tierces",
+        "Alimentation PoE ou DC ; fixation murale, sur verre ou boîte électrique",
+        "Gestion centralisée Yealink MCS ; compatible Microsoft Teams et Zoom Rooms"
       ]
     }
   }

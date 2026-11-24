@@ -1082,11 +1082,32 @@
           field('Page du catalogue', textInput(pr.page, v => setOpt('page', v, true), { type: 'number', inputmode: 'numeric' })),
           field('Source', selectInput(sources.map(([sid, src]) => ({ value: sid, label: src.title + (src.edition ? ' — ' + src.edition : '') })), pr.source || '',
             v => { if (v) pr.source = v; else delete pr.source; changed(false); }, { placeholder: '— aucune —' }))),
+        field('Statut', selectInput([{ value: '', label: 'Validé' }, { value: 'draft', label: 'À valider (badge affiché)' }], pr.status || '',
+          v => { if (v) pr.status = v; else delete pr.status; changed(false); }),
+          '« À valider » : fiche issue d\'une source qui n\'est pas une notice constructeur.'),
         field('Identifiant', textInput(pid, () => {}, { readonly: true }), 'Fixé à la création (il figure dans les liens de l\'Assistant produit).')),
       h('section', { class: 'ed-card' },
         h('h2', { class: 'ed-h3' }, 'Caractéristiques (Assistant produit)'),
         h('p', { class: 'ed-hint' }, 'Courtes et factuelles, reformulées : « Luminosité 8000 lumens », « 48 ports PoE+ ». Pas de texte commercial ni de prix. Enregistrées dans catalogue.json.'),
         listEditor(entry.facts, () => { E.cat.products[pid] = entry; changed(false); }, { addLabel: 'Ajouter une caractéristique', placeholder: 'ex. Budget PoE 960 W' })),
+      (entry.extra || []).map((ex, i) => {
+        const src = (E.dec.sources || {})[ex.source];
+        return h('section', { class: 'ed-card' },
+          h('h2', { class: 'ed-h3' }, 'Complément : ' + (src ? src.title + (src.edition ? ' — ' + src.edition : '') : ex.source) + (ex.page ? ', p. ' + ex.page : '')),
+          h('p', { class: 'ed-hint' }, 'Caractéristiques tirées d\'une autre source, affichées à part. Une fois vérifiées sur la notice constructeur, intégrez-les aux caractéristiques validées.'),
+          field('Statut', selectInput([{ value: '', label: 'Validé' }, { value: 'draft', label: 'À valider (badge affiché)' }], ex.status || '',
+            v => { if (v) ex.status = v; else delete ex.status; changed(false); })),
+          listEditor(ex.facts, () => { changed(false); }, { addLabel: 'Ajouter une caractéristique', placeholder: 'ex. Charge USB-C 100 W' }),
+          h('div', { class: 'ed-actions' },
+            h('button', { type: 'button', class: 'btn btn--small btn--primary', onclick: () => {
+              entry.facts.push(...(ex.facts || []).filter(f => String(f).trim()));
+              entry.extra.splice(i, 1);
+              if (!entry.extra.length) delete entry.extra;
+              E.cat.products[pid] = entry;
+              changed(true);
+              toast('Caractéristiques intégrées');
+            } }, 'Intégrer aux caractéristiques validées')));
+      }),
       h('section', { class: 'ed-card' },
         h('h2', { class: 'ed-h3' }, 'Utilisé dans les procédures'),
         usedIn.length ? h('ul', { class: 'ed-refs' }, usedIn.map(([nid]) => h('li', null, h('a', { href: '#/editeur/etape/' + encodeURIComponent(nid) }, nodeLabel(nid)))))
