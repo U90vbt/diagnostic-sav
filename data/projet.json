@@ -3,15 +3,7 @@
     "version": "1.1.0",
     "updated": "2026-11-24"
   },
-  "auteur": {
-    "nom": "Hugo",
-    "titre": "Technicien audiovisuel, salons et événements",
-    "lien": "",
-    "lienLabel": "Profil LinkedIn"
-  },
   "candidature": {
-    "poste": "Conseiller technique",
-    "entreprise": "Sidev",
     "texte": "Ce site accompagne ma candidature au poste de Conseiller technique. Plutôt que de décrire mon intérêt pour le métier, j'ai construit un outil qui en couvre les missions : diagnostic SAV de premier niveau, conseil avant-vente, veille technique et formation."
   },
   "accroche": "Un assistant de terrain pour le support technique audiovisuel : diagnostiquer, conseiller, rester à jour et former, sur téléphone et même sans réseau.",

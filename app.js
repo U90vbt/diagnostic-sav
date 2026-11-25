@@ -345,7 +345,7 @@
     const meta = data.meta || {};
     $('#data-version').textContent = 'v' + (meta.version || '?');
     if (meta.disclaimer) $('#footer-disclaimer').textContent = meta.disclaimer;
-    if (meta.title) document.title = 'DIAG·SAV — ' + meta.title;
+    if (meta.title) document.title = 'Assistant AV — ' + meta.title;
 
     const warnings = validate(data);
     const warnEl = $('#data-warnings');
@@ -2552,7 +2552,7 @@
     const focus = state.focusProduct && state.products.get(state.focusProduct);
     const sev = SEVERITY_ORDER.includes(node.severity) ? node.severity : 'moderate';
     const checks = document.querySelectorAll('#diag-stage .action input');
-    const doc = PDF.create({ title: 'Diagnostic SAV — ' + node.title, footer: 'DIAG·SAV — rapport de diagnostic du ' + now.toLocaleDateString('fr-FR') });
+    const doc = PDF.create({ title: 'Diagnostic SAV — ' + node.title, footer: 'Assistant AV — rapport de diagnostic du ' + now.toLocaleDateString('fr-FR') });
 
     doc.text('Rapport de diagnostic', { size: 20, bold: true, after: 4 });
     doc.text(rootSymptom.title + (active !== rootSymptom ? ' → ' + active.title : ''), { size: 12, color: '#555555', after: 8 });
@@ -2818,7 +2818,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.22.0';
+  const APP_VERSION = '1.22.1';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

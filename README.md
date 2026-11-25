@@ -1,4 +1,4 @@
-# DIAG·SAV — Assistant de diagnostic de premier niveau
+# Assistant AV — Assistant de diagnostic de premier niveau
 
 Site web statique qui remplace les procédures papier par un arbre de décision interactif pour les techniciens terrain.
 
@@ -296,7 +296,7 @@ Le journal s'exporte en **CSV** (s'ouvre dans Excel) ou en **JSON**. Le responsa
 | Comparer 2 ou 3 produits | `#/comparer?ids=a,b,c` | catalogue |
 | Démos et parc de prêt (checklist, suivi, export CSV) | `#/demos` | `data/demos.json` |
 
-Le nom, le titre et le lien (LinkedIn…) affichés sur la page projet se règlent dans `data/projet.json` (`auteur`). Les listes saisies (techniciens formés, prêts, checklist) restent **sur l'appareil** (localStorage) et ne sont jamais envoyées.
+Les listes saisies (techniciens formés, prêts, checklist) restent **sur l'appareil** (localStorage) et ne sont jamais envoyées.
 
 ## Vérification automatique des données
 

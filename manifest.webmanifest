@@ -1,6 +1,6 @@
 {
-  "name": "DIAG·SAV — Assistant de diagnostic N1",
-  "short_name": "DIAG·SAV",
+  "name": "Assistant AV — Diagnostic SAV de premier niveau",
+  "short_name": "Assistant AV",
   "description": "Assistant de diagnostic de premier niveau pour techniciens terrain.",
   "lang": "fr",
   "start_url": "./",

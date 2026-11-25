@@ -86,16 +86,11 @@
       [news ? news.items.length : 0, 'actualités'],
       [form ? form.tutoriels.length : 0, 'tutoriels']
     ];
-    const a = P.auteur || {};
     const c = P.candidature || {};
     fill(root, 
       header('Le projet', 'Un assistant de terrain pour le support technique audiovisuel', P.accroche),
       h('div', { class: 'pp-intro' },
         h('p', { class: 'pp-intro__text' }, c.texte),
-        h('p', { class: 'pp-intro__who' },
-          h('strong', null, a.nom), a.titre ? ' · ' + a.titre : '',
-          c.poste ? h('span', { class: 'pp-intro__job' }, 'Candidature : ' + c.poste + (c.entreprise ? ' — ' + c.entreprise : '')) : null,
-          a.lien ? h('a', { href: a.lien, rel: 'noopener', target: '_blank' }, a.lienLabel || a.lien) : null),
         h('div', { class: 'pp-actions' },
           h('a', { class: 'btn btn--primary', href: '#/visite' }, 'Visite guidée (6 scénarios)'),
           h('a', { class: 'btn btn--ghost', href: '#/' }, 'Explorer le site'))),
