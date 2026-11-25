@@ -13,7 +13,7 @@
       "text": "Quel type d'événement préparez-vous ?",
       "options": [
         {
-          "label": "Conférence, plénière ou séminaire",
+          "label": "Conférence",
           "next": "conf-jauge"
         },
         {
