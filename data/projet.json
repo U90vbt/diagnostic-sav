@@ -174,8 +174,8 @@
           "texte": "Le parcours avant-vente part du type d'événement."
         },
         {
-          "hash": "#/recommander/conf-jauge/conf-grande-budget/conf-grande-confort-contraintes/reco-conf-grande-confort-reseau",
-          "texte": "Jauge, budget et contraintes réseau donnent une configuration argumentée, produit par produit, avec un devis prêt à copier (sans prix)."
+          "hash": "#/recommander?type=conf&jauge=300&longueur=25&largeur=18&nb_hf=6&captation=oui&distance_regie=40&reseau=oui",
+          "texte": "Jauge, dimensions et contraintes donnent un dimensionnement calculé, trois niveaux comparés avec contrôles de cohérence (PoE, réseau, HF, longueurs), des produits remplaçables dans leur famille et un devis prêt à copier (sans prix)."
         },
         {
           "hash": "#/produits/biamp-tesiraforte",

@@ -154,7 +154,7 @@
       products: diffCollection(E.base.dec.products, E.dec.products),
       families: diffCollection(E.base.dec.families, E.dec.families),
       facts: diffCollection(E.base.cat.products, E.cat.products),
-      reco: diffCollection(E.base.reco.nodes, E.reco.nodes),
+      reco: diffCollection(recoFlat(E.base.reco), recoFlat(E.reco)),
       news: diffCollection(byId(E.base.news.items), byId(E.news.items))
     };
     const metaChanged = fmt(E.base.dec.meta) !== fmt(E.dec.meta) || fmt(E.base.dec.categories) !== fmt(E.dec.categories);
@@ -164,7 +164,6 @@
     d.catChanged = fmt(E.base.cat) !== fmt(E.cat);
     d.recoChanged = fmt(E.base.reco) !== fmt(E.reco);
     d.newsChanged = fmt(E.base.news) !== fmt(E.news);
-    if (d.recoChanged && !(d.reco.added.length + d.reco.removed.length + d.reco.modified.length)) d.total++;   // départ ou meta modifiés
     if (d.newsChanged && !(d.news.added.length + d.news.removed.length + d.news.modified.length)) d.total++;
     return d;
   }
@@ -303,7 +302,7 @@
       h('nav', { class: 'ed-tabs', 'aria-label': 'Sections de l\'éditeur' },
         tab('symptoms', '#/editeur', 'Symptômes', (E.dec.symptoms || []).length),
         tab('products', '#/editeur/produits', 'Produits', Object.keys(E.dec.products || {}).length),
-        tab('reco', '#/editeur/reco', 'Recommandations', Object.values(E.reco.nodes).filter(n => n.type === 'result').length),
+        tab('reco', '#/editeur/reco', 'Avant-vente', (E.reco.modules || []).length),
         tab('news', '#/editeur/veille', 'Veille', E.news.items.length),
         tab('verif', '#/editeur/verif', 'Vérification', iss.length),
         tab('export', '#/editeur/export', 'Exporter', diff.total || null)),
@@ -500,7 +499,7 @@
       }
       if (Array.isArray(data.symptoms) && data.nodes) {
         E.dec = data; toast('✓ ' + file.name + ' chargé comme procédures (decisions.json)');
-      } else if (data.nodes && 'start' in data && !data.symptoms) {
+      } else if (Array.isArray(data.questions) && Array.isArray(data.modules)) {
         E.reco = data; toast('✓ ' + file.name + ' chargé comme recommandations (reco.json)');
       } else if (Array.isArray(data.items) && data.categories) {
         E.news = data; toast('✓ ' + file.name + ' chargé comme veille (news.json)');
@@ -1191,121 +1190,260 @@
   }
 
   /* ---------------------------------------------------------------------
-     Recommandations (reco.json)
+     Recommandations (reco.json, schéma 2) : questions, repères, calculs,
+     blocs de produits à règles, contrôles. Formules : voir reco-engine.js.
      --------------------------------------------------------------------- */
-  function recoLabel(id) {
-    const n = E.reco.nodes[id];
-    if (!n) return '⚠ étape introuvable (' + id + ')';
-    return n.type === 'result' ? 'Recommandation · ' + truncate(n.title || '(sans titre)', 70) : 'Question · ' + truncate(n.text || '(sans texte)', 70);
+  const R = () => window.DIAGSAV_RECO;
+  /** Vue « à plat » de reco.json pour le résumé des modifications. */
+  function recoFlat(r) {
+    const o = { 'réglages': { meta: r.meta, niveaux: r.niveaux } };
+    for (const q of r.questions || []) o['question ' + q.id] = q;
+    for (const [k, p] of Object.entries(r.parametres || {})) o['repère ' + k] = p;
+    for (const c of r.calculs || []) o['calcul ' + c.id] = c;
+    for (const m of r.modules || []) o['bloc ' + m.id] = m;
+    (r.controles || []).forEach((c, i) => { o['contrôle ' + (i + 1)] = c; });
+    return o;
   }
+  const RID = /^[a-z][a-z0-9_]*$/;
+  const idSlug = t => slug(t || '').replace(/-/g, '_').replace(/^[^a-z]+/, '') || 'x';
+  function exprInput(value, onInput, placeholder) {
+    const err = h('p', { class: 'ed-hint ed-expr__err', role: 'status' });
+    const check = v => {
+      if (!String(v).trim() || !R()) { err.textContent = ''; return; }
+      try { R().parse(v); err.textContent = ''; } catch (e) { err.textContent = '⚠ ' + e.message; }
+    };
+    const el = textInput(value, v => { check(v); onInput(v); }, { placeholder });
+    el.classList.add('ed-input--code');
+    check(value == null ? '' : value);
+    return h('div', { class: 'ed-expr' }, el, err);
+  }
+  const setOpt = (obj, key, v, num) => {
+    const t = String(v).trim();
+    if (!t) delete obj[key];
+    else if (num && isFinite(Number(t.replace(',', '.')))) obj[key] = Number(t.replace(',', '.'));
+    else obj[key] = num ? t : v;
+  };
+  const statusSelect = (obj) => selectInput([{ value: '', label: 'Validé' }, { value: 'draft', label: 'À valider (badge affiché)' }],
+    obj.status || '', v => { if (v) obj.status = v; else delete obj.status; changed(false); });
+  const SYNTAX_HELP = 'Formules : nombres (2.5), textes entre guillemets ("conf"), réponses (jauge), calculs déjà définis, repères (p.micro_zone_m2), + - * / ( ), == != < <= > >=, et, ou, non, dans ["a", "b"], arrondi_sup(x), arrondi_inf(x), arrondi(x), min(a, b), max(a, b). Le mot niveau vaut essentiel, confort ou premium.';
 
-  function createRecoNode(type) {
-    const prefix = type === 'question' ? 'reco-q' : 'reco-r';
-    const id = uniqueId(prefix + '1', k => !!E.reco.nodes[k]);
-    E.reco.nodes[id] = type === 'question'
-      ? { type: 'question', label: '', text: 'Nouvelle question', options: [{ label: '', next: '' }] }
-      : { type: 'result', title: 'Nouvelle recommandation', items: [{ product: '', qty: 1 }] };
-    return id;
+  function testButton(label) {
+    return h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => A.startPreview(E.dec, E.cat, '#/recommander', { reco: E.reco, news: E.news }) }, label || 'Tester le parcours');
   }
 
   function screenReco() {
-    const nodes = E.reco.nodes;
-    const seen = new Set();
-    const branch = (id, depth) => {
-      if (!id) return h('span', { class: 'ed-tree__err' }, 'aucune étape choisie');
-      if (!nodes[id]) return h('span', { class: 'ed-tree__err' }, 'étape introuvable (' + id + ')');
-      const link = h('a', { class: 'ed-tree__node', href: '#/editeur/reco-etape/' + encodeURIComponent(id) },
-        h('span', { class: 'ed-pill' + (nodes[id].type === 'result' ? '' : ' is-q') }, nodes[id].type === 'result' ? 'Reco' : 'Q'), ' ',
-        nodes[id].type === 'result' ? nodes[id].title : nodes[id].text);
-      if (seen.has(id)) return h('span', { class: 'ed-tree__again' }, '↺ ', link, ' (déjà affichée)');
-      seen.add(id);
-      if (nodes[id].type !== 'question' || depth > 30) return link;
-      return h('div', null, link, h('ul', { class: 'ed-tree__opts' }, (nodes[id].options || []).map(o => h('li', null,
-        h('span', { class: 'ed-tree__ans' }, '« ' + (o.label || '?') + ' »'), ' → ', branch(o.next, depth + 1)))));
-    };
-    const questions = Object.keys(nodes).filter(k => nodes[k].type === 'question');
-    const tree = E.reco.start ? branch(E.reco.start, 0) : h('span', { class: 'ed-tree__err' }, 'aucune question de départ');
-    const orphansNow = Object.keys(nodes).filter(k => !seen.has(k));   // calculé après le parcours de l'arbre
+    const r = E.reco;
+    r.meta = r.meta || {}; r.questions = r.questions || []; r.parametres = r.parametres || {};
+    r.calculs = r.calculs || []; r.modules = r.modules || []; r.controles = r.controles || []; r.niveaux = r.niveaux || [];
+    const move = (list, i, d) => { const j = i + d; if (j < 0 || j >= list.length) return; [list[i], list[j]] = [list[j], list[i]]; changed(true); };
+    const orderTools = (list, i, name) => h('div', { class: 'ed-list__tools' },
+      h('button', { type: 'button', class: 'ed-icon', 'aria-label': 'Monter ' + name, disabled: i === 0 || null, onclick: () => move(list, i, -1) }, '↑'),
+      h('button', { type: 'button', class: 'ed-icon', 'aria-label': 'Descendre ' + name, disabled: i === list.length - 1 || null, onclick: () => move(list, i, 1) }, '↓'));
+
+    // niveaux
+    const niveaux = h('div', { class: 'ed-options' }, r.niveaux.map(n => h('div', { class: 'ed-row' },
+      field('Niveau « ' + n.id + ' »', textInput(n.label, v => { n.label = v; changed(false); })),
+      field('Description', textInput(n.description, v => { setOpt(n, 'description', v); changed(false); })))));
+
+    // repères
+    const params = h('div', { class: 'ed-options' }, Object.entries(r.parametres).map(([k, p]) => h('div', { class: 'ed-option' },
+      h('div', { class: 'ed-option__head' }, h('code', null, 'p.' + k),
+        h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer le repère ' + k,
+          onclick: () => { delete r.parametres[k]; changed(true); } }, '✕'))),
+      h('div', { class: 'ed-row' },
+        field('Libellé', textInput(p.label, v => { p.label = v; changed(false); })),
+        field('Valeur', textInput(p.valeur, v => { const n = Number(String(v).replace(',', '.')); if (String(v).trim() && isFinite(n)) p.valeur = n; changed(false); }, { type: 'number', inputmode: 'decimal' })),
+        field('Unité', textInput(p.unite, v => { setOpt(p, 'unite', v); changed(false); }))),
+      h('div', { class: 'ed-row' },
+        field('Source (document et page)', textInput(p.source, v => { setOpt(p, 'source', v); changed(false); })),
+        field('Statut', statusSelect(p))))),
+      h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => {
+        const name = (prompt('Identifiant du nouveau repère (minuscules et _) :', 'nouveau_repere') || '').trim();
+        if (!name) return;
+        if (!RID.test(name) || r.parametres[name]) { toast('Identifiant invalide ou déjà utilisé'); return; }
+        r.parametres[name] = { label: '', valeur: 0, unite: '', source: '', status: 'draft' }; changed(true);
+      } }, '+ Ajouter un repère'));
+
+    // calculs
+    const calculs = h('div', { class: 'ed-options' }, r.calculs.map((c, i) => h('div', { class: 'ed-option' },
+      h('div', { class: 'ed-option__head' }, h('span', { class: 'ed-option__key' }, String(i + 1)), h('code', null, c.id),
+        orderTools(r.calculs, i, 'le calcul ' + c.id),
+        h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer le calcul ' + c.id,
+          onclick: () => { r.calculs.splice(i, 1); changed(true); } }, '✕'))),
+      h('div', { class: 'ed-row' },
+        field('Libellé', textInput(c.label, v => { c.label = v; changed(false); })),
+        field('Unité', textInput(c.unite, v => { setOpt(c, 'unite', v); changed(false); })),
+        field('Décimales', textInput(c.decimales, v => { setOpt(c, 'decimales', v, true); changed(false); }, { type: 'number', inputmode: 'numeric' }))),
+      field('Formule', exprInput(c.formule, v => { c.formule = v; changed(false); }, 'ex. longueur * largeur')),
+      field('Uniquement si (facultatif)', exprInput(c.si, v => { setOpt(c, 'si', v); changed(false); }, 'ex. type == "conf"')),
+      h('div', { class: 'ed-row' },
+        field('Source ou repère', textInput(c.source, v => { setOpt(c, 'source', v); changed(false); })),
+        field('Statut', statusSelect(c))))),
+      h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => {
+        const name = (prompt('Identifiant du nouveau calcul (minuscules et _) :', 'nouveau_calcul') || '').trim();
+        if (!name) return;
+        if (!RID.test(name) || r.calculs.some(c => c.id === name) || r.questions.some(q => q.id === name)) { toast('Identifiant invalide ou déjà utilisé'); return; }
+        r.calculs.push({ id: name, label: '', formule: '', unite: '', status: 'draft' }); changed(true);
+      } }, '+ Ajouter un calcul'));
+
+    // contrôles
+    const KTYPES = { poe: 'Budget PoE (outils.json)', reseau: 'Audio / vidéo sur IP sans réseau dédié', longueur: 'Longueur de liaison (outils.json)', regle: 'Règle libre' };
+    const ctrls = h('div', { class: 'ed-options' }, r.controles.map((c, i) => {
+      const nbQ = r.questions.filter(q => q.type === 'nombre').map(q => ({ value: q.id, label: q.label || q.id }));
+      const chQ = r.questions.filter(q => q.type === 'choix').map(q => ({ value: q.id, label: q.label || q.id }));
+      let fields = [];
+      if (c.type === 'regle') fields = [
+        field('Condition', exprInput(c.si, v => { c.si = v; changed(false); }, 'ex. nb_hf > p.hf_par_bande')),
+        field('Message (valeurs entre accolades : {nb_hf})', textInput(c.message, v => { c.message = v; changed(false); }, { multiline: true, rows: 2 })),
+        h('div', { class: 'ed-row' },
+          field('Gravité', selectInput([{ value: 'erreur', label: 'Bloquant' }, { value: 'alerte', label: 'À vérifier' }, { value: 'info', label: 'Info' }], c.niveau || 'alerte', v => { c.niveau = v; changed(false); })),
+          field('Source (facultatif)', textInput(c.source, v => { setOpt(c, 'source', v); changed(false); })))];
+      else if (c.type === 'reseau') fields = [h('div', { class: 'ed-row' },
+        field('Question « réseau dédié »', selectInput(chQ, c.question || '', v => { c.question = v; changed(false); }, { placeholder: '— choisir —' })),
+        field('Réponses sans réseau (séparées par des virgules)', textInput((c.sans || []).join(', '), v => { c.sans = v.split(',').map(x => x.trim()).filter(Boolean); changed(false); }))),
+        field('Mots cherchés dans les caractéristiques (séparés par |)', textInput(c.motif, v => { setOpt(c, 'motif', v); changed(false); }))];
+      else if (c.type === 'longueur') fields = [h('div', { class: 'ed-row' },
+        field('Question « distance »', selectInput(nbQ, c.question || '', v => { c.question = v; changed(false); }, { placeholder: '— choisir —' })),
+        field('Liaison (identifiant dans outils.json)', textInput(c.liaison, v => { c.liaison = v; changed(false); })),
+        field('Libellé', textInput(c.libelle, v => { setOpt(c, 'libelle', v); changed(false); })))];
+      else fields = [h('p', { class: 'ed-hint' }, 'Additionne la puissance PoE des appareils (outils.json) et la compare au budget des switchs de la configuration.')];
+      return h('div', { class: 'ed-option' },
+        h('div', { class: 'ed-option__head' }, h('span', { class: 'ed-option__key' }, String(i + 1)), h('strong', null, KTYPES[c.type] || c.type),
+          h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer le contrôle ' + (i + 1),
+            onclick: () => { r.controles.splice(i, 1); changed(true); } }, '✕'))),
+        ...fields);
+    }),
+      h('div', { class: 'ed-actions' }, Object.entries(KTYPES).map(([t, l]) => h('button', { type: 'button', class: 'btn btn--small btn--ghost',
+        onclick: () => { r.controles.push(t === 'regle' ? { type: t, si: '', niveau: 'alerte', message: '' } : t === 'reseau' ? { type: t, question: '', sans: ['non'] } : t === 'longueur' ? { type: t, question: '', liaison: 'ethernet' } : { type: t }); changed(true); } }, '+ ' + l))));
+
     return h('div', null,
       h('section', { class: 'ed-card' },
-        h('h2', { class: 'ed-h2' }, 'Parcours de recommandation'),
+        h('h2', { class: 'ed-h2' }, 'Recommandation avant-vente'),
+        h('p', { class: 'ed-hint' }, 'La page pose les questions dans l\'ordre, fait les calculs, puis compose chaque niveau bloc par bloc : dans un bloc, la première règle vraie s\'applique (ou toutes, si le bloc est réglé ainsi). Les contrôles s\'affichent en alertes.'),
         h('div', { class: 'ed-row' },
-          field('Question de départ', selectInput(questions.map(k => ({ value: k, label: recoLabel(k) })), E.reco.start || '', v => { E.reco.start = v; changed(true); }, { placeholder: '— choisir —' })),
-          field('Titre de l\'onglet', textInput((E.reco.meta || {}).title, v => { E.reco.meta = E.reco.meta || {}; E.reco.meta.title = v; changed(false); }))),
-        h('div', { class: 'ed-actions' },
-          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { const id = createRecoNode('question'); if (!E.reco.start) E.reco.start = id; changed(false); A.navigate('#/editeur/reco-etape/' + id); } }, '+ Question'),
-          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { const id = createRecoNode('result'); changed(false); A.navigate('#/editeur/reco-etape/' + id); } }, '+ Recommandation'),
-          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => A.startPreview(E.dec, E.cat, '#/recommander', { reco: E.reco, news: E.news }) }, 'Tester le parcours'))),
+          field('Titre de la page', textInput(r.meta.title, v => { r.meta.title = v; changed(false); })),
+          field('Avertissement', textInput(r.meta.disclaimer, v => { setOpt(r.meta, 'disclaimer', v); changed(false); }))),
+        h('div', { class: 'ed-actions' }, testButton())),
       h('section', { class: 'ed-card' },
-        h('h2', { class: 'ed-h3' }, 'Arbre'),
-        h('div', { class: 'ed-tree' }, tree),
-        orphansNow.length ? h('div', null, h('h3', { class: 'ed-h3' }, 'Étapes non reliées'),
-          h('ul', { class: 'ed-refs' }, orphansNow.map(k => h('li', null, h('a', { href: '#/editeur/reco-etape/' + encodeURIComponent(k) }, recoLabel(k)))))) : null));
+        h('h2', { class: 'ed-h3' }, 'Questions (' + r.questions.length + ')'),
+        h('ol', { class: 'ed-reco-list' }, r.questions.map((q, i) => h('li', null,
+          h('a', { href: '#/editeur/reco-question/' + encodeURIComponent(q.id) }, h('span', { class: 'ed-pill is-q' }, q.type === 'nombre' ? 'Nombre' : 'Choix'), ' ', q.label || q.texte || q.id),
+          q.si ? h('span', { class: 'ed-hint' }, ' si ' + q.si) : null,
+          orderTools(r.questions, i, 'la question ' + (q.label || q.id))))),
+        h('div', { class: 'ed-actions' },
+          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { const id = uniqueId('question_1', k => r.questions.some(q => q.id === k)); r.questions.push({ id, label: '', type: 'choix', texte: 'Nouvelle question', options: [{ id: 'oui', label: 'Oui' }, { id: 'non', label: 'Non' }] }); changed(false); A.navigate('#/editeur/reco-question/' + id); } }, '+ Question à choix'),
+          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { const id = uniqueId('nombre_1', k => r.questions.some(q => q.id === k)); r.questions.push({ id, label: '', type: 'nombre', texte: 'Nouvelle question', unite: '', min: 0 }); changed(false); A.navigate('#/editeur/reco-question/' + id); } }, '+ Question chiffrée'))),
+      h('section', { class: 'ed-card' },
+        h('h2', { class: 'ed-h3' }, 'Blocs de produits (' + r.modules.length + ')'),
+        h('ol', { class: 'ed-reco-list' }, r.modules.map((m, i) => h('li', null,
+          h('a', { href: '#/editeur/reco-bloc/' + encodeURIComponent(m.id) }, m.titre || m.id),
+          h('span', { class: 'ed-hint' }, ' · ' + (m.regles || []).length + ' règle(s)'),
+          orderTools(r.modules, i, 'le bloc ' + (m.titre || m.id))))),
+        h('div', { class: 'ed-actions' }, h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { const id = uniqueId('bloc_1', k => r.modules.some(m => m.id === k)); r.modules.push({ id, titre: 'Nouveau bloc', regles: [{ si: '', items: [{ produit: '', qte: 1, pourquoi: '' }] }] }); changed(false); A.navigate('#/editeur/reco-bloc/' + id); } }, '+ Bloc'))),
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Niveaux comparés'), niveaux),
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Repères de dimensionnement'),
+        h('p', { class: 'ed-hint' }, 'Valeurs utilisées dans les formules sous la forme p.identifiant. Indiquez la source (document et page) ; sans notice constructeur, laissez « À valider ».'), params),
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Calculs'), h('p', { class: 'ed-hint' }, SYNTAX_HELP), calculs),
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Contrôles de cohérence'), ctrls));
   }
 
-  function screenRecoNode(id) {
-    const n = E.reco.nodes[id];
-    if (!n) return notFound('Cette étape n\'existe pas (ou plus).', '#/editeur/reco');
-    const others = Object.keys(E.reco.nodes).filter(k => k !== id).map(k => ({ value: k, label: recoLabel(k) }));
+  function screenRecoQuestion(id) {
+    const r = E.reco;
+    const q = (r.questions || []).find(x => x.id === id);
+    if (!q) return notFound('Cette question n\'existe pas (ou plus).', '#/editeur/reco');
+    const box = h('div', { class: 'ed-options' });
     let body;
-    if (n.type === 'question') {
-      if (!Array.isArray(n.options)) n.options = [];
-      const box = h('div', { class: 'ed-options' });
-      const draw = () => box.replaceChildren(...n.options.map((o, i) => h('div', { class: 'ed-option' },
-        h('div', { class: 'ed-option__head' },
-          h('span', { class: 'ed-option__key' }, String(i + 1)),
-          textInput(o.label, v => { o.label = v; changed(false); }, { placeholder: 'Réponse (ex. « 100 à 300 personnes »)' }),
-          h('div', { class: 'ed-list__tools' },
-            h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer la réponse ' + (i + 1), onclick: () => { n.options.splice(i, 1); changed(false); draw(); } }, '✕'))),
-        field('Mène vers', selectInput(others, o.next || '', v => { o.next = v; changed(false); draw(); }, { placeholder: '— choisir —' })),
-        h('div', { class: 'ed-actions' },
-          o.next && E.reco.nodes[o.next] ? h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/reco-etape/' + encodeURIComponent(o.next) }, 'Ouvrir →') : null,
-          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { o.next = createRecoNode('question'); changed(false); A.navigate('#/editeur/reco-etape/' + o.next); } }, '+ Créer une question'),
-          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { o.next = createRecoNode('result'); changed(false); A.navigate('#/editeur/reco-etape/' + o.next); } }, '+ Créer une recommandation')))),
-        h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { n.options.push({ label: '', next: '' }); changed(false); draw(); } }, '+ Ajouter une réponse'));
+    if (q.type === 'choix') {
+      q.options = q.options || [];
+      const draw = () => box.replaceChildren(...q.options.map((o, i) => h('div', { class: 'ed-row' },
+        field('Réponse ' + (i + 1), textInput(o.label, v => { o.label = v; changed(false); })),
+        field('Identifiant (utilisé dans les formules)', textInput(o.id, v => { o.id = v.trim(); changed(false); }), 'Changer l\'identifiant oblige à mettre à jour les formules qui l\'utilisent.'),
+        h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer la réponse ' + (i + 1), onclick: () => { q.options.splice(i, 1); changed(false); draw(); } }, '✕')))),
+        h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { q.options.push({ id: uniqueId('reponse_1', k => q.options.some(o => o.id === k)), label: '' }); changed(false); draw(); } }, '+ Ajouter une réponse'));
       draw();
-      body = [
-        h('div', { class: 'ed-row' },
-          field('Intitulé court (repris dans le devis)', textInput(n.label, v => { if (v.trim()) n.label = v; else delete n.label; changed(false); }, { placeholder: 'ex. Jauge' })),
-          field('Question posée', textInput(n.text, v => { n.text = v; changed(false); }))),
-        field('Aide (facultatif)', textInput(n.help, v => { if (v.trim()) n.help = v; else delete n.help; changed(false); }, { multiline: true, rows: 2 })),
-        h('h3', { class: 'ed-h3' }, 'Réponses'), box];
+      body = [h('h3', { class: 'ed-h3' }, 'Réponses'), box];
     } else {
-      if (!Array.isArray(n.items)) n.items = [];
-      const products = Object.entries(E.dec.products || {}).sort((a, b) => (a[1].brand + a[1].model).localeCompare(b[1].brand + b[1].model, 'fr'));
-      const box = h('div', { class: 'ed-options' });
-      const draw = () => box.replaceChildren(...n.items.map((it, i) => h('div', { class: 'ed-option' },
-        h('div', { class: 'ed-row' },
-          field('Produit', selectInput(products.map(([pid, pr]) => ({ value: pid, label: pr.brand + ' ' + pr.model })), it.product || '', v => { it.product = v; changed(false); }, { placeholder: '— choisir —' })),
-          field('Quantité', textInput(it.qty, v => { const q = parseInt(v, 10); if (q > 0) it.qty = q; else delete it.qty; changed(false); }, { type: 'number', inputmode: 'numeric' }))),
-        field('Pourquoi (facultatif)', textInput(it.why, v => { if (v.trim()) it.why = v; else delete it.why; changed(false); })),
-        h('div', { class: 'ed-actions' }, h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { n.items.splice(i, 1); changed(false); draw(); } }, 'Retirer ce produit')))),
-        h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { n.items.push({ product: '', qty: 1 }); changed(false); draw(); } }, '+ Ajouter un produit'));
-      draw();
-      body = [
-        field('Titre de la recommandation', textInput(n.title, v => { n.title = v; changed(false); })),
-        field('Résumé (facultatif)', textInput(n.summary, v => { if (v.trim()) n.summary = v; else delete n.summary; changed(false); }, { multiline: true, rows: 2 })),
-        h('h3', { class: 'ed-h3' }, 'Matériel recommandé'), box,
-        field('Remarques (facultatif)', textInput(n.notes, v => { if (v.trim()) n.notes = v; else delete n.notes; changed(false); }, { multiline: true, rows: 2 })),
-        field('Statut', selectInput([{ value: '', label: 'Validée' }, { value: 'draft', label: 'À valider (badge affiché)' }],
-          n.status || '', v => { if (v) n.status = v; else delete n.status; changed(false); }))];
+      body = [h('div', { class: 'ed-row' },
+        field('Unité', textInput(q.unite, v => { setOpt(q, 'unite', v); changed(false); })),
+        field('Minimum', textInput(q.min, v => { setOpt(q, 'min', v, true); changed(false); }, { type: 'number', inputmode: 'decimal' })),
+        field('Maximum', textInput(q.max, v => { setOpt(q, 'max', v, true); changed(false); }, { type: 'number', inputmode: 'decimal' })),
+        field('Valeur proposée', textInput(q.defaut, v => { setOpt(q, 'defaut', v, true); changed(false); }, { type: 'number', inputmode: 'decimal' })))];
     }
-    const incomingRefs = Object.entries(E.reco.nodes).filter(([, m]) => (m.options || []).some(o => o.next === id));
+    const users = [];
+    const uses = src => { try { return src != null && src !== '' && R().refs(R().parse(src)).includes(id); } catch { return false; } };
+    for (const x of r.questions) if (uses(x.si)) users.push('Question « ' + (x.label || x.id) + ' »');
+    for (const c of r.calculs) if (uses(c.si) || uses(c.formule)) users.push('Calcul « ' + (c.label || c.id) + ' »');
+    for (const m of r.modules) if ((m.regles || []).some(g => uses(g.si) || (g.items || []).some(it => uses(it.qte)))) users.push('Bloc « ' + (m.titre || m.id) + ' »');
+    for (const [i, c] of r.controles.entries()) if (uses(c.si) || c.question === id) users.push('Contrôle ' + (i + 1));
     return h('div', null,
-      h('p', null, h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/reco' }, '← Parcours de recommandation')),
+      h('p', null, h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/reco' }, '← Recommandation avant-vente')),
       h('section', { class: 'ed-card' },
-        h('div', { class: 'ed-actions' }, h('span', { class: 'ed-pill' + (n.type === 'result' ? '' : ' is-q') }, n.type === 'result' ? 'Recommandation' : 'Question'), h('span', { class: 'ed-hint' }, 'Identifiant : ' + id)),
-        body,
-        h('div', { class: 'ed-actions' }, deleteButton('reco:' + id, 'Supprimer cette étape', () => {
-          for (const m of Object.values(E.reco.nodes)) for (const o of m.options || []) if (o.next === id) o.next = '';
-          if (E.reco.start === id) E.reco.start = '';
-          delete E.reco.nodes[id]; changed(false); A.navigate('#/editeur/reco');
+        h('div', { class: 'ed-actions' }, h('span', { class: 'ed-pill is-q' }, q.type === 'nombre' ? 'Question chiffrée' : 'Question à choix'), h('span', { class: 'ed-hint' }, 'Identifiant : ' + id)),
+        h('div', { class: 'ed-row' },
+          field('Intitulé court (récapitulatif et devis)', textInput(q.label, v => { q.label = v; changed(false); }, { placeholder: 'ex. Jauge' })),
+          field('Question posée', textInput(q.texte, v => { q.texte = v; changed(false); }))),
+        field('Aide (facultatif)', textInput(q.aide, v => { setOpt(q, 'aide', v); changed(false); }, { multiline: true, rows: 2 })),
+        field('Poser seulement si (facultatif)', exprInput(q.si, v => { setOpt(q, 'si', v); changed(false); }, 'ex. type == "conf"'), SYNTAX_HELP),
+        ...body,
+        h('div', { class: 'ed-actions' }, testButton('Tester'), deleteButton('recoq:' + id, 'Supprimer cette question', () => {
+          r.questions = r.questions.filter(x => x !== q); changed(false); A.navigate('#/editeur/reco');
         }))),
-      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Mène à cette étape'),
-        (E.reco.start === id || incomingRefs.length) ? h('ul', { class: 'ed-refs' },
-          E.reco.start === id ? h('li', null, 'Question de départ du parcours') : null,
-          incomingRefs.map(([k]) => h('li', null, h('a', { href: '#/editeur/reco-etape/' + encodeURIComponent(k) }, recoLabel(k)))))
-          : h('p', { class: 'ed-hint' }, 'Rien ne mène ici : cette étape n\'est jamais proposée.')));
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Utilisée par'),
+        users.length ? h('ul', { class: 'ed-refs' }, users.map(u => h('li', null, u))) : h('p', { class: 'ed-hint' }, 'Aucune formule n\'utilise cette réponse.')));
+  }
+
+  function screenRecoBloc(id) {
+    const r = E.reco;
+    const m = (r.modules || []).find(x => x.id === id);
+    if (!m) return notFound('Ce bloc n\'existe pas (ou plus).', '#/editeur/reco');
+    m.regles = m.regles || [];
+    const products = Object.entries(E.dec.products || {}).sort((a, b) => (a[1].brand + a[1].model).localeCompare(b[1].brand + b[1].model, 'fr'))
+      .map(([pid, pr]) => ({ value: pid, label: pr.brand + ' ' + pr.model }));
+    const lv = r.niveaux || [];
+    const box = h('div', { class: 'ed-options' });
+    const draw = () => box.replaceChildren(...m.regles.map((g, i) => {
+      g.items = g.items || [];
+      const levelBoxes = h('div', { class: 'ed-checks' }, lv.map(n => {
+        const cb = h('input', { type: 'checkbox', checked: (!g.niveaux || !g.niveaux.length || g.niveaux.includes(n.id)) ? true : null,
+          onchange: () => {
+            const cur = new Set((g.niveaux && g.niveaux.length) ? g.niveaux : lv.map(x => x.id));
+            if (cb.checked) cur.add(n.id); else cur.delete(n.id);
+            const arr = lv.map(x => x.id).filter(x => cur.has(x));
+            if (arr.length === lv.length) delete g.niveaux; else g.niveaux = arr;
+            changed(false);
+          } });
+        return h('label', { class: 'ed-check' }, cb, ' ' + n.label);
+      }));
+      return h('div', { class: 'ed-option' },
+        h('div', { class: 'ed-option__head' }, h('span', { class: 'ed-option__key' }, String(i + 1)), h('strong', null, 'Règle ' + (i + 1)),
+          h('div', { class: 'ed-list__tools' },
+            h('button', { type: 'button', class: 'ed-icon', 'aria-label': 'Monter la règle ' + (i + 1), disabled: i === 0 || null, onclick: () => { [m.regles[i - 1], m.regles[i]] = [m.regles[i], m.regles[i - 1]]; changed(false); draw(); } }, '↑'),
+            h('button', { type: 'button', class: 'ed-icon', 'aria-label': 'Descendre la règle ' + (i + 1), disabled: i === m.regles.length - 1 || null, onclick: () => { [m.regles[i + 1], m.regles[i]] = [m.regles[i], m.regles[i + 1]]; changed(false); draw(); } }, '↓'),
+            h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer la règle ' + (i + 1), onclick: () => { m.regles.splice(i, 1); changed(false); draw(); } }, '✕'))),
+        field('Si (vide = toujours)', exprInput(g.si, v => { setOpt(g, 'si', v); changed(false); }, 'ex. type == "conf" et jauge > 100')),
+        h('div', { class: 'ed-field' }, h('span', { class: 'ed-label' }, 'Niveaux concernés'), levelBoxes),
+        ...g.items.map((it, k) => h('div', { class: 'ed-row ed-reco-item' },
+          field('Produit', selectInput(products, it.produit || '', v => { it.produit = v; changed(false); }, { placeholder: '— choisir —' })),
+          field('Quantité (nombre ou formule)', exprInput(it.qte, v => { const t = String(v).trim(); it.qte = /^\d+$/.test(t) ? Number(t) : t; changed(false); }, 'ex. 2 ou nb_hf')),
+          field('Pourquoi (valeurs entre accolades)', textInput(it.pourquoi, v => { setOpt(it, 'pourquoi', v); changed(false); })),
+          h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Retirer le produit ' + (k + 1) + ' de la règle ' + (i + 1), onclick: () => { g.items.splice(k, 1); changed(false); draw(); } }, '✕')))),
+        h('div', { class: 'ed-actions' }, h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { g.items.push({ produit: '', qte: 1, pourquoi: '' }); changed(false); draw(); } }, '+ Produit')),
+        field('Remarque affichée (facultatif)', textInput(g.note, v => { setOpt(g, 'note', v); changed(false); })));
+    }),
+      h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { m.regles.push({ si: '', items: [{ produit: '', qte: 1, pourquoi: '' }] }); changed(false); draw(); } }, '+ Règle'));
+    draw();
+    return h('div', null,
+      h('p', null, h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/reco' }, '← Recommandation avant-vente')),
+      h('section', { class: 'ed-card' },
+        h('div', { class: 'ed-actions' }, h('span', { class: 'ed-pill' }, 'Bloc'), h('span', { class: 'ed-hint' }, 'Identifiant : ' + id)),
+        h('div', { class: 'ed-row' },
+          field('Titre du bloc', textInput(m.titre, v => { m.titre = v; changed(false); })),
+          field('Règles appliquées', selectInput([{ value: '', label: 'La première règle vraie' }, { value: 'toutes', label: 'Toutes les règles vraies' }], m.mode || '', v => { setOpt(m, 'mode', v); changed(false); }))),
+        h('p', { class: 'ed-hint' }, SYNTAX_HELP),
+        box,
+        h('div', { class: 'ed-actions' }, testButton('Tester'), deleteButton('recob:' + id, 'Supprimer ce bloc', () => {
+          r.modules = r.modules.filter(x => x !== m); changed(false); A.navigate('#/editeur/reco');
+        }))));
   }
 
   /* ---------------------------------------------------------------------
@@ -1317,20 +1455,19 @@
     try { pubCat = await A.loadPublishedCatalogue(); }
     catch (err) { console.warn('[DIAG·SAV] Éditeur : catalogue indisponible', err); pubCat = { meta: {}, synonyms: {}, products: {} }; }
     let pubReco, pubNews;
-    try { pubReco = await A.loadPublishedJson('data/reco.json'); } catch (err) { console.warn('[DIAG·SAV] Éditeur : reco.json indisponible', err); pubReco = { meta: {}, start: '', nodes: {} }; }
+    try { pubReco = await A.loadPublishedJson('data/reco.json'); } catch (err) { console.warn('[DIAG·SAV] Éditeur : reco.json indisponible', err); pubReco = { meta: { schema: 2 }, niveaux: [], questions: [], parametres: {}, calculs: [], modules: [], controles: [] }; }
     try { pubNews = await A.loadPublishedJson('data/news.json'); } catch (err) { console.warn('[DIAG·SAV] Éditeur : news.json indisponible', err); pubNews = { meta: {}, categories: [], impacts: {}, items: [] }; }
     E.base = { dec: pubDec, cat: pubCat, reco: pubReco, news: pubNews };
     const draft = readDraft();
     if (draft) {
       E.dec = draft.dec; E.cat = draft.cat; E.savedAt = draft.savedAt;
-      E.reco = draft.reco || clone(pubReco); E.news = draft.news || clone(pubNews);
+      E.reco = (draft.reco && draft.reco.meta && draft.reco.meta.schema === 2) ? draft.reco : clone(pubReco); E.news = draft.news || clone(pubNews);
       E.conflict = draft.baseStamp !== stamp(pubDec)
         || (draft.reco && draft.recoStamp && draft.recoStamp !== stamp(pubReco))
         || (draft.news && draft.newsStamp && draft.newsStamp !== stamp(pubNews));
     } else {
       E.dec = clone(pubDec); E.cat = clone(pubCat); E.reco = clone(pubReco); E.news = clone(pubNews);
     }
-    E.reco.nodes = E.reco.nodes || {};
     E.news.items = E.news.items || [];
     E.dec.nodes = E.dec.nodes || {};
     E.dec.symptoms = E.dec.symptoms || [];
@@ -1353,7 +1490,8 @@
     else if (section === 'produit' && screens.product) { active = 'products'; content = screens.product(id); }
     else if (section === 'famille' && screens.products) { active = 'products'; content = screens.products(); }
     else if (section === 'reco') { active = 'reco'; content = screenReco(); }
-    else if (section === 'reco-etape') { active = 'reco'; content = screenRecoNode(id); }
+    else if (section === 'reco-question') { active = 'reco'; content = screenRecoQuestion(id); }
+    else if (section === 'reco-bloc') { active = 'reco'; content = screenRecoBloc(id); }
     else if (section === 'veille') { active = 'news'; content = screenNewsList(); }
     else if (section === 'actu') { active = 'news'; content = screenNewsItem(id); }
     else if (section === 'verif') { active = 'verif'; content = screenVerif(); }

@@ -4,9 +4,9 @@ name: Vérification des données
 
 on:
   push:
-    paths: ['data/**', 'img/**', 'tools/**', '.github/workflows/validate.yml']
+    paths: ['data/**', 'img/**', 'tools/**', 'reco-engine.js', '.github/workflows/validate.yml']
   pull_request:
-    paths: ['data/**', 'img/**', 'tools/**', '.github/workflows/validate.yml']
+    paths: ['data/**', 'img/**', 'tools/**', 'reco-engine.js', '.github/workflows/validate.yml']
   workflow_dispatch:
 
 permissions:

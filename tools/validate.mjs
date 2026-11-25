@@ -7,7 +7,9 @@
    exigés : un champ facultatif absent n'est jamais une erreur.
    ========================================================================= */
 import { readFileSync, existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, resolve, dirname } from 'node:path';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
 const DIR = resolve(process.argv[2] || 'data');
 const errors = [];
@@ -168,35 +170,39 @@ if (C && D) {
   for (const pid of productIds) if (!prods[pid]) warn(F, `products.${pid}`, 'aucune caractéristique pour ce produit');
 }
 
-/* ---------------- reco.json ---------------- */
+/* ---------------- reco.json (schéma 2, moteur partagé avec le site) ---------------- */
 const R = load('reco.json');
 if (R) {
   const F = 'reco.json';
-  const nodes = isObj(R.nodes) ? R.nodes : (err(F, 'nodes', 'section manquante'), {});
-  if (need(F, 'start', R, 'start') && !nodes[R.start]) err(F, 'start', `nœud de départ « ${R.start} » introuvable`);
-  const reached = new Set([R.start]);
-  for (const [id, n] of Object.entries(nodes)) {
-    const p = `nodes.${id}`;
-    checkId(F, p, id);
-    if (n.type === 'question') {
-      need(F, p, n, 'text');
-      if (!Array.isArray(n.options) || !n.options.length) { err(F, p, 'au moins une réponse attendue'); continue; }
-      n.options.forEach((o, j) => {
-        need(F, `${p}.options[${j}]`, o, 'label');
-        if (!nodes[o.next]) err(F, `${p}.options[${j}]`, `nœud suivant « ${o.next} » introuvable`); else reached.add(o.next);
-      });
-    } else if (n.type === 'result') {
-      need(F, p, n, 'title');
-      if (!Array.isArray(n.items) || !n.items.length) err(F, p, 'au moins un produit attendu dans « items »');
-      (n.items || []).forEach((it, j) => {
-        const q = `${p}.items[${j}]`;
-        if (D && !productIds.has(it.product)) err(F, q, `produit « ${it.product} » introuvable`);
-        if (!(Number.isInteger(it.qty) && it.qty > 0)) err(F, q, '« qty » : entier positif attendu');
-      });
-      if (n.status !== undefined && n.status !== 'draft') err(F, p, '« status » ne peut valoir que "draft"');
-    } else err(F, p, `type « ${n.type} » inconnu`);
+  const engine = createRequire(import.meta.url)(join(dirname(fileURLToPath(import.meta.url)), '..', 'reco-engine.js'));
+  for (const msg of engine.validate(R, pid => !D || productIds.has(pid))) err(F, '-', msg);
+  for (const [id, p] of Object.entries(R.parametres || {})) {
+    if (!isStr(p.source)) warn(F, `parametres.${id}`, 'source (document et page) non indiquée');
+    if (p.status !== undefined && p.status !== 'draft') err(F, `parametres.${id}`, '« status » ne peut valoir que "draft"');
   }
-  for (const id of Object.keys(nodes)) if (!reached.has(id)) warn(F, `nodes.${id}`, 'nœud jamais atteint (orphelin)');
+  // simulation : toutes les combinaisons de réponses à choix, valeurs proposées pour les nombres
+  const qs = R.questions || [];
+  let combos = [{}];
+  for (const q of qs) {
+    const vals = q.type === 'choix' ? (q.options || []).map(o => o.id) : [q.defaut != null ? q.defaut : (q.min != null ? q.min : 1)];
+    combos = combos.flatMap(c => vals.map(v => ({ ...c, [q.id]: v })));
+    if (combos.length > 5000) { warn(F, 'questions', 'trop de combinaisons : simulation limitée'); combos = combos.slice(0, 5000); break; }
+  }
+  const empty = new Set();
+  let runs = 0;
+  for (const raw of combos) {
+    const answers = {};
+    for (const q of qs) if (q.id in raw && engine.test(q.si, { values: answers, params: R.parametres || {} })) answers[q.id] = raw[q.id];
+    const key = JSON.stringify(answers);
+    if (empty.has(key)) continue;
+    for (const n of R.niveaux || []) {
+      runs++;
+      const res = engine.compute(R, answers, n.id, {});
+      if (!res.modules.some(m => m.items.length)) empty.add(key + ' / ' + n.id);
+    }
+  }
+  for (const k of [...empty].slice(0, 5)) warn(F, 'simulation', 'configuration sans aucun produit pour ' + k);
+  if (!runs) warn(F, 'simulation', 'aucune configuration calculée');
 }
 
 /* ---------------- news.json ---------------- */

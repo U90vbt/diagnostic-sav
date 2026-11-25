@@ -17,6 +17,7 @@ Site web statique qui remplace les procédures papier par un arbre de décision 
 ├── index.html             Structure de la page
 ├── styles.css             Thème sombre épuré
 ├── app.js                 Navigation, recherche, diagnostic, assistant produit
+├── reco-engine.js         Moteur avant-vente : formules, calculs, contrôles (site et vérificateur)
 ├── editor.js              Éditeur des procédures (chargé seulement à l'ouverture de l'onglet)
 ├── pdf.js                 Générateur PDF minimal (chargé seulement à l'export)
 ├── sw.js                  Service worker (mode hors ligne)
@@ -26,7 +27,7 @@ Site web statique qui remplace les procédures papier par un arbre de décision 
 ├── img/                   Photos et schémas des étapes (img/schemas/ : exemples)
 └── data/
     ├── decisions.json     Arbre de décision + fiches produits (marque, modèle, page)
-    ├── reco.json          Arbre de recommandation avant-vente (onglet Recommander)
+    ├── reco.json          Règles de recommandation avant-vente (onglet Recommander)
     ├── news.json          Veille technologique (onglet Veille)
     └── catalogue.json     Caractéristiques produits et synonymes (Assistant produit)
 ```
@@ -103,7 +104,7 @@ L'onglet **Éditeur** (ou le lien « Éditer les procédures » en pied de page,
 | **Étape (question)** | Texte, aide, réponses : chacune mène à une étape choisie **dans une liste** ou au diagnostic d'un autre symptôme ; **+ Créer une question / un résultat** pour construire la suite ; **Tester à partir d'ici** |
 | **Étape (résultat)** | Titre, gravité, résumé, actions dans l'ordre, mise en garde, escalade, diagnostics liés, **étapes selon le matériel** (marque, produits, statut « À valider ») |
 | **Produits** | Fiche produit et ses caractéristiques (Assistant produit) sur le même écran ; familles et symptôme principal (★) |
-| **Recommandations** | Parcours de recommandation (`reco.json`) : arbre, questions avec intitulé court pour le devis, réponses reliées par liste déroulante, recommandations (produits du catalogue, quantités, justification, remarques) ; **Tester le parcours** |
+| **Avant-vente** | Règles de recommandation (`reco.json`) : questions (choix ou nombre, condition d'affichage), repères sourcés, calculs, blocs de produits à règles (condition, niveaux, quantité en formule), contrôles de cohérence ; les formules sont vérifiées pendant la saisie ; **Tester le parcours** |
 | **Veille** | Actualités (`news.json`) : catégorie, date, impact SAV, résumé, action, matériel concerné, source et lien |
 | **Vérification** | Tous les points à corriger, en français courant, avec un bouton **Corriger** qui ouvre le bon formulaire |
 | **Exporter** | Résumé des modifications, numéro de version, téléchargement de `decisions.json`, `catalogue.json`, `reco.json` et `news.json` |
@@ -318,31 +319,39 @@ Pied de page › **Thème : Sombre · Clair · Système**. Sombre reste le thèm
 
 ## Recommander (avant-vente)
 
-L'onglet **Recommander** (`#/recommander`) guide un commercial ou un technicien : **type d'événement → jauge → budget → contraintes réseau / audio**, jusqu'à une **carte de recommandation** (produits du catalogue, quantités, justification). **Copier le devis** produit un texte pré-rempli (besoin exprimé, matériel avec références et pages du catalogue). Les prix ne sont pas dans les données : le devis contient des lignes « à compléter ».
+L'onglet **Recommander** (`#/recommander`) pose des questions **chiffrées** (type d'événement, jauge, dimensions de la salle, nombre de micros HF, distance régie, réseau…) puis compose la configuration :
 
-Les réponses données restent visibles (« Vos réponses ») et chacune se modifie d'un clic. L'adresse contient tout le parcours : un lien peut être partagé.
+1. **Dimensionnement calculé** : surface, hauteur et diagonale d'image, nombre d'enceintes, de micros de plafond, de distributeurs d'antennes. Chaque calcul affiche sa source ; les repères non issus d'une notice sont marqués **À valider**.
+2. **Composition par blocs** : micros, traitement, sonorisation, affichage, visio, captation, réseau… Dans chaque bloc, une règle (condition + niveaux) choisit les produits et leurs quantités (nombre ou formule).
+3. **Contrôles de cohérence**, affichés en alertes avec une solution : budget et ports PoE des switchs (tables de `outils.json`), produits audio/vidéo sur IP sans réseau dédié, nombre de micros HF par bande de 44 MHz, longueur de liaison au-delà de 100 m en Ethernet, règles libres.
+4. **Trois niveaux côte à côte** (Essentiel, Confort, Premium ; onglets sur mobile). Chaque produit se **remplace** par un autre de la même famille (le même type en premier) et se **compare** dans le comparateur. **Copier le devis** produit le texte du niveau choisi, sans prix.
 
-### Format de `data/reco.json`
+Toutes les réponses sont dans l'adresse (`#/recommander?type=conf&jauge=300…`) : un lien se partage et chaque réponse se modifie depuis « Vos réponses ».
+
+### Format de `data/reco.json` (schéma 2)
 
 ```json
 {
-  "meta": { "version": "0.1.0", "title": "Recommandation avant-vente", "disclaimer": "…" },
-  "start": "type-evenement",
-  "nodes": {
-    "type-evenement": { "type": "question", "label": "Type d'événement", "text": "Quel type d'événement préparez-vous ?",
-      "options": [ { "label": "Conférence ou plénière", "next": "conf-jauge" } ] },
-    "reco-conf": { "type": "result", "title": "Pack conférence 300 personnes", "summary": "…",
-      "items": [ { "product": "shure-slxd", "qty": 4, "why": "Un micro HF par orateur." } ],
-      "notes": "Prévoir un repérage de la salle." }
-  }
+  "meta": { "version": "1.0.0", "schema": 2, "title": "Recommandation avant-vente", "disclaimer": "…" },
+  "niveaux": [ { "id": "essentiel", "label": "Essentiel", "description": "…" } ],
+  "questions": [
+    { "id": "type", "label": "Type d'événement", "type": "choix", "texte": "Quel type d'événement ?", "options": [ { "id": "conf", "label": "Conférence" } ] },
+    { "id": "jauge", "label": "Jauge", "type": "nombre", "texte": "Combien de personnes ?", "unite": "personnes", "min": 2, "max": 2000, "defaut": 100, "si": "type == \"conf\"" }
+  ],
+  "parametres": { "micro_zone_m2": { "label": "…", "valeur": 36, "unite": "m²", "source": "Guide de l'audio 2025, p. 178", "status": "draft" } },
+  "calculs": [ { "id": "surface_salle", "label": "Surface de la salle", "formule": "longueur * largeur", "unite": "m²" } ],
+  "modules": [ { "id": "micros_hf", "titre": "Micros sans fil", "regles": [
+    { "si": "type == \"conf\" et nb_hf > 0", "niveaux": ["essentiel"], "items": [ { "produit": "shure-slxd", "qte": "nb_hf", "pourquoi": "…" } ], "note": "…" } ] } ],
+  "controles": [ { "type": "poe" }, { "type": "regle", "si": "nb_hf > p.hf_par_bande", "niveau": "erreur", "message": "{nb_hf} micros HF : …" } ]
 }
 ```
 
-- `label` (question) : intitulé court repris dans le devis (« Jauge », « Budget »…).
-- `items[].product` : identifiant d'un produit de `decisions.json` (le nom, la référence et la page s'affichent automatiquement). `qty` : nombre entier.
-- Une réponse mène toujours à une autre question ou à une recommandation (`next`). Pour que la recommandation dépende de chaque réponse, faites une branche par réponse.
-- **Le fichier livré ne contient que 2 parcours d'exemple marqués [EXEMPLE À REMPLACER]** : remplacez-les par vos packs réels.
-- Les anomalies (réponse sans suite, produit inconnu, quantité invalide) sont signalées en haut de l'onglet et détaillées dans la console.
+- **Formules** (`si`, `formule`, `qte`) : nombres (`2.5`), textes entre guillemets, réponses (`jauge`), calculs déjà définis, repères (`p.micro_zone_m2`), `+ - * /`, comparaisons, `et`, `ou`, `non`, `dans ["a", "b"]`, `arrondi_sup()`, `arrondi_inf()`, `arrondi()`, `min()`, `max()`. Le mot `niveau` vaut l'identifiant du niveau calculé. Aucun code n'est exécuté : `reco-engine.js` lit les formules avec son propre analyseur.
+- Dans un bloc, la **première règle vraie** s'applique (`"mode": "toutes"` : toutes les règles vraies). Une règle sans `niveaux` vaut pour tous.
+- Messages et justifications acceptent des valeurs entre accolades : `{nb_enceintes} enceintes pour {surface_salle} m²`.
+- Types de contrôles : `poe`, `reseau` (`question`, `sans`, `motif` cherché dans les caractéristiques du catalogue), `longueur` (`question`, `liaison` de `outils.json`), `regle`.
+- `node tools/validate.mjs` vérifie les références (questions, calculs, repères, produits, niveaux) et simule toutes les combinaisons de réponses.
+- **Contenu livré : brouillon à valider.** Les repères sans notice constructeur (surface par enceinte, ratio d'écran) sont provisoires.
 
 ---
 

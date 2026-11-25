@@ -43,6 +43,22 @@
         "budget": 1440,
         "ports": 48,
         "note": "Budget maximal, selon les alimentations installées."
+      },
+      {
+        "product": "netgear-gsm4212px",
+        "budget": 240,
+        "ports": 8
+      },
+      {
+        "product": "netgear-gsm4328",
+        "budget": 648,
+        "ports": 24,
+        "note": "Budget de base ; 720 W avec un module d'alimentation supplémentaire."
+      },
+      {
+        "product": "netgear-gsm4210px",
+        "budget": 220,
+        "ports": 8
       }
     ],
     "appareils": [
@@ -101,6 +117,14 @@
       {
         "product": "kramer-swt3-31-hu-tr",
         "norme": "poe"
+      },
+      {
+        "product": "shure-mxa920",
+        "norme": "poe"
+      },
+      {
+        "product": "shure-mxa902-aniusb",
+        "norme": "poe+"
       }
     ],
     "marge": 0.2

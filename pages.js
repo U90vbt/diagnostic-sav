@@ -82,7 +82,7 @@
       [nodes.filter(n => n.type === 'question').length, 'questions'],
       [nodes.filter(n => n.type === 'result').length, 'résultats'],
       [d.products.size, 'produits'],
-      [reco ? Object.values(reco.nodes).filter(n => n.type === 'result').length : 0, 'recommandations'],
+      [reco ? (reco.modules || []).length : 0, 'blocs avant-vente'],
       [news ? news.items.length : 0, 'actualités'],
       [form ? form.tutoriels.length : 0, 'tutoriels']
     ];

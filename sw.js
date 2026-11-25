@@ -4,7 +4,7 @@
      pour que les modifications SAV soient visibles dès que le réseau est disponible.
    Incrémenter CACHE_VERSION à chaque modification de index.html / styles.css / app.js. */
 
-const CACHE_VERSION = 'diagsav-v1.21.1';
+const CACHE_VERSION = 'diagsav-v1.22.0';
 const DATA_PATH = 'data/decisions.json';
 const CATALOGUE_PATH = 'data/catalogue.json';
 const SHELL = [
@@ -16,6 +16,7 @@ const SHELL = [
   'data/formation.json',
   'data/demos.json',
   'pages.js',
+  'reco-engine.js',
   './',
   'index.html',
   'styles.css',

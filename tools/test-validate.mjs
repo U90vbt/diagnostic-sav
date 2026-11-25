@@ -42,9 +42,11 @@ const cases = [
   ['identifiant mal formé (majuscules, espace)', ({ edit }) => edit('news.json', n => { n.items[0].id = 'Mon Actu'; }), 1, 'minuscules'],
   ['étape suivante orpheline', ({ edit }) => edit('decisions.json', d => { d.nodes[firstNode(d, 'question')].options[0].next = 'n-existe-pas'; }), 1, 'introuvable'],
   ['symptôme lié introuvable', ({ edit }) => edit('decisions.json', d => { d.nodes[firstNode(d, 'result')].related = ['fantome']; }), 1, 'symptôme lié « fantome »'],
-  ['produit inconnu dans une recommandation', ({ edit }) => edit('reco.json', r => {
-    const k = Object.keys(r.nodes).find(x => r.nodes[x].type === 'result'); r.nodes[k].items[0].product = 'produit-fantome';
-  }), 1, 'produit « produit-fantome » introuvable'],
+  ['produit inconnu dans une recommandation', ({ edit }) => edit('reco.json', r => { r.modules[0].regles[0].items[0].produit = 'produit-fantome'; }), 1, 'produit inconnu du catalogue (« produit-fantome »)'],
+  ['formule de recommandation illisible', ({ edit }) => edit('reco.json', r => { r.calculs[0].formule = 'longueur * (largeur'; }), 1, 'formule illisible'],
+  ['référence inconnue dans une formule', ({ edit }) => edit('reco.json', r => { r.calculs[0].formule = 'longueur * largeur_salle'; }), 1, '« largeur_salle » n\'est ni une question'],
+  ['repère inconnu dans une formule', ({ edit }) => edit('reco.json', r => { r.calculs[0].formule = 'longueur * p.inexistant'; }), 1, 'paramètre « p.inexistant » inconnu'],
+  ['niveau inconnu dans une règle', ({ edit }) => edit('reco.json', r => { r.modules[0].regles[0].niveaux = ['luxe']; }), 1, 'niveau « luxe » inconnu'],
   ['produit en double (même marque et modèle)', ({ edit }) => edit('decisions.json', d => {
     const [id, p] = Object.entries(d.products)[0]; d.products[id + '-bis'] = { ...p };
   }), 1, 'doublon'],

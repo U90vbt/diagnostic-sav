@@ -551,8 +551,8 @@
       }
       return { view: 'page', page: parts[0].split('?')[0], sub: parts.slice(1).map(x => x.split('?')[0]), params };
     }
-    if (parts[0] === 'recommander') {
-      return { view: 'reco', path: parts.slice(1) };
+    if (parts[0] && parts[0].split('?')[0] === 'recommander') {
+      return { view: 'reco', params: recoParams(raw.split('?')[1] || '') };
     }
     if (parts[0] === 'editeur') {
       return { view: 'editor', sub: parts.slice(1) };
@@ -733,7 +733,7 @@
   function pageKey() {
     const r = parseHash();
     if (r.view === 'products') return 'products:' + (r.productId || '');
-    if (r.view === 'reco') return 'reco:' + (r.path || []).join('/');
+    if (r.view === 'reco') return 'reco:' + JSON.stringify(r.params || {});
     if (r.view === 'editor') return 'editor:' + (r.sub || []).join('/');
     if (r.view === 'page') return 'page:' + r.page + '/' + (r.sub || []).join('/');
     return r.view;
@@ -1970,8 +1970,13 @@
       loadJson('data/news.json').catch(() => null)]);
     const slot = $('#pdetail-links');
     if (!slot || $('#product-detail').dataset.pid !== pid) return;
-    const recos = reco ? Object.entries(reco.nodes || {}).filter(([, n]) => n.type === 'result' && (n.items || []).some(it => it.product === pid)) : [];
-    const recoPaths = recos.map(([id, n]) => ({ n, path: recoPathTo(reco, id) })).filter(x => x.path);
+    const lv = reco ? Object.fromEntries((reco.niveaux || []).map(n => [n.id, n.label])) : {};
+    const recoMods = reco ? (reco.modules || []).map(m => {
+      const rules = (m.regles || []).filter(r => (r.items || []).some(it => it.produit === pid));
+      if (!rules.length) return null;
+      const levels = new Set(rules.flatMap(r => (r.niveaux && r.niveaux.length) ? r.niveaux : Object.keys(lv)));
+      return { titre: m.titre, levels: Object.keys(lv).filter(k => levels.has(k)).map(k => lv[k]) };
+    }).filter(Boolean) : [];
     const items = news ? (news.items || []).filter(it => (it.products || []).includes(pid)).sort((a, b) => String(b.date).localeCompare(String(a.date))) : [];
     slot.replaceChildren(...[
       items.length ? h('section', { class: 'pdetail__block' },
@@ -1979,24 +1984,10 @@
         h('ul', { class: 'plinks' }, items.map(it => h('li', null,
           h('a', { href: '#/veille?f=' + encodeURIComponent(it.category) }, it.title),
           h('span', { class: 'muted' }, ' · ' + fmtDate(it.date) + ' · impact ' + String(((news.impacts || {})[it.impact] || {}).label || it.impact || '?').toLowerCase()))))) : null,
-      recoPaths.length ? h('section', { class: 'pdetail__block' },
-        h('h3', { class: 'block-title' }, 'Recommandé pour'),
-        h('ul', { class: 'plinks' }, recoPaths.map(({ n, path }) => h('li', null, h('a', { href: recoHash(path) }, n.title))))) : null].filter(Boolean));
-  }
-
-  /** Chemin (sans le départ) qui mène du départ de reco.json au nœud id. */
-  function recoPathTo(data, target) {
-    const nodes = data.nodes || {};
-    const queue = [[data.start, []]];
-    const seen = new Set();
-    while (queue.length) {
-      const [id, path] = queue.shift();
-      if (id === target) return path;
-      if (seen.has(id) || !nodes[id] || nodes[id].type !== 'question') continue;
-      seen.add(id);
-      for (const o of nodes[id].options || []) queue.push([o.next, [...path, o.next]]);
-    }
-    return null;
+      recoMods.length ? h('section', { class: 'pdetail__block' },
+        h('h3', { class: 'block-title' }, 'Proposé en avant-vente'),
+        h('ul', { class: 'plinks' }, recoMods.map(m => h('li', null, h('a', { href: '#/recommander' }, m.titre),
+          h('span', { class: 'muted' }, ' · ' + m.levels.join(', ')))))) : null].filter(Boolean));
   }
 
   let pTimer = null;
@@ -2117,53 +2108,6 @@
     box.replaceChildren(h('div', { class: 'pstatus' }, h('p', { class: 'pstatus__error' }, what + ' n\'a pas pu être chargé. ', h('code', null, err.message))));
   }
 
-  /* ---------------------------------------------------------------------
-     Recommander (avant-vente) : arbre de questions → carte de recommandation
-     --------------------------------------------------------------------- */
-  /** Contrôle de reco.json, messages en français. */
-  function validateReco(data, hasProduct = pid => state.products.has(pid)) {
-    const w = [];
-    const nodes = (data && data.nodes) || {};
-    if (!data || typeof data !== 'object') return ['Le fichier reco.json est vide ou mal formé.'];
-    if (!data.start) w.push('reco.json : aucune question de départ (champ « start »).');
-    else if (!nodes[data.start]) w.push('reco.json : la question de départ « ' + data.start + ' » n\'existe pas.');
-    for (const [id, n] of Object.entries(nodes)) {
-      const name = n.type === 'result' ? 'la recommandation « ' + truncate(n.title || id, 60) + ' »' : 'la question « ' + truncate(n.text || id, 60) + ' »';
-      if (n.type === 'question') {
-        if (!n.text) w.push('Une question de reco.json n\'a pas de texte (« ' + id + ' »).');
-        if (!Array.isArray(n.options) || !n.options.length) w.push(cap(name) + ' n\'a aucune réponse.');
-        for (const o of n.options || []) {
-          if (!o.label) w.push(cap(name) + ' a une réponse sans libellé.');
-          if (!o.next) w.push('La réponse « ' + (o.label || '?') + ' » de ' + name + ' ne mène nulle part.');
-          else if (!nodes[o.next]) w.push('La réponse « ' + (o.label || '?') + ' » de ' + name + ' mène vers « ' + o.next + ' », qui n\'existe pas.');
-        }
-      } else if (n.type === 'result') {
-        if (!n.title) w.push('Une recommandation n\'a pas de titre (« ' + id + ' »).');
-        if (!Array.isArray(n.items) || !n.items.length) w.push(cap(name) + ' ne propose aucun produit.');
-        (n.items || []).forEach((it, i) => {
-          if (!it.product) w.push(cap(name) + ' : la ligne ' + (i + 1) + ' n\'indique pas de produit.');
-          else if (!hasProduct(it.product)) w.push(cap(name) + ' cite un produit inconnu du catalogue (« ' + it.product + ' »).');
-          if (it.qty != null && !(Number.isInteger(it.qty) && it.qty > 0)) w.push(cap(name) + ' : la quantité de la ligne ' + (i + 1) + ' doit être un nombre entier positif.');
-        });
-      } else {
-        w.push('reco.json : l\'étape « ' + id + ' » a un type inconnu (« ' + n.type + ' ») : attendu question ou result.');
-      }
-    }
-    return w;
-  }
-
-  function recoHash(path) { return '#/recommander' + (path.length ? '/' + path.map(encodeURIComponent).join('/') : ''); }
-
-  /** Nombre maximal de questions restantes, question courante comprise (protégé contre les cycles). */
-  function recoDepth(nodes, id, seen = new Set()) {
-    const n = nodes[id];
-    if (!n || n.type !== 'question' || seen.has(id)) return 0;
-    seen.add(id);
-    const best = Math.max(0, ...(n.options || []).map(o => recoDepth(nodes, o.next, seen)));
-    seen.delete(id);
-    return 1 + best;
-  }
-
   /** Liens directs vers les symptômes fréquents (champ « frequent » de decisions.json). */
   function renderQuickLinks() {
     const all = [...state.symptoms.values()];
@@ -2176,97 +2120,282 @@
     }
   }
 
+  /* ---------------------------------------------------------------------
+     Recommander (avant-vente) : questions chiffrées → configuration composée
+     par blocs (reco.json, schéma 2), calculs, contrôles, trois niveaux.
+     Le moteur (formules, contrôles, vérification) est dans reco-engine.js.
+     --------------------------------------------------------------------- */
+  const RE = () => window.DIAGSAV_RECO;
+  /** Contrôle de reco.json, messages en français. */
+  function validateReco(data, hasProduct = pid => state.products.has(pid)) {
+    if (!RE()) return ['Le moteur de recommandation (reco-engine.js) n\'est pas chargé.'];
+    return RE().validate(data, hasProduct);
+  }
+
+  /** #/recommander?type=conf&jauge=300 … (+ q=<question à modifier>, n=<niveau affiché>). */
+  function recoParams(raw) {
+    const out = {};
+    for (const kv of String(raw || '').split('&').filter(Boolean)) {
+      const [k, v = ''] = kv.split('=');
+      try { out[decodeURIComponent(k)] = decodeURIComponent(v.replace(/\+/g, ' ')); } catch { out[k] = v; }
+    }
+    return out;
+  }
+  function recoHash(answers, extra = {}) {
+    const all = Object.assign({}, answers, extra);
+    const qs = Object.entries(all).filter(([, v]) => v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&');
+    return '#/recommander' + (qs ? '?' + qs : '');
+  }
+  /** Réponse lisible pour le récapitulatif et le devis. */
+  function recoAnswerLabel(q, v) {
+    if (q.type === 'nombre') return RE().fmtNum(v) + (q.unite ? ' ' + q.unite : '');
+    const o = (q.options || []).find(x => x.id === v);
+    return o ? o.label : String(v);
+  }
+  /** Produits de la même famille (pour remplacer une ligne). */
+  function recoAlternatives(pid) {
+    const pr = state.products.get(pid);
+    if (!pr || !pr.family) return [];
+    const typeKey = t => String(t || '').toLowerCase().split(/[ ,(·]/)[0];
+    return [...state.products.entries()].filter(([id, p]) => id !== pid && p.family === pr.family)
+      .map(([id, p]) => [id, p, typeKey(p.type) === typeKey(pr.type)])
+      .sort((a, b) => (b[2] - a[2]) || productLabel(a[1]).localeCompare(productLabel(b[1]), 'fr'));
+  }
+  const recoSwaps = {};   // niveau|bloc:règle:ligne → produit choisi (le temps de la session)
+
   async function renderReco(route) {
     showView('reco');
     const box = $('#reco-root');
-    let data;
-    try { data = await loadJson('data/reco.json'); }
-    catch (err) { renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Recommander' }]); return loadError(box, 'Le fichier des recommandations (data/reco.json)', err); }
+    let data, outils = {};
+    try {
+      if (!RE()) await loadScript('reco-engine.js', 'DIAGSAV_RECO');
+      data = await loadJson('data/reco.json');
+    } catch (err) { renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Recommander' }]); return loadError(box, 'Le fichier des recommandations (data/reco.json)', err); }
     if (state.preview && state.previewReco) data = state.previewReco;
-    const nodes = data.nodes || {};
-    if (!state.recoChecked || state.recoChecked !== data) {
+    try { outils = await loadJson('data/outils.json'); } catch (err) { console.warn('[DIAG·SAV] outils.json indisponible : contrôles PoE et longueurs ignorés', err); }
+    let cat = null;
+    try { cat = await loadCatalogue(); } catch (err) { console.warn('[DIAG·SAV] catalogue indisponible : contrôle réseau limité', err); }
+    if (state.recoChecked !== data) {
       state.recoChecked = data;
       state.recoIssues = validateReco(data);
       if (state.recoIssues.length) console.warn('[DIAG·SAV] Anomalies dans reco.json :\n- ' + state.recoIssues.join('\n- '));
     }
-    if (!nodes[data.start]) {
+    const E = RE();
+    if (!(data.questions || []).length) {
       renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Recommander' }]);
       box.replaceChildren(h('div', { class: 'empty' }, 'Aucune recommandation n\'est encore configurée (data/reco.json).'));
       return;
     }
-    // chemin : départ + étapes reliées
-    const path = [data.start];
-    for (const id of route.path || []) {
-      const prev = nodes[path[path.length - 1]];
-      if (!prev || prev.type !== 'question' || !(prev.options || []).some(o => o.next === id) || !nodes[id]) break;
-      path.push(id);
+    const params = route.params || {};
+    // réponses : seulement celles des questions visibles, dans l'ordre
+    const raw = E.cleanAnswers(data, params);
+    const answers = {};
+    for (const q of data.questions) {
+      if (!(q.id in raw)) continue;
+      if (!E.test(q.si, { values: answers, params: data.parametres || {} })) continue;
+      answers[q.id] = raw[q.id];
     }
-    const canonical = recoHash(path.slice(1));
-    if (location.hash !== canonical && (route.path || []).length !== path.length - 1) history.replaceState(null, '', canonical);
-
-    const current = nodes[path[path.length - 1]];
-    const answers = path.slice(0, -1).map((id, i) => {
-      const q = nodes[id];
-      const o = (q.options || []).find(x => x.next === path[i + 1]);
-      return { q, label: q.label || q.text, answer: o ? o.label : '?', index: i };
-    });
+    const visible = E.visibleQuestions(data, answers);
+    const pending = visible.filter(q => !(q.id in answers));
+    const editing = visible.find(q => q.id === params.q);
+    const current = editing || pending[0] || null;
+    const answered = visible.filter(q => q.id in answers);
+    const niveaux = data.niveaux || [];
+    const nivSel = niveaux.some(n => n.id === params.n) ? params.n : ((niveaux[1] || niveaux[0] || {}).id);
+    const canonical = recoHash(answers, editing ? { q: editing.id } : (current ? {} : { n: params.n && nivSel === params.n ? nivSel : undefined }));
+    if (location.hash !== canonical) history.replaceState(null, '', canonical);
 
     renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Recommander', href: '#/recommander' },
-      ...path.slice(1).map((id, i) => ({ label: nodes[id].type === 'result' ? 'Recommandation' : (nodes[id].label || 'Étape ' + (i + 2)), href: recoHash(path.slice(1, i + 2)) }))]);
+      ...(current ? [{ label: current.label || 'Question' }] : [{ label: 'Configuration' }])]);
 
-    const recap = answers.length ? h('ol', { class: 'reco-recap' }, answers.map(a => h('li', null,
-      h('a', { href: recoHash(path.slice(1, a.index + 1)), title: 'Modifier cette réponse' },
-        h('span', { class: 'reco-recap__q' }, a.label), h('span', { class: 'reco-recap__a' }, a.answer))))) : null;
+    const recap = answered.length ? h('ol', { class: 'reco-recap' }, answered.map(q => h('li', null,
+      h('a', { href: recoHash(answers, { q: q.id }), title: 'Modifier cette réponse', 'aria-current': editing === q ? 'step' : null },
+        h('span', { class: 'reco-recap__q' }, q.label || q.texte), h('span', { class: 'reco-recap__a' }, recoAnswerLabel(q, answers[q.id])))))) : null;
 
     let stage;
-    if (current.type === 'question') {
-      stage = h('article', { class: 'panel question' },
-        h('header', { class: 'panel__head' }, h('span', { class: 'panel__tag' }, 'Étape ' + path.length + '/' + (path.length - 1 + recoDepth(nodes, path[path.length - 1]))), h('span', null, current.label || 'Question')),
-        h('div', { class: 'panel__body' },
-          h('h2', { class: 'question__text', tabindex: '-1', 'data-focus': true }, current.text),
-          current.help ? h('p', { class: 'question__help' }, current.help) : null,
-          h('ul', { class: 'options', role: 'list' }, (current.options || []).map((o, i) => h('li', null,
-            h('button', { type: 'button', class: 'option', dataset: { index: String(i) }, disabled: nodes[o.next] ? null : true,
-              onclick: () => navigate(recoHash([...path.slice(1), o.next])) },
-              h('span', { class: 'option__key', 'aria-hidden': 'true' }, String(i + 1)),
-              h('span', null, o.label),
-              h('span', { class: 'option__arrow', 'aria-hidden': 'true' }, '→')))))));
-    } else {
-      const items = (current.items || []).map(it => ({ it, pr: state.products.get(it.product) }));
-      stage = h('article', { class: 'panel reco-result' },
-        h('header', { class: 'panel__head' }, h('span', { class: 'panel__tag' }, 'Recommandation')),
-        h('div', { class: 'panel__body' },
-          h('h2', { class: 'result__title', tabindex: '-1', 'data-focus': true }, current.title),
-          draftBadge(current.status),
-          current.summary ? h('p', { class: 'result__summary' }, current.summary) : null,
-          h('ul', { class: 'reco-items' }, items.map(({ it, pr }) => h('li', { class: 'reco-item' },
-            h('span', { class: 'reco-item__qty' }, (it.qty || 1) + ' ×'),
-            h('div', { class: 'reco-item__main' },
-              pr ? h('a', { class: 'reco-item__name', href: '#/produits/' + encodeURIComponent(it.product) }, productLabel(pr))
-                 : h('span', { class: 'reco-item__name is-bad' }, '⚠ Produit inconnu : ' + it.product),
-              pr ? h('span', { class: 'reco-item__type' }, pr.type + (productSourceLabel(pr) ? ' · ' + productSourceLabel(pr) : '')) : null,
-              it.why ? h('span', { class: 'reco-item__why' }, it.why) : null)))),
-          current.notes ? h('p', { class: 'callout callout--escalate' }, h('span', { class: 'callout__icon', 'aria-hidden': 'true' }, 'i'), h('span', null, current.notes)) : null,
-          (data.meta && data.meta.disclaimer) ? h('p', { class: 'result__sevdesc' }, data.meta.disclaimer) : null,
-          h('div', { class: 'result__footer' },
-            h('button', { type: 'button', class: 'btn btn--primary', onclick: () => copyText(buildQuote(data, current, answers, items), '✓ Devis copié dans le presse-papiers') }, 'Copier le devis'),
-            h('a', { class: 'btn', href: '#/recommander' }, 'Nouvelle recommandation'))));
-    }
+    if (current) stage = recoQuestion(data, current, answers, visible, !!editing);
+    else stage = recoResult(data, answers, { outils, cat, niveaux, nivSel });
 
     box.replaceChildren(...[
       h('div', { class: 'phead' },
         h('p', { class: 'eyebrow' }, 'Avant-vente'),
         h('h1', { class: 'phead__title' }, (data.meta && data.meta.title) || 'Recommander')),
       state.recoIssues.length ? h('p', { class: 'reco-warn' }, '⚠ ' + state.recoIssues.length + ' anomalie(s) dans data/reco.json (détail dans la console).') : null,
-      h('div', { class: 'reco' },
+      h('div', { class: current ? 'reco' : 'reco reco--result' },
         h('div', { class: 'reco__main' }, stage,
           h('div', { class: 'diag__controls' },
-            path.length > 1 ? h('a', { class: 'btn btn--ghost', href: recoHash(path.slice(1, -1)) }, '← Étape précédente') : null,
-            path.length > 1 ? h('a', { class: 'btn btn--ghost', href: '#/recommander' }, '↺ Recommencer') : null)),
+            answered.length && !editing ? h('a', { class: 'btn btn--ghost', href: recoHash(Object.fromEntries(Object.entries(answers).slice(0, -1))) }, '← Étape précédente') : null,
+            editing ? h('a', { class: 'btn btn--ghost', href: recoHash(answers) }, '← Annuler la modification') : null,
+            answered.length ? h('a', { class: 'btn btn--ghost', href: '#/recommander' }, '↺ Recommencer') : null)),
         recap ? h('aside', { class: 'reco__aside' }, h('h2', { class: 'reco-aside__title' }, 'Vos réponses'), recap) : null)
     ].filter(Boolean));
     const heading = box.querySelector('[data-focus]');
     if (heading) heading.focus({ preventScroll: true });
+  }
+
+  function recoQuestion(data, q, answers, visible, editing) {
+    const others = Object.fromEntries(Object.entries(answers).filter(([k]) => k !== q.id));
+    const go = v => navigate(recoHash(editing ? Object.assign({}, answers, { [q.id]: v }) : Object.assign(others, { [q.id]: v })));
+    const idx = visible.indexOf(q) + 1;
+    let body;
+    if (q.type === 'nombre') {
+      const val = q.id in answers ? answers[q.id] : (q.defaut != null ? q.defaut : '');
+      const input = h('input', { class: 'reco-num__input', type: 'number', inputmode: 'decimal', id: 'reco-num', step: 'any',
+        min: q.min != null ? String(q.min) : null, max: q.max != null ? String(q.max) : null, value: String(val), required: true });
+      const err = h('p', { class: 'reco-num__err', role: 'alert' });
+      body = h('form', { class: 'reco-num', novalidate: true, onsubmit: ev => {
+        ev.preventDefault();
+        const n = Number(String(input.value).replace(',', '.'));
+        if (input.value === '' || !isFinite(n)) { err.textContent = 'Indiquez un nombre.'; input.focus(); return; }
+        if (q.min != null && n < q.min) { err.textContent = 'Minimum : ' + RE().fmtNum(q.min) + (q.unite ? ' ' + q.unite : '') + '.'; input.focus(); return; }
+        if (q.max != null && n > q.max) { err.textContent = 'Maximum : ' + RE().fmtNum(q.max) + (q.unite ? ' ' + q.unite : '') + '.'; input.focus(); return; }
+        go(n);
+      } },
+        h('label', { class: 'visually-hidden', for: 'reco-num' }, q.texte),
+        h('div', { class: 'reco-num__row' }, input, q.unite ? h('span', { class: 'reco-num__unit' }, q.unite) : null,
+          h('button', { type: 'submit', class: 'btn btn--primary' }, 'Valider →')),
+        err);
+    } else {
+      body = h('ul', { class: 'options', role: 'list' }, (q.options || []).map((o, i) => h('li', null,
+        h('button', { type: 'button', class: 'option', dataset: { index: String(i) }, 'aria-pressed': answers[q.id] === o.id ? 'true' : null, onclick: () => go(o.id) },
+          h('span', { class: 'option__key', 'aria-hidden': 'true' }, String(i + 1)),
+          h('span', null, o.label),
+          h('span', { class: 'option__arrow', 'aria-hidden': 'true' }, '→')))));
+    }
+    return h('article', { class: 'panel question' },
+      h('header', { class: 'panel__head' }, h('span', { class: 'panel__tag' }, 'Étape ' + idx + '/' + visible.length), h('span', null, q.label || 'Question')),
+      h('div', { class: 'panel__body' },
+        h('h2', { class: 'question__text', tabindex: '-1', 'data-focus': true }, q.texte),
+        q.aide ? h('p', { class: 'question__help' }, q.aide) : null,
+        body));
+  }
+
+  const ALERT_UI = { erreur: ['high', '!', 'Bloquant'], alerte: ['moderate', '!', 'À vérifier'], info: ['low', 'i', 'Info'], ok: ['ok', '✓', 'OK'] };
+
+  function recoResult(data, answers, { outils, cat, niveaux, nivSel }) {
+    const E = RE();
+    const ctx = { products: state.products, catalogue: cat, outils, swaps: recoSwaps };
+    const configs = niveaux.map(n => ({ n, r: E.compute(data, answers, n.id, ctx) }));
+    const calc = (configs[0] || { r: { calculs: [] } }).r.calculs;
+    const params = data.parametres || {};
+    const rerender = () => onRoute();
+
+    const calcBlock = calc.length ? h('section', { class: 'reco-calc' },
+      h('h3', { class: 'block-title' }, 'Dimensionnement'),
+      h('dl', { class: 'reco-calc__list' }, calc.map(c => h('div', { class: 'reco-calc__row' },
+        h('dt', null, c.label, c.status === 'draft' ? h('span', { class: 'badge badge--draft', title: 'Repère à valider' }, 'À valider') : null),
+        h('dd', null, h('strong', null, E.fmtNum(c.value, c.decimales) + (c.unite ? ' ' + c.unite : '')),
+          c.source ? h('span', { class: 'reco-calc__src' }, c.source) : null)))),
+      h('details', { class: 'reco-params' },
+        h('summary', null, 'Repères utilisés (' + Object.keys(params).length + ')'),
+        h('ul', null, Object.entries(params).map(([id, p]) => h('li', null,
+          h('strong', null, (p.label || id) + ' : ' + E.fmtNum(p.valeur, 2) + (p.unite ? ' ' + p.unite : '')),
+          p.status === 'draft' ? h('span', { class: 'badge badge--draft' }, 'À valider') : null,
+          p.source ? h('span', { class: 'reco-calc__src' }, p.source) : null))))) : null;
+
+    const itemRow = (n, it) => {
+      const pr = state.products.get(it.product);
+      const alts = recoAlternatives(it.original);
+      const swapKey = n.id + '|' + it.key;
+      const sel = alts.length ? h('select', { class: 'reco-swap', 'aria-label': 'Remplacer ' + (pr ? productLabel(pr) : it.product) + ' par un produit de la même famille',
+        onchange: ev => { if (ev.target.value === it.original) delete recoSwaps[swapKey]; else recoSwaps[swapKey] = ev.target.value; rerender(); } },
+        h('option', { value: it.original, selected: it.product === it.original ? true : null }, 'Proposé : ' + productLabel(state.products.get(it.original) || { brand: '', model: it.original })),
+        [['Même type', alts.filter(a => a[2])], ['Même famille', alts.filter(a => !a[2])]].filter(g => g[1].length).map(([lbl, list]) =>
+          h('optgroup', { label: lbl }, list.map(([id, p]) => h('option', { value: id, selected: id === it.product ? true : null }, productLabel(p)))))) : null;
+      return h('li', { class: 'reco-item' + (it.product !== it.original ? ' is-swapped' : '') },
+        h('span', { class: 'reco-item__qty' }, it.qty + ' ×'),
+        h('div', { class: 'reco-item__main' },
+          pr ? h('a', { class: 'reco-item__name', href: '#/produits/' + encodeURIComponent(it.product) }, productLabel(pr))
+             : h('span', { class: 'reco-item__name is-bad' }, '⚠ Produit inconnu : ' + it.product),
+          pr ? h('span', { class: 'reco-item__type' }, pr.type + (productSourceLabel(pr) ? ' · ' + productSourceLabel(pr) : '')) : null,
+          it.product === it.original && it.why ? h('span', { class: 'reco-item__why' }, it.why) : null,
+          it.product !== it.original ? h('span', { class: 'reco-item__why' }, 'Remplace ' + productLabel(state.products.get(it.original) || { brand: '', model: it.original }) + ' (même famille).') : null,
+          sel ? h('div', { class: 'reco-item__tools' }, sel,
+            h('a', { class: 'btn btn--small btn--ghost', href: '#/comparer?ids=' + [it.original, ...alts.filter(a => a[2]).concat(alts.filter(a => !a[2])).slice(0, 2).map(a => a[0])].map(encodeURIComponent).join(',') }, 'Comparer')) : null));
+    };
+
+    // points identiques dans tous les niveaux : affichés une fois, au-dessus des colonnes
+    const common = configs.length > 1 ? configs[0].r.alerts.filter(a => a.niveau !== 'ok' && configs.every(c => c.r.alerts.some(b => b.message === a.message))) : [];
+    const commonMsg = new Set(common.map(a => a.message));
+    const alertList = list => h('ul', { class: 'reco-alerts' }, list.map(a => {
+      const [sev, icon, word] = ALERT_UI[a.niveau] || ALERT_UI.info;
+      return h('li', { class: 'reco-alert reco-alert--' + sev },
+        h('span', { class: 'reco-alert__icon', 'aria-hidden': 'true' }, icon),
+        h('span', null, h('span', { class: 'visually-hidden' }, word + ' : '), a.message, a.source ? h('span', { class: 'reco-calc__src' }, 'Source : ' + a.source) : null));
+    }));
+    const column = ({ n, r }) => {
+      const count = r.modules.reduce((s, m) => s + m.items.reduce((t, it) => t + it.qty, 0), 0);
+      const alerts = r.alerts.filter(a => a.niveau !== 'ok' && !commonMsg.has(a.message));
+      const oks = r.alerts.filter(a => a.niveau === 'ok');
+      return h('section', { class: 'reco-level', id: 'niveau-' + n.id, 'data-level': n.id, 'aria-labelledby': 'niveau-' + n.id + '-t' },
+        h('header', { class: 'reco-level__head' },
+          h('h3', { class: 'reco-level__title', id: 'niveau-' + n.id + '-t' }, n.label),
+          n.description ? h('p', { class: 'reco-level__desc' }, n.description) : null,
+          h('p', { class: 'reco-level__count' }, count + ' équipement' + (count > 1 ? 's' : '') + (alerts.length ? ' · ' + alerts.length + ' point' + (alerts.length > 1 ? 's' : '') + ' propre' + (alerts.length > 1 ? 's' : '') + ' à ce niveau' : ''))),
+        (alerts.length || oks.length) ? alertList([...alerts, ...oks]) : null,
+        r.modules.map(m => h('div', { class: 'reco-module' },
+          h('h4', { class: 'reco-module__title' }, m.titre),
+          m.items.length ? h('ul', { class: 'reco-items' }, m.items.map(it => itemRow(n, it))) : null,
+          m.notes.map(t => h('p', { class: 'reco-module__note' }, t)))),
+        h('div', { class: 'reco-level__foot' },
+          h('button', { type: 'button', class: 'btn btn--primary', onclick: () => copyText(buildQuote(data, answers, n, r), '✓ Devis « ' + n.label + ' » copié') }, 'Copier le devis ' + n.label)));
+    };
+
+    const tabs = h('div', { class: 'reco-tabs', role: 'tablist', 'aria-label': 'Niveau affiché' }, niveaux.map(n =>
+      h('a', { class: 'reco-tab', role: 'tab', href: recoHash(answers, { n: n.id }), 'aria-selected': n.id === nivSel ? 'true' : 'false' }, n.label)));
+    const grid = h('div', { class: 'reco-levels', 'data-show': nivSel }, configs.map(column));
+    const swapped = Object.keys(recoSwaps).length;
+
+    return h('article', { class: 'panel reco-result' },
+      h('header', { class: 'panel__head' }, h('span', { class: 'panel__tag' }, 'Configuration'), h('span', null, niveaux.length + ' niveaux comparés')),
+      h('div', { class: 'panel__body' },
+        h('h2', { class: 'result__title', tabindex: '-1', 'data-focus': true }, 'Configuration proposée'),
+        h('span', { class: 'badge badge--draft' }, 'Brouillon à valider'),
+        (data.meta && data.meta.disclaimer) ? h('p', { class: 'result__summary' }, data.meta.disclaimer) : null,
+        calcBlock,
+        common.length ? h('section', { class: 'reco-common' }, h('h3', { class: 'block-title' }, 'Points à vérifier, tous niveaux'), alertList(common)) : null,
+        tabs, grid,
+        h('div', { class: 'result__footer' },
+          swapped ? h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => { for (const k of Object.keys(recoSwaps)) delete recoSwaps[k]; rerender(); } }, 'Annuler les remplacements (' + swapped + ')') : null,
+          h('a', { class: 'btn', href: '#/recommander' }, 'Nouvelle recommandation'))));
+  }
+
+  /** Texte de devis pré-rempli pour un niveau, sans prix (le catalogue n'en contient pas). */
+  function buildQuote(data, answers, niveau, r) {
+    const E = RE();
+    const L = [];
+    L.push('=== DEVIS — RECOMMANDATION AVANT-VENTE ===');
+    L.push('Date : ' + new Date().toLocaleDateString('fr-FR') + '   Niveau : ' + niveau.label);
+    L.push('Client : ____________________   Événement : ____________________   Date(s) : __________');
+    L.push('');
+    L.push('Besoin exprimé :');
+    for (const q of E.visibleQuestions(data, answers)) if (q.id in answers) L.push('  - ' + (q.label || q.texte) + ' : ' + recoAnswerLabel(q, answers[q.id]));
+    if (r.calculs.length) {
+      L.push(''); L.push('Dimensionnement (repères à valider) :');
+      r.calculs.forEach(c => L.push('  - ' + c.label + ' : ' + E.fmtNum(c.value, c.decimales) + (c.unite ? ' ' + c.unite : '')));
+    }
+    for (const m of r.modules) {
+      L.push(''); L.push(m.titre + ' :');
+      m.items.forEach(it => {
+        const pr = state.products.get(it.product);
+        const name = pr ? productLabel(pr) : '(produit inconnu : ' + it.product + ')';
+        const ref = pr && pr.ref ? ' — réf. ' + pr.ref : '';
+        const src = pr && productSourceLabel(pr) ? ' (' + productSourceLabel(pr) + ')' : '';
+        L.push('  ' + it.qty + ' × ' + name + ref + src);
+        if (it.product === it.original && it.why) L.push('      ' + it.why);
+        L.push('      Prix unitaire : à compléter');
+      });
+      m.notes.forEach(t => L.push('  Remarque : ' + t));
+    }
+    const alerts = r.alerts.filter(a => a.niveau !== 'ok');
+    if (alerts.length) { L.push(''); L.push('Points à vérifier :'); alerts.forEach(a => L.push('  - ' + a.message)); }
+    L.push('');
+    L.push('Prestations (installation, exploitation, transport) : à compléter');
+    L.push('Total HT : à compléter');
+    L.push('');
+    L.push((data.meta && data.meta.disclaimer) || 'Recommandation indicative, à valider.');
+    return L.join('\n');
   }
 
   /* ---------------------------------------------------------------------
@@ -2352,38 +2481,6 @@
       shown.length ? h('ul', { class: 'news-list' }, shown.map(card)) : h('p', { class: 'empty' }, 'Aucune actualité dans cette catégorie.'),
       (data.meta && data.meta.note) ? h('p', { class: 'muted news-note' }, data.meta.note) : null
     ].filter(Boolean));
-  }
-
-  /** Texte de devis pré-rempli, sans prix (le catalogue n'en contient pas). */
-  function buildQuote(data, result, answers, items) {
-    const now = new Date();
-    const L = [];
-    L.push('=== DEVIS — RECOMMANDATION AVANT-VENTE ===');
-    L.push('Date : ' + now.toLocaleDateString('fr-FR'));
-    L.push('Client : ____________________   Événement : ____________________   Date(s) : __________');
-    L.push('');
-    L.push('Besoin exprimé :');
-    answers.forEach(a => L.push('  - ' + a.label + ' : ' + a.answer));
-    L.push('');
-    L.push('Proposition : ' + result.title);
-    if (result.summary) L.push('  ' + result.summary);
-    L.push('');
-    L.push('Matériel :');
-    items.forEach(({ it, pr }) => {
-      const name = pr ? productLabel(pr) : '(produit inconnu : ' + it.product + ')';
-      const ref = pr && pr.ref ? ' — réf. ' + pr.ref : '';
-      const src = pr && productSourceLabel(pr) ? ' (' + productSourceLabel(pr) + ')' : '';
-      L.push('  ' + (it.qty || 1) + ' × ' + name + ref + src);
-      if (it.why) L.push('      ' + it.why);
-      L.push('      Prix unitaire : à compléter');
-    });
-    if (result.notes) { L.push(''); L.push('Remarques : ' + result.notes); }
-    L.push('');
-    L.push('Prestations (installation, exploitation, transport) : à compléter');
-    L.push('Total HT : à compléter');
-    L.push('');
-    L.push((data.meta && data.meta.disclaimer) || 'Recommandation indicative, à valider.');
-    return L.join('\n');
   }
 
   async function copyText(text, okMsg) {
@@ -2667,7 +2764,11 @@
       }
       if (route.view === 'reco') {
         if (e.key === 'Escape') { e.preventDefault(); navigate('#/'); return; }
-        if (e.key === 'Backspace' && (route.path || []).length) { e.preventDefault(); navigate(recoHash(route.path.slice(0, -1))); return; }
+        if (e.key === 'Backspace') {
+          const back = [...document.querySelectorAll('#reco-root .diag__controls a')].find(a => /précédente|Annuler/.test(a.textContent));
+          if (back) { e.preventDefault(); back.click(); }
+          return;
+        }
         if (/^[1-9]$/.test(e.key)) {
           const btn = document.querySelector('#reco-root .option[data-index="' + (Number(e.key) - 1) + '"]');
           if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
@@ -2717,7 +2818,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.21.1';
+  const APP_VERSION = '1.22.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;
