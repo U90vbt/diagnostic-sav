@@ -1202,6 +1202,8 @@
     for (const c of r.calculs || []) o['calcul ' + c.id] = c;
     for (const m of r.modules || []) o['bloc ' + m.id] = m;
     (r.controles || []).forEach((c, i) => { o['contrôle ' + (i + 1)] = c; });
+    if (r.zones || r.types_liaison) o['zones et types de liaison'] = { zones: r.zones, types: r.types_liaison };
+    (r.liaisons || []).forEach((l, i) => { o['liaison ' + (i + 1)] = l; });
     return o;
   }
   const RID = /^[a-z][a-z0-9_]*$/;
@@ -1344,7 +1346,13 @@
       h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Repères de dimensionnement'),
         h('p', { class: 'ed-hint' }, 'Valeurs utilisées dans les formules sous la forme p.identifiant. Indiquez la source (document et page) ; sans notice constructeur, laissez « À valider ».'), params),
       h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Calculs'), h('p', { class: 'ed-hint' }, SYNTAX_HELP), calculs),
-      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Contrôles de cohérence'), ctrls));
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Contrôles de cohérence'), ctrls),
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Liaisons et synoptique (' + (r.liaisons || []).length + ')'),
+        h('p', { class: 'ed-hint' }, (r.zones || []).length + ' zone(s), ' + Object.keys(r.types_liaison || {}).length + ' type(s) de liaison.'),
+        h('div', { class: 'ed-actions' }, h('a', { class: 'btn btn--small', href: '#/editeur/reco-liaisons' }, 'Modifier les liaisons, zones et types'))),
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Marque imposée'),
+        field('Question qui limite les remplacements à une marque', selectInput(r.questions.filter(q => q.type === 'choix').map(q => ({ value: q.id, label: q.label || q.id })), (r.meta && r.meta.question_marque) || '', v => { setOpt(r.meta, 'question_marque', v); changed(false); }, { placeholder: '— aucune —' }),
+          'Renseignez la marque sur les réponses de cette question (écran de la question).')));
   }
 
   function screenRecoQuestion(id) {
@@ -1358,6 +1366,7 @@
       const draw = () => box.replaceChildren(...q.options.map((o, i) => h('div', { class: 'ed-row' },
         field('Réponse ' + (i + 1), textInput(o.label, v => { o.label = v; changed(false); })),
         field('Identifiant (utilisé dans les formules)', textInput(o.id, v => { o.id = v.trim(); changed(false); }), 'Changer l\'identifiant oblige à mettre à jour les formules qui l\'utilisent.'),
+        (r.meta && r.meta.question_marque === q.id) ? field('Marque imposée (facultatif)', textInput(o.marque, v => { setOpt(o, 'marque', v.trim()); changed(false); }, { placeholder: 'ex. Yealink' })) : null,
         h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer la réponse ' + (i + 1), onclick: () => { q.options.splice(i, 1); changed(false); draw(); } }, '✕')))),
         h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { q.options.push({ id: uniqueId('reponse_1', k => q.options.some(o => o.id === k)), label: '' }); changed(false); draw(); } }, '+ Ajouter une réponse'));
       draw();
@@ -1390,6 +1399,84 @@
         }))),
       h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Utilisée par'),
         users.length ? h('ul', { class: 'ed-refs' }, users.map(u => h('li', null, u))) : h('p', { class: 'ed-hint' }, 'Aucune formule n\'utilise cette réponse.')));
+  }
+
+  /** Options d'une ligne : hors catalogue, repère et zone pour le synoptique. */
+  function itemExtras(it, products) {
+    const zones = (E.reco.zones || []).map(z => ({ value: z.id, label: z.label || z.id }));
+    const open = !!(it.libelle || it.repere || it.zone || it.inclus);
+    return h('details', { class: 'ed-reco-extra', open: open || null },
+      h('summary', null, 'Hors catalogue, synoptique' + (it.repere ? ' · repère ' + it.repere : '')),
+      h('div', { class: 'ed-row' },
+        field('Libellé hors catalogue (si aucun produit choisi)', textInput(it.libelle, v => { setOpt(it, 'libelle', v); changed(false); }, { placeholder: 'ex. Capteur de cloison' })),
+        field('Inclus dans (produit du catalogue)', selectInput(products, it.inclus || '', v => { setOpt(it, 'inclus', v); changed(false); }, { placeholder: '— non —' }))),
+      h('div', { class: 'ed-row' },
+        field('Repère (pour les liaisons)', textInput(it.repere, v => { setOpt(it, 'repere', v.trim()); changed(false); }, { placeholder: 'ex. s1_ecran' })),
+        field('Zone du synoptique', selectInput(zones, it.zone || '', v => { setOpt(it, 'zone', v); changed(false); }, { placeholder: '— aucune —' }))),
+      h('div', { class: 'ed-row' },
+        field('Fiche constructeur (lien)', textInput(it.source, v => { setOpt(it, 'source', v.trim()); changed(false); }, { placeholder: 'https://…' })),
+        field('Statut', statusSelect(it))));
+  }
+
+  /** Liaisons entre repères : alimente le synoptique et le contrôle des longueurs. */
+  function screenRecoLiaisons() {
+    const r = E.reco;
+    r.liaisons = r.liaisons || []; r.types_liaison = r.types_liaison || {}; r.zones = r.zones || [];
+    const reps = new Map();
+    for (const m of r.modules || []) for (const g of m.regles || []) for (const it of g.items || []) if (it.repere && !reps.has(it.repere)) {
+      const pr = it.produit && E.dec.products && E.dec.products[it.produit];
+      reps.set(it.repere, it.repere + ' · ' + (pr ? pr.brand + ' ' + pr.model : (it.libelle || '?')));
+    }
+    const repOpts = [...reps].map(([value, label]) => ({ value, label }));
+    const typeOpts = Object.entries(r.types_liaison).map(([value, t]) => ({ value, label: t.label || value }));
+    const box = h('div', { class: 'ed-options' });
+    const draw = () => box.replaceChildren(...r.liaisons.map((l, i) => h('div', { class: 'ed-option' },
+      h('div', { class: 'ed-option__head' }, h('span', { class: 'ed-option__key' }, String(i + 1)), h('strong', null, (l.de || '?') + ' → ' + (l.vers || '?')),
+        h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer la liaison ' + (i + 1), onclick: () => { r.liaisons.splice(i, 1); changed(false); draw(); } }, '✕'))),
+      h('div', { class: 'ed-row' },
+        field('De', selectInput(repOpts, l.de || '', v => { l.de = v; changed(false); }, { placeholder: '— repère —' })),
+        field('Port', textInput(l.port_de, v => { setOpt(l, 'port_de', v); changed(false); }, { placeholder: 'ex. HDMI' })),
+        field('Vers', selectInput(repOpts, l.vers || '', v => { l.vers = v; changed(false); }, { placeholder: '— repère —' })),
+        field('Port', textInput(l.port_vers, v => { setOpt(l, 'port_vers', v); changed(false); }, { placeholder: 'ex. HDMI in' }))),
+      h('div', { class: 'ed-row' },
+        field('Type de liaison', selectInput(typeOpts, l.type || '', v => { l.type = v; changed(false); }, { placeholder: '— type —' })),
+        field('Longueur en m (nombre ou formule)', exprInput(l.longueur, v => { const t = String(v).trim(); l.longueur = /^\d+(\.\d+)?$/.test(t) ? Number(t) : t; changed(false); }, 'ex. distance_baie')),
+        field('Uniquement si (facultatif)', exprInput(l.si, v => { setOpt(l, 'si', v); changed(false); }, 'ex. distance_baie > 5'))),
+      field('Remarque (facultatif)', textInput(l.note, v => { setOpt(l, 'note', v); changed(false); })))),
+      h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { r.liaisons.push({ de: '', port_de: '', vers: '', port_vers: '', type: '', longueur: '' }); changed(false); draw(); } }, '+ Liaison'));
+    draw();
+    const zoneBox = h('div', { class: 'ed-options' });
+    const drawZones = () => zoneBox.replaceChildren(...r.zones.map((z, i) => h('div', { class: 'ed-row' },
+      field('Zone ' + (i + 1) + ' (colonne du synoptique)', textInput(z.label, v => { z.label = v; changed(false); })),
+      field('Identifiant', textInput(z.id, v => { z.id = v.trim(); changed(false); }), 'Utilisé par les lignes des blocs.'),
+      h('div', { class: 'ed-list__tools' },
+        h('button', { type: 'button', class: 'ed-icon', 'aria-label': 'Monter la zone ' + (i + 1), disabled: i === 0 || null, onclick: () => { [r.zones[i - 1], r.zones[i]] = [r.zones[i], r.zones[i - 1]]; changed(false); drawZones(); } }, '↑'),
+        h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer la zone ' + (i + 1), onclick: () => { r.zones.splice(i, 1); changed(false); drawZones(); } }, '✕')))),
+      h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { r.zones.push({ id: uniqueId('zone_1', k => r.zones.some(z => z.id === k)), label: 'Nouvelle zone' }); changed(false); drawZones(); } }, '+ Zone'));
+    drawZones();
+    const COLORS = ['Gris', 'Bleu', 'Orange', 'Vert', 'Violet', 'Jaune', 'Rose', 'Turquoise'].map((label, value) => ({ value: String(value), label }));
+    const typeBox = h('div', { class: 'ed-options' });
+    const drawTypes = () => typeBox.replaceChildren(...Object.entries(r.types_liaison).map(([k, t]) => h('div', { class: 'ed-row' },
+      field('Type « ' + k + ' »', textInput(t.label, v => { t.label = v; changed(false); })),
+      field('Longueur maximale : liaison de outils.json', textInput(t.liaison, v => { setOpt(t, 'liaison', v.trim()); changed(false); }, { placeholder: 'ex. ethernet, hdmi, usb2, hdbaset' })),
+      field('Couleur', selectInput(COLORS, String(t.couleur || 0), v => { t.couleur = Number(v); changed(false); })),
+      h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer le type ' + k, onclick: () => { delete r.types_liaison[k]; changed(false); drawTypes(); } }, '✕')))),
+      h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => {
+        const name = (prompt('Identifiant du nouveau type (minuscules et _) :', 'nouveau_type') || '').trim();
+        if (!name) return;
+        if (!RID.test(name) || r.types_liaison[name]) { toast('Identifiant invalide ou déjà utilisé'); return; }
+        r.types_liaison[name] = { label: '', couleur: 0 }; changed(false); drawTypes();
+      } }, '+ Type'));
+    drawTypes();
+    return h('div', null,
+      h('p', null, h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/reco' }, '← Recommandation avant-vente')),
+      h('section', { class: 'ed-card' },
+        h('h2', { class: 'ed-h2' }, 'Liaisons et synoptique'),
+        h('p', { class: 'ed-hint' }, 'Une liaison relie deux repères (champ « Repère » d\'une ligne de bloc). Elle n\'apparaît que si ses deux extrémités sont dans la configuration calculée. Les liaisons entre deux zones sont dessinées ; celles d\'une même zone sont listées dans le tableau.'),
+        box, h('div', { class: 'ed-actions' }, testButton())),
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Zones (colonnes du synoptique, de gauche à droite)'), zoneBox),
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Types de liaison'),
+        h('p', { class: 'ed-hint' }, 'La longueur maximale vient de la table « Longueurs de liaison » de l\'outil (outils.json) ; un type sans liaison n\'est pas contrôlé.'), typeBox));
   }
 
   function screenRecoBloc(id) {
@@ -1426,7 +1513,8 @@
           field('Produit', selectInput(products, it.produit || '', v => { it.produit = v; changed(false); }, { placeholder: '— choisir —' })),
           field('Quantité (nombre ou formule)', exprInput(it.qte, v => { const t = String(v).trim(); it.qte = /^\d+$/.test(t) ? Number(t) : t; changed(false); }, 'ex. 2 ou nb_hf')),
           field('Pourquoi (valeurs entre accolades)', textInput(it.pourquoi, v => { setOpt(it, 'pourquoi', v); changed(false); })),
-          h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Retirer le produit ' + (k + 1) + ' de la règle ' + (i + 1), onclick: () => { g.items.splice(k, 1); changed(false); draw(); } }, '✕')))),
+          h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Retirer le produit ' + (k + 1) + ' de la règle ' + (i + 1), onclick: () => { g.items.splice(k, 1); changed(false); draw(); } }, '✕')),
+          itemExtras(it, products))),
         h('div', { class: 'ed-actions' }, h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { g.items.push({ produit: '', qte: 1, pourquoi: '' }); changed(false); draw(); } }, '+ Produit')),
         field('Remarque affichée (facultatif)', textInput(g.note, v => { setOpt(g, 'note', v); changed(false); })));
     }),
@@ -1492,6 +1580,7 @@
     else if (section === 'reco') { active = 'reco'; content = screenReco(); }
     else if (section === 'reco-question') { active = 'reco'; content = screenRecoQuestion(id); }
     else if (section === 'reco-bloc') { active = 'reco'; content = screenRecoBloc(id); }
+    else if (section === 'reco-liaisons') { active = 'reco'; content = screenRecoLiaisons(); }
     else if (section === 'veille') { active = 'news'; content = screenNewsList(); }
     else if (section === 'actu') { active = 'news'; content = screenNewsItem(id); }
     else if (section === 'verif') { active = 'verif'; content = screenVerif(); }

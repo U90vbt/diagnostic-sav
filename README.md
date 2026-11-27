@@ -326,6 +326,9 @@ L'onglet **Recommander** (`#/recommander`) pose des questions **chiffrées** (ty
 3. **Contrôles de cohérence**, affichés en alertes avec une solution : budget et ports PoE des switchs (tables de `outils.json`), produits audio/vidéo sur IP sans réseau dédié, nombre de micros HF par bande de 44 MHz, longueur de liaison au-delà de 100 m en Ethernet, règles libres.
 4. **Trois niveaux côte à côte** (Essentiel, Confort, Premium ; onglets sur mobile). Chaque produit se **remplace** par un autre de la même famille (le même type en premier) et se **compare** dans le comparateur. **Copier le devis** produit le texte du niveau choisi, sans prix.
 
+5. **Salles divisibles et synoptique** : pour deux salles séparées par une cloison amovible, l'outil compose la solution salle par salle (zones), ajoute la fusion (capteur de cloison, salle maître) et génère le **synoptique de câblage** (une colonne par zone) et la **liste des liaisons** (de, port, vers, port, type, longueur). Chaque liaison est contrôlée contre les longueurs maximales de `outils.json` (HDMI, USB, Ethernet, HDBaseT…). Le synoptique se télécharge en SVG, les liaisons en CSV, et elles figurent dans le devis.
+6. **Marque imposée** : la réponse « Yealink » à la question « Écosystème » oriente les règles et limite les remplacements à cette marque.
+
 Toutes les réponses sont dans l'adresse (`#/recommander?type=conf&jauge=300…`) : un lien se partage et chaque réponse se modifie depuis « Vos réponses ».
 
 ### Format de `data/reco.json` (schéma 2)
@@ -349,6 +352,9 @@ Toutes les réponses sont dans l'adresse (`#/recommander?type=conf&jauge=300…`
 - **Formules** (`si`, `formule`, `qte`) : nombres (`2.5`), textes entre guillemets, réponses (`jauge`), calculs déjà définis, repères (`p.micro_zone_m2`), `+ - * /`, comparaisons, `et`, `ou`, `non`, `dans ["a", "b"]`, `arrondi_sup()`, `arrondi_inf()`, `arrondi()`, `min()`, `max()`. Le mot `niveau` vaut l'identifiant du niveau calculé. Aucun code n'est exécuté : `reco-engine.js` lit les formules avec son propre analyseur.
 - Dans un bloc, la **première règle vraie** s'applique (`"mode": "toutes"` : toutes les règles vraies). Une règle sans `niveaux` vaut pour tous.
 - Messages et justifications acceptent des valeurs entre accolades : `{nb_enceintes} enceintes pour {surface_salle} m²`.
+- **Lignes hors catalogue** : une ligne peut porter un `libelle` au lieu d'un `produit` (accessoire, élément d'un pack), avec `inclus` (le produit qui la contient, sans quantité au devis), `source` (lien vers la fiche constructeur) et `status: "draft"`.
+- **Synoptique** : `zones` (colonnes, dans l'ordre), `types_liaison` (`label`, `liaison` = identifiant de la table des longueurs de `outils.json`, `couleur` 0 à 7), et sur chaque ligne `repere` + `zone`. `liaisons` : `{ "de": "s1_ecran", "port_de": "HDMI", "vers": "s1_tx", "port_vers": "HDMI", "type": "hdmi", "longueur": "distance_baie", "si": "distance_baie > 5" }`. Une liaison n'apparaît que si ses deux repères sont dans la configuration.
+- `meta.question_marque` désigne la question dont les réponses portent une `marque`.
 - Types de contrôles : `poe`, `reseau` (`question`, `sans`, `motif` cherché dans les caractéristiques du catalogue), `longueur` (`question`, `liaison` de `outils.json`), `regle`.
 - `node tools/validate.mjs` vérifie les références (questions, calculs, repères, produits, niveaux) et simule toutes les combinaisons de réponses.
 - **Contenu livré : brouillon à valider.** Les repères sans notice constructeur (surface par enceinte, ratio d'écran) sont provisoires.

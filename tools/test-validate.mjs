@@ -46,6 +46,10 @@ const cases = [
   ['formule de recommandation illisible', ({ edit }) => edit('reco.json', r => { r.calculs[0].formule = 'longueur * (largeur'; }), 1, 'formule illisible'],
   ['référence inconnue dans une formule', ({ edit }) => edit('reco.json', r => { r.calculs[0].formule = 'longueur * largeur_salle'; }), 1, '« largeur_salle » n\'est ni une question'],
   ['repère inconnu dans une formule', ({ edit }) => edit('reco.json', r => { r.calculs[0].formule = 'longueur * p.inexistant'; }), 1, 'paramètre « p.inexistant » inconnu'],
+  ['liaison vers un repère absent', ({ edit }) => edit('reco.json', r => { r.liaisons[0].vers = 'repere_fantome'; }), 1, 'repère d\'arrivée « repere_fantome » absent des blocs'],
+  ['type de liaison inconnu', ({ edit }) => edit('reco.json', r => { r.liaisons[0].type = 'laser'; }), 1, 'type « laser » inconnu'],
+  ['zone inconnue sur une ligne', ({ edit }) => edit('reco.json', r => { const it = r.modules.flatMap(m => m.regles).flatMap(g => g.items).find(x => x.zone); it.zone = 'grenier'; }), 1, 'zone « grenier » inconnue'],
+  ['ligne sans produit ni libellé', ({ edit }) => edit('reco.json', r => { const it = r.modules.flatMap(m => m.regles).flatMap(g => g.items).find(x => x.libelle); delete it.libelle; }), 1, 'ni produit du catalogue, ni libellé'],
   ['niveau inconnu dans une règle', ({ edit }) => edit('reco.json', r => { r.modules[0].regles[0].niveaux = ['luxe']; }), 1, 'niveau « luxe » inconnu'],
   ['produit en double (même marque et modèle)', ({ edit }) => edit('decisions.json', d => {
     const [id, p] = Object.entries(d.products)[0]; d.products[id + '-bis'] = { ...p };

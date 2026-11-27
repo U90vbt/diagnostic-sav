@@ -226,8 +226,10 @@
           const qty = q === undefined ? 1 : Math.max(0, Math.round(q));
           if (!qty) return;
           const key = m.id + ':' + (m.regles || []).indexOf(r) + ':' + i;
-          const swapped = ctx.swaps && ctx.swaps[niveau + '|' + key];
-          items.push({ key, product: swapped || it.produit, original: it.produit, qty, why: fill(it.pourquoi, env) });
+          const swapped = it.produit && ctx.swaps && ctx.swaps[niveau + '|' + key];
+          items.push({ key, product: swapped || it.produit || null, original: it.produit || null, qty, why: fill(it.pourquoi, env),
+            libelle: it.libelle ? fill(it.libelle, env) : null, repere: it.repere || null, zone: it.zone || null,
+            inclus: it.inclus || null, source: it.source || null, status: it.status || null });
         });
         if (r.note) notes.push(fill(r.note, env));
       });
@@ -235,11 +237,52 @@
     }
     const all = modules.flatMap(m => m.items);
     const alerts = [];
+    const liaisons = computeLinks(data, env, all, ctx, alerts);
     for (const c of data.controles || []) {
       try { alerts.push(...runCheck(c, { env, all, answers, ctx })); }
       catch (err) { alerts.push({ niveau: 'info', message: 'Contrôle « ' + (c.type || '?') + ' » impossible : ' + err.message }); }
     }
-    return { niveau, calculs, modules, alerts, values };
+    return { niveau, calculs, modules, alerts, values, liaisons };
+  }
+
+  /* ---------------- liaisons (synoptique) ---------------- */
+  /** Liaisons dont les deux extrémités sont dans la configuration ; longueurs contrôlées. */
+  function computeLinks(data, env, all, ctx, alerts) {
+    const byRef = new Map();
+    for (const it of all) if (it.repere && !byRef.has(it.repere)) byRef.set(it.repere, it);
+    const types = data.types_liaison || {};
+    const ref = ((ctx.outils || {}).longueurs || {}).liaisons || [];
+    const out = [];
+    for (const l of data.liaisons || []) {
+      if (!test(l.si, env)) continue;
+      const a = byRef.get(l.de), b = byRef.get(l.vers);
+      if (!a || !b) continue;
+      const t = types[l.type] || {};
+      const norme = ref.find(x => x.id === t.liaison);
+      const max = t.max != null ? Number(t.max) : (norme ? norme.max : undefined);
+      const len = l.longueur == null || l.longueur === '' ? undefined : value(l.longueur, env);
+      out.push({ de: a, vers: b, portDe: l.port_de || '', portVers: l.port_vers || '', type: l.type, typeLabel: t.label || l.type,
+        couleur: t.couleur || 0, longueur: len, max, over: len !== undefined && max !== undefined && len > max,
+        solution: norme ? norme.solution : '', normeLabel: norme ? norme.label : '', note: fill(l.note, env) });
+    }
+    const groups = new Map();
+    for (const l of out.filter(x => x.over)) {
+      const g = groups.get(l.type) || { n: 0, len: 0, l };
+      g.n++; g.len = Math.max(g.len, l.longueur); groups.set(l.type, g);
+    }
+    for (const { n, len, l } of groups.values()) {
+      alerts.push({ niveau: 'erreur', message: n + ' liaison' + (n > 1 ? 's' : '') + ' « ' + l.typeLabel + ' » jusqu\'à ' + fmtNum(len, 0) + ' m : au-delà des ' + fmtNum(l.max, 0) + ' m ' + (l.normeLabel ? '(' + l.normeLabel + ')' : 'admis') + '. ' + (l.solution || '') });
+    }
+    return out;
+  }
+
+  /** Marque imposée par la réponse à la question désignée dans meta.question_marque (sinon null). */
+  function brandOf(data, answers) {
+    const qid = data.meta && data.meta.question_marque;
+    if (!qid || !(qid in answers)) return null;
+    const q = (data.questions || []).find(x => x.id === qid);
+    const o = q && (q.options || []).find(x => x.id === answers[qid]);
+    return o && o.marque ? o.marque : null;
   }
 
   /* ---------------- contrôles de cohérence ---------------- */
@@ -358,6 +401,9 @@
       known.add(c.id);
     });
     const mIds = new Set();
+    const reperes = new Set();
+    const zones = new Set((data.zones || []).map(z => z.id));
+    (data.zones || []).forEach((z, i) => { if (!z.id || !/^[a-z][a-z0-9_]*$/.test(z.id)) w.push('Zone ' + (i + 1) + ' : identifiant invalide.'); if (!z.label) w.push('Zone « ' + (z.id || i + 1) + ' » : libellé manquant.'); });
     (data.modules || []).forEach((m, i) => {
       const where = 'Bloc « ' + (m.titre || m.id || i + 1) + ' »';
       if (!m.id) w.push(where + ' : identifiant manquant.');
@@ -370,8 +416,14 @@
         for (const n of r.niveaux || []) if (!niveaux.has(n)) w.push(rw + ' : niveau « ' + n + ' » inconnu.');
         if (!(r.items || []).length && !r.note) w.push(rw + ' : ni produit, ni remarque.');
         (r.items || []).forEach((it, k) => {
-          if (!it.produit) w.push(rw + ', ligne ' + (k + 1) + ' : produit manquant.');
-          else if (!hasProduct(it.produit)) w.push(rw + ' : produit inconnu du catalogue (« ' + it.produit + ' »).');
+          const lw = rw + ', ligne ' + (k + 1);
+          if (!it.produit && !it.libelle) w.push(lw + ' : ni produit du catalogue, ni libellé hors catalogue.');
+          else if (it.produit && !hasProduct(it.produit)) w.push(rw + ' : produit inconnu du catalogue (« ' + it.produit + ' »).');
+          if (it.produit && it.libelle) w.push(lw + ' : choisir un produit du catalogue OU un libellé hors catalogue, pas les deux.');
+          if (it.repere != null && !/^[a-z][a-z0-9_]*$/.test(it.repere)) w.push(lw + ' : repère « ' + it.repere + ' » invalide (minuscules, chiffres et _).');
+          if (it.repere) reperes.add(it.repere);
+          if (it.zone && !zones.has(it.zone)) w.push(lw + ' : zone « ' + it.zone + ' » inconnue.');
+          if (it.inclus && it.produit === it.inclus) w.push(lw + ' : un produit ne peut pas être inclus dans lui-même.');
           checkExpr(it.qte, rw + ', quantité', known);
         });
       });
@@ -382,10 +434,26 @@
       else if (c.type === 'reseau' || c.type === 'longueur') { if (!qIds.has(c.question)) w.push(where + ' : question « ' + c.question + ' » inconnue.'); }
       else if (c.type !== 'poe') w.push(where + ' : type inconnu (poe, reseau, longueur, regle).');
     });
+    const types = data.types_liaison || {};
+    for (const [id, t] of Object.entries(types)) {
+      if (!/^[a-z][a-z0-9_]*$/.test(id)) w.push('Type de liaison « ' + id + ' » : identifiant invalide.');
+      if (!t.label) w.push('Type de liaison « ' + id + ' » : libellé manquant.');
+    }
+    (data.liaisons || []).forEach((l, i) => {
+      const where = 'Liaison ' + (i + 1) + ' (' + (l.de || '?') + ' → ' + (l.vers || '?') + ')';
+      if (!l.de || !reperes.has(l.de)) w.push(where + ' : repère de départ « ' + (l.de || '') + ' » absent des blocs.');
+      if (!l.vers || !reperes.has(l.vers)) w.push(where + ' : repère d\'arrivée « ' + (l.vers || '') + ' » absent des blocs.');
+      if (l.de && l.de === l.vers) w.push(where + ' : départ et arrivée identiques.');
+      if (!types[l.type]) w.push(where + ' : type « ' + (l.type || '') + ' » inconnu.');
+      checkExpr(l.si, where + ' (condition)', known);
+      checkExpr(l.longueur, where + ' (longueur)', known);
+    });
+    const mq = data.meta && data.meta.question_marque;
+    if (mq && !qIds.has(mq)) w.push('meta.question_marque : question « ' + mq + ' » inconnue.');
     return w;
   }
 
-  const API = { parse: compile, evaluate, refs, test, value, fill, cleanAnswers, visibleQuestions, compute, validate, fmtNum };
+  const API = { brandOf, parse: compile, evaluate, refs, test, value, fill, cleanAnswers, visibleQuestions, compute, validate, fmtNum };
   root.DIAGSAV_RECO = API;
   if (typeof module === 'object' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

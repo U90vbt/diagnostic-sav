@@ -2154,15 +2154,115 @@
     return o ? o.label : String(v);
   }
   /** Produits de la même famille (pour remplacer une ligne). */
-  function recoAlternatives(pid) {
-    const pr = state.products.get(pid);
+  function recoAlternatives(pid, brand) {
+    const pr = pid && state.products.get(pid);
     if (!pr || !pr.family) return [];
+    const okBrand = p => !brand || String(p.brand).toLowerCase() === String(brand).toLowerCase();
     const typeKey = t => String(t || '').toLowerCase().split(/[ ,(·]/)[0];
-    return [...state.products.entries()].filter(([id, p]) => id !== pid && p.family === pr.family)
+    return [...state.products.entries()].filter(([id, p]) => id !== pid && p.family === pr.family && okBrand(p))
       .map(([id, p]) => [id, p, typeKey(p.type) === typeKey(pr.type)])
       .sort((a, b) => (b[2] - a[2]) || productLabel(a[1]).localeCompare(productLabel(b[1]), 'fr'));
   }
   const recoSwaps = {};   // niveau|bloc:règle:ligne → produit choisi (le temps de la session)
+
+  /* ---------------------------------------------------------------------
+     Synoptique de câblage généré à partir des liaisons de reco.json :
+     une colonne par zone, une boîte par équipement, les liaisons entre
+     zones tracées en équerre (lignes derrière les boîtes), les liaisons
+     internes à une zone listées dans le tableau.
+     --------------------------------------------------------------------- */
+  const SYN_COLORS = ['#878a94', '#56a7d5', '#e0823d', '#2fb57a', '#9a7fe0', '#d4a72c', '#d75c8a', '#4fb3b3'];
+  const xmlEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const cut = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+  function recoItemName(it) {
+    const pr = it.product && state.products.get(it.product);
+    return pr ? productLabel(pr) : (it.libelle || it.product || '?');
+  }
+  function recoItemShort(it) {
+    const pr = it.product && state.products.get(it.product);
+    return pr ? pr.model : (it.libelle || it.product || '?').replace(/^Yealink /, '');
+  }
+  function recoItemSub(it) {
+    const pr = it.product && state.products.get(it.product);
+    const incl = it.inclus ? state.products.get(it.inclus) : null;
+    if (it.inclus) return 'inclus · ' + (incl ? incl.model : it.inclus);
+    return (it.qty > 1 ? it.qty + ' × ' : '') + (pr ? pr.type : 'hors catalogue');
+  }
+  function buildSynoptic(data, r) {
+    const zones = (data.zones || []).filter(z => r.modules.some(m => m.items.some(it => it.zone === z.id)));
+    if (!zones.length || !r.liaisons.length) return null;
+    const BW = 184, BH = 44, STEP = 56, COLW = 216, GUT = 88, M = 16, TOP = 24, HEAD = 36;
+    const col = new Map(zones.map((z, i) => [z.id, i]));
+    const boxes = [];
+    const byKey = new Map();
+    zones.forEach((z, ci) => {
+      let row = 0;
+      for (const m of r.modules) for (const it of m.items) {
+        if (it.zone !== z.id) continue;
+        const b = { it, ci, x: M + ci * (COLW + GUT) + (COLW - BW) / 2, y: TOP + HEAD + row * STEP, deg: 0 };
+        boxes.push(b); byKey.set(it, b); row++;
+      }
+    });
+    const rows = Math.max(...zones.map((z, ci) => boxes.filter(b => b.ci === ci).length));
+    const zoneH = HEAD + rows * STEP + 4;
+    const cross = r.liaisons.filter(l => byKey.has(l.de) && byKey.has(l.vers) && byKey.get(l.de).ci !== byKey.get(l.vers).ci);
+    const internal = r.liaisons.length - cross.length;
+    for (const l of cross) { byKey.get(l.de).deg++; byKey.get(l.vers).deg++; }
+    // routage : une voie par « moyeu » (l'extrémité la plus reliée) dans la gouttière voisine de l'autre extrémité
+    const gutters = new Map();
+    const routes = cross.map(l => {
+      let hub = byKey.get(l.vers), leaf = byKey.get(l.de);
+      if (leaf.deg > hub.deg || (leaf.deg === hub.deg && leaf.y < hub.y && false)) [hub, leaf] = [leaf, hub];
+      const right = hub.ci > leaf.ci;
+      const g = right ? leaf.ci : leaf.ci - 1;    // gouttière à droite de la colonne g
+      if (!gutters.has(g)) gutters.set(g, []);
+      const lanes = gutters.get(g);
+      if (!lanes.includes(hub)) lanes.push(hub);
+      return { l, hub, leaf, right, g };
+    });
+    for (const lanes of gutters.values()) lanes.sort((a, b) => a.y - b.y);
+    const laneX = (g, hub, right) => {
+      const lanes = gutters.get(g); const n = lanes.length; const i = lanes.indexOf(hub);
+      const gx0 = M + g * (COLW + GUT) + COLW, sp = Math.min(12, (GUT - 24) / Math.max(1, n - 1));
+      // la voie la plus proche du moyeu pour le moyeu le plus haut côté leaf : ordre simple, centré
+      const start = gx0 + GUT / 2 - sp * (n - 1) / 2;
+      return Math.round(right ? start + sp * (n - 1 - i) : start + sp * i);
+    };
+    const W = M * 2 + zones.length * COLW + (zones.length - 1) * GUT;
+    const types = data.types_liaison || {};
+    const usedTypes = [...new Set(cross.map(l => l.type))];
+    const legendY = TOP + zoneH + 28;
+    const H = legendY + Math.ceil(usedTypes.length / 3) * 22 + (internal ? 22 : 0) + 12;
+    const color = l => SYN_COLORS[(types[l.type] && types[l.type].couleur) || 0] || SYN_COLORS[0];
+    const P = [];
+    P.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" font-family="Inter, system-ui, sans-serif" font-size="13" role="img" aria-label="Synoptique de câblage">');
+    P.push('<rect width="' + W + '" height="' + H + '" fill="var(--surface, #151518)"/>');
+    zones.forEach((z, ci) => {
+      const x = M + ci * (COLW + GUT);
+      P.push('<rect x="' + x + '" y="' + TOP + '" width="' + COLW + '" height="' + zoneH + '" rx="8" fill="var(--surface-2, #1b1b1f)" stroke="var(--line-strong, #3a3b40)"/>');
+      P.push('<text x="' + (x + 16) + '" y="' + (TOP + 23) + '" font-weight="600" fill="var(--text, #ebedf3)">' + xmlEsc(cut(z.label, 26)) + '</text>');
+    });
+    for (const { l, hub, leaf, right, g } of routes) {
+      const lx = laneX(g, hub, right);
+      const ly = leaf.y + BH / 2 + (leaf.y === hub.y ? 0 : 6), hy = hub.y + BH / 2 - (leaf.y === hub.y ? 0 : 6);   // décalés : une sortie ne se confond pas avec l'arrivée d'un autre moyeu
+      const lxEdge = right ? leaf.x + BW : leaf.x, hxEdge = right ? hub.x : hub.x + BW;
+      const d = 'M' + lxEdge + ' ' + ly + 'H' + lx + 'V' + hy + 'H' + hxEdge;
+      P.push('<path d="' + d + '" fill="none" stroke="' + color(l) + '" stroke-width="2"' + (l.over ? ' stroke-dasharray="6 4"' : '') + '><title>' + xmlEsc(recoItemName(l.de) + ' → ' + recoItemName(l.vers) + ' · ' + l.typeLabel + (l.longueur !== undefined ? ' · ' + RE().fmtNum(l.longueur, 0) + ' m' : '')) + '</title></path>');
+    }
+    for (const b of boxes) {
+      P.push('<g><rect x="' + b.x + '" y="' + b.y + '" width="' + BW + '" height="' + BH + '" rx="8" fill="var(--surface, #151518)" stroke="var(--line-strong, #3a3b40)" stroke-width="1.25"/>');
+      P.push('<text x="' + (b.x + 12) + '" y="' + (b.y + 18) + '" font-weight="600" fill="var(--text, #ebedf3)">' + xmlEsc(cut(recoItemShort(b.it), 23)) + '</text>');
+      P.push('<text x="' + (b.x + 12) + '" y="' + (b.y + 34) + '" font-size="11.5" fill="var(--muted, #878a94)">' + xmlEsc(cut(recoItemSub(b.it), 27)) + '</text></g>');
+    }
+    usedTypes.forEach((t, i) => {
+      const x = M + (i % 3) * 230, y = legendY + Math.floor(i / 3) * 22;
+      P.push('<line x1="' + x + '" y1="' + (y - 4) + '" x2="' + (x + 24) + '" y2="' + (y - 4) + '" stroke="' + color({ type: t }) + '" stroke-width="2"/>');
+      P.push('<text x="' + (x + 32) + '" y="' + y + '" font-size="11.5" fill="var(--text-2, #b4b7c0)">' + xmlEsc(cut((types[t] && types[t].label) || t, 30)) + '</text>');
+    });
+    if (internal) P.push('<text x="' + M + '" y="' + (legendY + Math.ceil(usedTypes.length / 3) * 22) + '" font-size="11.5" fill="var(--muted, #878a94)">' + internal + ' liaison' + (internal > 1 ? 's' : '') + ' à l’intérieur d’une zone : voir le tableau. Trait pointillé : longueur dépassée.</text>');
+    P.push('</svg>');
+    return { svg: P.join(''), width: W };
+  }
 
   async function renderReco(route) {
     showView('reco');
@@ -2294,9 +2394,21 @@
           p.status === 'draft' ? h('span', { class: 'badge badge--draft' }, 'À valider') : null,
           p.source ? h('span', { class: 'reco-calc__src' }, p.source) : null))))) : null;
 
+    const brand = E.brandOf(data, answers);
     const itemRow = (n, it) => {
+      if (!it.original) {
+        const incl = it.inclus && state.products.get(it.inclus);
+        return h('li', { class: 'reco-item reco-item--extra' + (it.inclus ? ' is-included' : '') },
+          h('span', { class: 'reco-item__qty' }, it.inclus ? '' : it.qty + ' ×'),
+          h('div', { class: 'reco-item__main' },
+            h('span', { class: 'reco-item__name' }, it.libelle),
+            h('span', { class: 'reco-item__type' }, it.inclus ? 'Inclus dans ' + (incl ? productLabel(incl) : it.inclus) : 'Hors catalogue',
+              it.status === 'draft' ? h('span', { class: 'badge badge--draft' }, 'À valider') : null),
+            it.why ? h('span', { class: 'reco-item__why' }, it.why) : null,
+            it.source ? h('a', { class: 'reco-item__src', href: it.source, rel: 'noopener', target: '_blank' }, 'Fiche constructeur') : null));
+      }
       const pr = state.products.get(it.product);
-      const alts = recoAlternatives(it.original);
+      const alts = recoAlternatives(it.original, brand);
       const swapKey = n.id + '|' + it.key;
       const sel = alts.length ? h('select', { class: 'reco-swap', 'aria-label': 'Remplacer ' + (pr ? productLabel(pr) : it.product) + ' par un produit de la même famille',
         onchange: ev => { if (ev.target.value === it.original) delete recoSwaps[swapKey]; else recoSwaps[swapKey] = ev.target.value; rerender(); } },
@@ -2325,7 +2437,7 @@
         h('span', null, h('span', { class: 'visually-hidden' }, word + ' : '), a.message, a.source ? h('span', { class: 'reco-calc__src' }, 'Source : ' + a.source) : null));
     }));
     const column = ({ n, r }) => {
-      const count = r.modules.reduce((s, m) => s + m.items.reduce((t, it) => t + it.qty, 0), 0);
+      const count = r.modules.reduce((s, m) => s + m.items.reduce((t, it) => t + (it.inclus ? 0 : it.qty), 0), 0);
       const alerts = r.alerts.filter(a => a.niveau !== 'ok' && !commonMsg.has(a.message));
       const oks = r.alerts.filter(a => a.niveau === 'ok');
       return h('section', { class: 'reco-level', id: 'niveau-' + n.id, 'data-level': n.id, 'aria-labelledby': 'niveau-' + n.id + '-t' },
@@ -2345,6 +2457,8 @@
     const tabs = h('div', { class: 'reco-tabs', role: 'tablist', 'aria-label': 'Niveau affiché' }, niveaux.map(n =>
       h('a', { class: 'reco-tab', role: 'tab', href: recoHash(answers, { n: n.id }), 'aria-selected': n.id === nivSel ? 'true' : 'false' }, n.label)));
     const grid = h('div', { class: 'reco-levels', 'data-show': nivSel }, configs.map(column));
+    const sel = configs.find(c => c.n.id === nivSel) || configs[0];
+    const syn = sel ? recoWiring(data, answers, sel, niveaux, nivSel) : null;
     const swapped = Object.keys(recoSwaps).length;
 
     return h('article', { class: 'panel reco-result' },
@@ -2355,10 +2469,46 @@
         (data.meta && data.meta.disclaimer) ? h('p', { class: 'result__summary' }, data.meta.disclaimer) : null,
         calcBlock,
         common.length ? h('section', { class: 'reco-common' }, h('h3', { class: 'block-title' }, 'Points à vérifier, tous niveaux'), alertList(common)) : null,
-        tabs, grid,
+        tabs, grid, syn,
         h('div', { class: 'result__footer' },
           swapped ? h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => { for (const k of Object.keys(recoSwaps)) delete recoSwaps[k]; rerender(); } }, 'Annuler les remplacements (' + swapped + ')') : null,
           h('a', { class: 'btn', href: '#/recommander' }, 'Nouvelle recommandation'))));
+  }
+
+  /** Synoptique + tableau des liaisons du niveau choisi. */
+  function recoWiring(data, answers, { n, r }, niveaux, nivSel) {
+    if (!r.liaisons || !r.liaisons.length) return null;
+    const E = RE();
+    const syn = buildSynoptic(data, r);
+    const pic = h('div', { class: 'reco-syn__pic' });
+    if (syn) { pic.innerHTML = syn.svg; pic.style.setProperty('--syn-w', syn.width + 'px'); }
+    const fmtL = l => l.longueur === undefined ? '—' : E.fmtNum(l.longueur, 0) + ' m';
+    const end = (it, port) => h('span', null, h('strong', null, recoItemName(it)), port ? h('span', { class: 'muted' }, ' · ' + port) : null);
+    const over = r.liaisons.filter(l => l.over).length;
+    return h('section', { class: 'reco-syn', 'aria-labelledby': 'reco-syn-t' },
+      h('div', { class: 'reco-syn__head' },
+        h('h3', { class: 'block-title', id: 'reco-syn-t' }, 'Synoptique et liaisons · ' + n.label),
+        h('div', { class: 'reco-syn__levels', role: 'group', 'aria-label': 'Niveau du synoptique' }, niveaux.map(x =>
+          h('a', { class: 'chip-link', href: recoHash(answers, { n: x.id }), 'aria-current': x.id === nivSel ? 'true' : null }, x.label)))),
+      h('p', { class: 'reco-syn__lead' }, r.liaisons.length + ' liaisons' + (over ? ', dont ' + over + ' trop longue' + (over > 1 ? 's' : '') + ' pour leur type' : ', toutes dans les longueurs admises') + '. Longueurs estimées à partir de vos réponses, à métrer sur place.'),
+      syn ? h('div', { class: 'reco-syn__scroll' }, pic) : null,
+      h('div', { class: 'reco-syn__actions' },
+        syn ? h('button', { type: 'button', class: 'btn btn--small', onclick: () => downloadFile('synoptique-' + n.id + '.svg', syn.svg, 'image/svg+xml') }, 'Télécharger le synoptique (SVG)') : null,
+        h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => downloadFile('liaisons-' + n.id + '.csv', recoLinksCsv(r), 'text/csv;charset=utf-8') }, 'Liste des liaisons (CSV)')),
+      h('div', { class: 'reco-syn__table' },
+        h('table', { class: 'reco-links' },
+          h('thead', null, h('tr', null, ['De', 'Vers', 'Liaison', 'Longueur', 'Contrôle'].map(t => h('th', { scope: 'col' }, t)))),
+          h('tbody', null, r.liaisons.map(l => h('tr', { class: l.over ? 'is-over' : null },
+            h('td', null, end(l.de, l.portDe)), h('td', null, end(l.vers, l.portVers)),
+            h('td', null, l.typeLabel, l.note ? h('span', { class: 'reco-links__note' }, l.note) : null),
+            h('td', { class: 'num' }, fmtL(l)),
+            h('td', null, l.max === undefined ? '—' : (l.over ? '⚠ max ' + E.fmtNum(l.max, 0) + ' m' : '✓ ≤ ' + E.fmtNum(l.max, 0) + ' m'))))))));
+  }
+  function recoLinksCsv(r) {
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const rows = [['De', 'Port', 'Vers', 'Port', 'Liaison', 'Longueur (m)', 'Maximum (m)', 'Remarque']];
+    for (const l of r.liaisons) rows.push([recoItemName(l.de), l.portDe, recoItemName(l.vers), l.portVers, l.typeLabel, l.longueur === undefined ? '' : Math.round(l.longueur), l.max === undefined ? '' : l.max, l.note]);
+    return '\ufeff' + rows.map(x => x.map(q).join(';')).join('\r\n');
   }
 
   /** Texte de devis pré-rempli pour un niveau, sans prix (le catalogue n'en contient pas). */
@@ -2378,6 +2528,13 @@
     for (const m of r.modules) {
       L.push(''); L.push(m.titre + ' :');
       m.items.forEach(it => {
+        if (!it.original) {
+          if (it.inclus) { const incl = state.products.get(it.inclus); L.push('      dont ' + it.libelle + ' (inclus dans ' + (incl ? productLabel(incl) : it.inclus) + ')'); return; }
+          L.push('  ' + it.qty + ' × ' + it.libelle + ' (hors catalogue' + (it.status === 'draft' ? ', à valider' : '') + ')');
+          if (it.why) L.push('      ' + it.why);
+          L.push('      Prix unitaire : à compléter');
+          return;
+        }
         const pr = state.products.get(it.product);
         const name = pr ? productLabel(pr) : '(produit inconnu : ' + it.product + ')';
         const ref = pr && pr.ref ? ' — réf. ' + pr.ref : '';
@@ -2387,6 +2544,10 @@
         L.push('      Prix unitaire : à compléter');
       });
       m.notes.forEach(t => L.push('  Remarque : ' + t));
+    }
+    if (r.liaisons && r.liaisons.length) {
+      L.push(''); L.push('Liaisons (' + r.liaisons.length + ', longueurs estimées) :');
+      r.liaisons.forEach(l => L.push('  - ' + recoItemName(l.de) + (l.portDe ? ' [' + l.portDe + ']' : '') + ' → ' + recoItemName(l.vers) + (l.portVers ? ' [' + l.portVers + ']' : '') + ' : ' + l.typeLabel + (l.longueur !== undefined ? ', ' + E.fmtNum(l.longueur, 0) + ' m' : '') + (l.over ? ' (TROP LONG)' : '')));
     }
     const alerts = r.alerts.filter(a => a.niveau !== 'ok');
     if (alerts.length) { L.push(''); L.push('Points à vérifier :'); alerts.forEach(a => L.push('  - ' + a.message)); }
@@ -2818,7 +2979,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.22.2';
+  const APP_VERSION = '1.23.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;
