@@ -1,0 +1,257 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "updated": "2026-11-27",
+    "note": "Ports et alimentation des produits, relevés dans les catalogues (document et page) ou sur la fiche web du constructeur (marqués à valider). Sert au synoptique, au contrôle des ports et au budget PoE de la recommandation avant-vente."
+  },
+  "types_port": {
+    "hdmi_in": "Entrée HDMI",
+    "hdmi_out": "Sortie HDMI",
+    "usb_a": "USB-A",
+    "usb_b": "USB-B",
+    "usb_c": "USB-C",
+    "vch": "VCH (RJ45 alimenté)",
+    "rj45": "RJ45 réseau",
+    "poe_out": "RJ45 avec PoE fourni",
+    "sfp": "SFP / SFP+",
+    "codec": "Codec (liaison entre AVHub)",
+    "gpio": "GPIO"
+  },
+  "produits": {
+    "yealink-avhub": {
+      "ports": [
+        {
+          "type": "vch",
+          "nombre": 7
+        },
+        {
+          "type": "usb_b",
+          "nombre": 1
+        },
+        {
+          "type": "usb_a",
+          "nombre": 2
+        },
+        {
+          "type": "codec",
+          "nombre": 1
+        }
+      ],
+      "source": "yealink-web",
+      "url": "https://www.yealink.com/en/product-tech-specs/room-system-avhub",
+      "status": "draft"
+    },
+    "yealink-uvc86": {
+      "ports": [
+        {
+          "type": "vch",
+          "nombre": 1
+        },
+        {
+          "type": "hdmi_out",
+          "nombre": 1
+        }
+      ],
+      "source": "yealink-web",
+      "url": "https://www.yealink.com/en/product-campare/compatible-camera-uvc86_microsoft-teams-rooms-mvcs90_zoom-rooms-zvc860-iii",
+      "status": "draft"
+    },
+    "yealink-vch51-pro": {
+      "ports": [
+        {
+          "type": "rj45",
+          "nombre": 1
+        },
+        {
+          "type": "usb_c",
+          "nombre": 1
+        }
+      ],
+      "poe": "poe",
+      "source": "yealink-web",
+      "url": "https://www.yealink.com/en/product-detail/vch51pro",
+      "status": "draft"
+    },
+    "yealink-mshare-e2": {
+      "ports": [
+        {
+          "type": "hdmi_in",
+          "nombre": 1
+        },
+        {
+          "type": "usb_c",
+          "nombre": 1
+        },
+        {
+          "type": "usb_b",
+          "nombre": 1
+        }
+      ],
+      "source": "yealink-web",
+      "url": "https://www.yealink.com/en/product-campare/room-system-avhub_room-system-rch40_room-system-mshare-e2",
+      "status": "draft"
+    },
+    "yealink-ap08": {
+      "ports": [
+        {
+          "type": "usb_b",
+          "nombre": 2
+        },
+        {
+          "type": "poe_out",
+          "nombre": 3
+        }
+      ],
+      "source": "cata-uc-2026",
+      "page": 35
+    },
+    "yealink-rch40-e2": {
+      "ports": [
+        {
+          "type": "poe_out",
+          "nombre": 4
+        }
+      ],
+      "poe_budget": 90,
+      "source": "cata-uc-2026",
+      "page": 20
+    },
+    "yealink-en300": {
+      "ports": [
+        {
+          "type": "hdmi_in",
+          "nombre": 1
+        },
+        {
+          "type": "usb_c",
+          "nombre": 1
+        },
+        {
+          "type": "rj45",
+          "nombre": 1
+        }
+      ],
+      "poe": "poe+",
+      "source": "cata-uc-2026",
+      "page": 49
+    },
+    "yealink-de300": {
+      "ports": [
+        {
+          "type": "hdmi_out",
+          "nombre": 1
+        },
+        {
+          "type": "rj45",
+          "nombre": 1
+        }
+      ],
+      "poe": "poe+",
+      "source": "cata-uc-2026",
+      "page": 49
+    },
+    "netgear-gsm4212px": {
+      "ports": [
+        {
+          "type": "poe_out",
+          "nombre": 8
+        },
+        {
+          "type": "rj45",
+          "nombre": 2
+        },
+        {
+          "type": "sfp",
+          "nombre": 2
+        }
+      ],
+      "poe_budget": 240,
+      "source": "focus-ete-2026",
+      "page": 52
+    },
+    "netgear-gsm4328": {
+      "ports": [
+        {
+          "type": "poe_out",
+          "nombre": 24
+        },
+        {
+          "type": "sfp",
+          "nombre": 4
+        }
+      ],
+      "poe_budget": 648,
+      "source": "focus-ete-2026",
+      "page": 53
+    },
+    "netgear-gsm4230px": {
+      "ports": [
+        {
+          "type": "poe_out",
+          "nombre": 24
+        },
+        {
+          "type": "rj45",
+          "nombre": 2
+        },
+        {
+          "type": "sfp",
+          "nombre": 4
+        }
+      ],
+      "poe_budget": 480,
+      "source": "focus-ete-2025",
+      "page": 60
+    },
+    "netgear-gsm4248px": {
+      "ports": [
+        {
+          "type": "poe_out",
+          "nombre": 40
+        },
+        {
+          "type": "rj45",
+          "nombre": 2
+        },
+        {
+          "type": "sfp",
+          "nombre": 8
+        }
+      ],
+      "poe_budget": 960,
+      "source": "focus-ete-2025",
+      "page": 60
+    },
+    "netgear-gsm4248ux": {
+      "ports": [
+        {
+          "type": "poe_out",
+          "nombre": 40
+        },
+        {
+          "type": "rj45",
+          "nombre": 2
+        },
+        {
+          "type": "sfp",
+          "nombre": 8
+        }
+      ],
+      "poe_budget": 2880,
+      "source": "focus-ete-2026",
+      "page": 52
+    },
+    "shure-mxa920": {
+      "ports": [
+        {
+          "type": "rj45",
+          "nombre": 1
+        }
+      ],
+      "poe": "poe",
+      "source": "guide-audio-2025",
+      "page": 178,
+      "status": "draft"
+    }
+  }
+}

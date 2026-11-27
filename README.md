@@ -17,7 +17,8 @@ Site web statique qui remplace les procédures papier par un arbre de décision 
 ├── index.html             Structure de la page
 ├── styles.css             Thème sombre épuré
 ├── app.js                 Navigation, recherche, diagnostic, assistant produit
-├── reco-engine.js         Moteur avant-vente : formules, calculs, contrôles (site et vérificateur)
+├── reco-engine.js         Moteur avant-vente : formules, salles, liaisons, contrôles (site et vérificateur)
+├── reco-export.js         Export du dossier avant-vente en PDF et en .xlsx (chargé à la demande)
 ├── editor.js              Éditeur des procédures (chargé seulement à l'ouverture de l'onglet)
 ├── pdf.js                 Générateur PDF minimal (chargé seulement à l'export)
 ├── sw.js                  Service worker (mode hors ligne)
@@ -28,6 +29,7 @@ Site web statique qui remplace les procédures papier par un arbre de décision 
 └── data/
     ├── decisions.json     Arbre de décision + fiches produits (marque, modèle, page)
     ├── reco.json          Règles de recommandation avant-vente (onglet Recommander)
+    ├── connectique.json   Ports, PoE et budgets PoE des produits (avant-vente), sourcés
     ├── news.json          Veille technologique (onglet Veille)
     └── catalogue.json     Caractéristiques produits et synonymes (Assistant produit)
 ```
@@ -326,8 +328,12 @@ L'onglet **Recommander** (`#/recommander`) pose des questions **chiffrées** (ty
 3. **Contrôles de cohérence**, affichés en alertes avec une solution : budget et ports PoE des switchs (tables de `outils.json`), produits audio/vidéo sur IP sans réseau dédié, nombre de micros HF par bande de 44 MHz, longueur de liaison au-delà de 100 m en Ethernet, règles libres.
 4. **Trois niveaux côte à côte** (Essentiel, Confort, Premium ; onglets sur mobile). Chaque produit se **remplace** par un autre de la même famille (le même type en premier) et se **compare** dans le comparateur. **Copier le devis** produit le texte du niveau choisi, sans prix.
 
-5. **Salles divisibles et synoptique** : pour deux salles séparées par une cloison amovible, l'outil compose la solution salle par salle (zones), ajoute la fusion (capteur de cloison, salle maître) et génère le **synoptique de câblage** (une colonne par zone) et la **liste des liaisons** (de, port, vers, port, type, longueur). Chaque liaison est contrôlée contre les longueurs maximales de `outils.json` (HDMI, USB, Ethernet, HDBaseT…). Le synoptique se télécharge en SVG, les liaisons en CSV, et elles figurent dans le devis.
-6. **Marque imposée** : la réponse « Yealink » à la question « Écosystème » oriente les règles et limite les remplacements à cette marque.
+5. **Projets à plusieurs salles** : nombre de salles (1 à 4), surface et distance à la baie de chacune, cloisons amovibles et salle maître. Les blocs « par salle » sont calculés salle par salle ; le bloc « Fusion » ajoute un capteur par cloison et relie les AVHub. Contrôles : une seule tablette maître, ports disponibles de chaque équipement (ex. ports VCH et Codec de l'AVHub), 8 caméras au plus, fusion de plus de deux salles à valider.
+6. **Marque imposée** : la réponse à « Écosystème souhaité » oriente les règles ; dans les blocs « filtre_marque », un produit d'une autre marque est remplacé automatiquement par un produit de la même famille, et les remplacements proposés restent dans la marque.
+7. **Connectique sourcée** (`data/connectique.json`) : ports, alimentation PoE et budget PoE des produits, avec document et page (ou fiche web, « À valider »). Elle alimente le **contrôle des ports** et un **budget PoE exact** par switch (appareils réellement raccordés) ; les consommations inconnues sont listées.
+8. **Synoptique, liaisons et baie** : synoptique SVG (salles de part et d'autre de la baie), liste des liaisons (de, port, vers, port, type, longueur) contrôlées une à une contre les longueurs maximales (HDMI, USB, Ethernet 100 m, HDBaseT…), contenu de la baie.
+9. **Export complet du dossier** : **PDF** (besoin, dimensionnement, nomenclature, baie, synoptique vectoriel, liaisons, points à valider) et **tableur .xlsx** (une feuille par partie), générés dans le navigateur, sans librairie.
+
 
 Toutes les réponses sont dans l'adresse (`#/recommander?type=conf&jauge=300…`) : un lien se partage et chaque réponse se modifie depuis « Vos réponses ».
 
@@ -355,6 +361,8 @@ Toutes les réponses sont dans l'adresse (`#/recommander?type=conf&jauge=300…`
 - **Lignes hors catalogue** : une ligne peut porter un `libelle` au lieu d'un `produit` (accessoire, élément d'un pack), avec `inclus` (le produit qui la contient, sans quantité au devis), `source` (lien vers la fiche constructeur) et `status: "draft"`.
 - **Synoptique** : `zones` (colonnes, dans l'ordre), `types_liaison` (`label`, `liaison` = identifiant de la table des longueurs de `outils.json`, `couleur` 0 à 7), et sur chaque ligne `repere` + `zone`. `liaisons` : `{ "de": "s1_ecran", "port_de": "HDMI", "vers": "s1_tx", "port_vers": "HDMI", "type": "hdmi", "longueur": "distance_baie", "si": "distance_baie > 5" }`. Une liaison n'apparaît que si ses deux repères sont dans la configuration.
 - `meta.question_marque` désigne la question dont les réponses portent une `marque`.
+- **Plusieurs salles** : `meta.salles = { "nombre": "nb_salles", "max": 4, "si": "type == \"salles\"" }`. Une question, un calcul, un bloc, une zone ou une liaison marqués `"par_salle": true` sont répétés : la question `superficie` devient `superficie_1`, `superficie_2`… et, dans un bloc par salle, `superficie` désigne la salle en cours ; `{salle}` et `{maitre}` sont remplacés dans les repères, zones et libellés.
+- Lignes : `role` (ex. `tablette_maitre`) pour le contrôle `unicite`. Types de liaison : `port` (type de port compté) et `poe: true`. Contrôles : `ports`, `unicite`, `poe` (exact avec la connectique).
 - Types de contrôles : `poe`, `reseau` (`question`, `sans`, `motif` cherché dans les caractéristiques du catalogue), `longueur` (`question`, `liaison` de `outils.json`), `regle`.
 - `node tools/validate.mjs` vérifie les références (questions, calculs, repères, produits, niveaux) et simule toutes les combinaisons de réponses.
 - **Contenu livré : brouillon à valider.** Les repères sans notice constructeur (surface par enceinte, ratio d'écran) sont provisoires.

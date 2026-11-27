@@ -4416,6 +4416,13 @@
       "edition": "2025",
       "publisher": "Sidev (guide distributeur)",
       "note": "Guide distributeur, pas une notice constructeur : données à valider."
+    },
+    "yealink-web": {
+      "title": "Fiches produits Yealink",
+      "edition": "Site constructeur, consulté le 27/11/2026",
+      "publisher": "Yealink",
+      "web": true,
+      "note": "Pages web sans numéro de page : chaque produit renvoie à sa fiche (champ url). Contenu marqué à valider."
     }
   },
   "families": {
@@ -6945,6 +6952,67 @@
       "source": "guide-audio-2025",
       "page": 204,
       "status": "draft"
+    },
+    "yealink-avhub": {
+      "brand": "Yealink",
+      "model": "AVHub",
+      "type": "Processeur audio-vidéo de salle",
+      "family": "visio",
+      "source": "yealink-web",
+      "url": "https://www.yealink.com/en/product-tech-specs/room-system-avhub",
+      "status": "draft"
+    },
+    "yealink-uvc86": {
+      "brand": "Yealink",
+      "model": "UVC86",
+      "type": "Caméra PTZ 4K double optique",
+      "family": "camera-ptz",
+      "source": "yealink-web",
+      "url": "https://www.yealink.com/en/product-campare/compatible-camera-uvc86_microsoft-teams-rooms-mvcs90_zoom-rooms-zvc860-iii",
+      "status": "draft"
+    },
+    "yealink-yps20": {
+      "brand": "Yealink",
+      "model": "YPS20",
+      "type": "Capteur de cloison pour salle divisible",
+      "family": "gestion-salle",
+      "source": "yealink-web",
+      "url": "https://www.yealink.com/en/product-detail/yps20",
+      "status": "draft"
+    },
+    "yealink-mshare-e2": {
+      "brand": "Yealink",
+      "model": "MShare E2",
+      "type": "Boîtier de partage d'écran filaire",
+      "family": "presentation-sans-fil",
+      "source": "yealink-web",
+      "url": "https://www.yealink.com/en/product-campare/room-system-avhub_room-system-rch40_room-system-mshare-e2",
+      "status": "draft"
+    },
+    "yealink-vch51-pro": {
+      "brand": "Yealink",
+      "model": "VCH51 Pro",
+      "type": "Boîtier de partage et BYOD filaire",
+      "family": "presentation-sans-fil",
+      "source": "yealink-web",
+      "url": "https://www.yealink.com/en/product-detail/vch51pro",
+      "status": "draft"
+    },
+    "yealink-mcore-4": {
+      "brand": "Yealink",
+      "model": "MCore 4",
+      "type": "Mini-PC Microsoft Teams Rooms",
+      "family": "visio",
+      "source": "cata-uc-2026",
+      "page": 19
+    },
+    "yealink-mtouch-plus": {
+      "brand": "Yealink",
+      "model": "MTouch Plus",
+      "type": "Console tactile Teams Rooms",
+      "family": "visio",
+      "source": "cata-uc-2026",
+      "page": 19
     }
   }
 }

@@ -301,7 +301,7 @@
     const name = src ? src.title + (src.edition ? ' ' + src.edition.toLowerCase() : '') : '';
     return [name, page ? 'p. ' + page : ''].filter(Boolean).join(', ');
   }
-  function productSourceLabel(prod) { return sourceLabel(prod.source, prod.page); }
+  function productSourceLabel(prod) { return sourceLabel(prod.source, prod.page) + (prod.url && !prod.page ? ' (fiche web)' : ''); }
   /** Petite mention « À valider » pour un produit ou une caractéristique tirés d'une source non constructeur. */
   const draftMark = (title) => h('span', { class: 'badge badge--draft', title: title || 'Donnée issue d\'un guide distributeur : à vérifier sur la notice constructeur.' }, 'À valider');
   const factItem = (f, cls) => h('li', { class: cls || null }, f.text,
@@ -1924,11 +1924,12 @@
       h('header', { class: 'pdetail__head' },
         h('p', { class: 'eyebrow' }, pr.type),
         h('h2', { class: 'pdetail__title', tabindex: '-1', 'data-focus': true }, productLabel(pr)),
-        pr.status === 'draft' ? h('p', { class: 'pdetail__draft' }, draftMark(), ' Fiche créée à partir d\'un guide distributeur : caractéristiques à vérifier sur la notice constructeur.') : null,
+        pr.status === 'draft' ? h('p', { class: 'pdetail__draft' }, draftMark(), pr.url && !pr.page ? ' Fiche créée à partir de la page web du constructeur, sans notice : caractéristiques à vérifier sur la notice.' : ' Fiche créée à partir d\'un guide distributeur : caractéristiques à vérifier sur la notice constructeur.') : null,
         h('dl', { class: 'pdetail__meta' },
           h('dt', null, 'Famille'), h('dd', null, fam ? fam.label : '—'),
           pr.ref ? [h('dt', null, 'Référence'), h('dd', null, pr.ref)] : null,
-          h('dt', null, 'Source'), h('dd', null, productSourceLabel(pr) || '—'))
+          h('dt', null, 'Source'), h('dd', null, productSourceLabel(pr) || '—',
+            pr.url ? [' · ', h('a', { href: pr.url, rel: 'noopener', target: '_blank' }, 'Fiche constructeur')] : null))
       ),
       h('section', { class: 'panel pdetail__block' },
         h('div', { class: 'panel__body' },
@@ -2041,6 +2042,7 @@
     state.preview = true;
     state.previewReco = extra.reco ? JSON.parse(JSON.stringify(extra.reco)) : null;
     state.previewNews = extra.news ? JSON.parse(JSON.stringify(extra.news)) : null;
+    state.previewConn = extra.conn ? JSON.parse(JSON.stringify(extra.conn)) : null;
     state.recoChecked = null; state.newsChecked = null;
     ingest(JSON.parse(JSON.stringify(decisions)));
     if (catalogue) {
@@ -2057,7 +2059,7 @@
     state.preview = false;
     ingest(JSON.parse(JSON.stringify(state.published)));
     state.pIndex = null; state.catalogue = null; cataloguePromise = null;
-    state.previewReco = null; state.previewNews = null; state.recoChecked = null; state.newsChecked = null;
+    state.previewReco = null; state.previewNews = null; state.previewConn = null; state.recoChecked = null; state.newsChecked = null;
     $('#preview-banner').hidden = true;
     document.body.classList.remove('is-preview');
     if (goBack) navigate('#/editeur');
@@ -2176,7 +2178,8 @@
   const cut = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
   function recoItemName(it) {
     const pr = it.product && state.products.get(it.product);
-    return pr ? productLabel(pr) : (it.libelle || it.product || '?');
+    const name = pr ? productLabel(pr) : (it.libelle || it.product || '?');
+    return it.salle && !/salle/i.test(name) ? name + ' · salle ' + it.salle : name;
   }
   function recoItemShort(it) {
     const pr = it.product && state.products.get(it.product);
@@ -2189,22 +2192,35 @@
     return (it.qty > 1 ? it.qty + ' × ' : '') + (pr ? pr.type : 'hors catalogue');
   }
   function buildSynoptic(data, r) {
-    const zones = (data.zones || []).filter(z => r.modules.some(m => m.items.some(it => it.zone === z.id)));
+    const zones = (r.zones || data.zones || []).filter(z => r.modules.some(m => m.items.some(it => it.zone === z.id)));
     if (!zones.length || !r.liaisons.length) return null;
-    const BW = 184, BH = 44, STEP = 56, COLW = 216, GUT = 88, M = 16, TOP = 24, HEAD = 36;
-    const col = new Map(zones.map((z, i) => [z.id, i]));
+    const BW = 184, BH = 44, STEP = 56, COLW = 216, GUT = 88, M = 16, TOP = 24, HEAD = 36, ZGAP = 20;
+    // colonnes : salles impaires à gauche, zones communes au centre, salles paires à droite (chaque salle touche la baie) ;
+    // sans salles, une colonne par zone
+    const hasRooms = zones.some(z => z.salle);
+    const columns = hasRooms
+      ? [zones.filter(z => z.salle && z.salle % 2 === 1), zones.filter(z => !z.salle), zones.filter(z => z.salle && z.salle % 2 === 0)].filter(c => c.length)
+      : zones.map(z => [z]);
     const boxes = [];
     const byKey = new Map();
-    zones.forEach((z, ci) => {
-      let row = 0;
-      for (const m of r.modules) for (const it of m.items) {
-        if (it.zone !== z.id) continue;
-        const b = { it, ci, x: M + ci * (COLW + GUT) + (COLW - BW) / 2, y: TOP + HEAD + row * STEP, deg: 0 };
-        boxes.push(b); byKey.set(it, b); row++;
+    const zoneRects = [];
+    let maxBottom = 0;
+    columns.forEach((colZones, ci) => {
+      let y0 = TOP;
+      for (const z of colZones) {
+        let row = 0;
+        for (const m of r.modules) for (const it of m.items) {
+          if (it.zone !== z.id) continue;
+          const b = { it, ci, x: M + ci * (COLW + GUT) + (COLW - BW) / 2, y: y0 + HEAD + row * STEP, deg: 0 };
+          boxes.push(b); byKey.set(it, b); row++;
+        }
+        const zh = HEAD + row * STEP + 4;
+        zoneRects.push({ z, x: M + ci * (COLW + GUT), y: y0, h: zh });
+        y0 += zh + ZGAP;
       }
+      maxBottom = Math.max(maxBottom, y0 - ZGAP);
     });
-    const rows = Math.max(...zones.map((z, ci) => boxes.filter(b => b.ci === ci).length));
-    const zoneH = HEAD + rows * STEP + 4;
+    const zoneH = maxBottom - TOP;
     const cross = r.liaisons.filter(l => byKey.has(l.de) && byKey.has(l.vers) && byKey.get(l.de).ci !== byKey.get(l.vers).ci);
     const internal = r.liaisons.length - cross.length;
     for (const l of cross) { byKey.get(l.de).deg++; byKey.get(l.vers).deg++; }
@@ -2228,28 +2244,31 @@
       const start = gx0 + GUT / 2 - sp * (n - 1) / 2;
       return Math.round(right ? start + sp * (n - 1 - i) : start + sp * i);
     };
-    const W = M * 2 + zones.length * COLW + (zones.length - 1) * GUT;
+    const W = M * 2 + columns.length * COLW + (columns.length - 1) * GUT;
     const types = data.types_liaison || {};
     const usedTypes = [...new Set(cross.map(l => l.type))];
     const legendY = TOP + zoneH + 28;
     const H = legendY + Math.ceil(usedTypes.length / 3) * 22 + (internal ? 22 : 0) + 12;
     const color = l => SYN_COLORS[(types[l.type] && types[l.type].couleur) || 0] || SYN_COLORS[0];
     const P = [];
+    const model = { W, H, zones: [], paths: [], boxes: [], legend: [], note: null };
     P.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" font-family="Inter, system-ui, sans-serif" font-size="13" role="img" aria-label="Synoptique de câblage">');
     P.push('<rect width="' + W + '" height="' + H + '" fill="var(--surface, #151518)"/>');
-    zones.forEach((z, ci) => {
-      const x = M + ci * (COLW + GUT);
-      P.push('<rect x="' + x + '" y="' + TOP + '" width="' + COLW + '" height="' + zoneH + '" rx="8" fill="var(--surface-2, #1b1b1f)" stroke="var(--line-strong, #3a3b40)"/>');
-      P.push('<text x="' + (x + 16) + '" y="' + (TOP + 23) + '" font-weight="600" fill="var(--text, #ebedf3)">' + xmlEsc(cut(z.label, 26)) + '</text>');
-    });
+    for (const zr of zoneRects) {
+      P.push('<rect x="' + zr.x + '" y="' + zr.y + '" width="' + COLW + '" height="' + zr.h + '" rx="8" fill="var(--surface-2, #1b1b1f)" stroke="var(--line-strong, #3a3b40)"/>');
+      model.zones.push({ x: zr.x, y: zr.y, w: COLW, h: zr.h, label: cut(zr.z.label, 26) });
+      P.push('<text x="' + (zr.x + 16) + '" y="' + (zr.y + 23) + '" font-weight="600" fill="var(--text, #ebedf3)">' + xmlEsc(cut(zr.z.label, 26)) + '</text>');
+    }
     for (const { l, hub, leaf, right, g } of routes) {
       const lx = laneX(g, hub, right);
       const ly = leaf.y + BH / 2 + (leaf.y === hub.y ? 0 : 6), hy = hub.y + BH / 2 - (leaf.y === hub.y ? 0 : 6);   // décalés : une sortie ne se confond pas avec l'arrivée d'un autre moyeu
       const lxEdge = right ? leaf.x + BW : leaf.x, hxEdge = right ? hub.x : hub.x + BW;
       const d = 'M' + lxEdge + ' ' + ly + 'H' + lx + 'V' + hy + 'H' + hxEdge;
+      model.paths.push({ pts: [[lxEdge, ly], [lx, ly], [lx, hy], [hxEdge, hy]], color: color(l), dashed: !!l.over });
       P.push('<path d="' + d + '" fill="none" stroke="' + color(l) + '" stroke-width="2"' + (l.over ? ' stroke-dasharray="6 4"' : '') + '><title>' + xmlEsc(recoItemName(l.de) + ' → ' + recoItemName(l.vers) + ' · ' + l.typeLabel + (l.longueur !== undefined ? ' · ' + RE().fmtNum(l.longueur, 0) + ' m' : '')) + '</title></path>');
     }
     for (const b of boxes) {
+      model.boxes.push({ x: b.x, y: b.y, w: BW, h: BH, title: cut(recoItemShort(b.it), 23), sub: cut(recoItemSub(b.it), 27) });
       P.push('<g><rect x="' + b.x + '" y="' + b.y + '" width="' + BW + '" height="' + BH + '" rx="8" fill="var(--surface, #151518)" stroke="var(--line-strong, #3a3b40)" stroke-width="1.25"/>');
       P.push('<text x="' + (b.x + 12) + '" y="' + (b.y + 18) + '" font-weight="600" fill="var(--text, #ebedf3)">' + xmlEsc(cut(recoItemShort(b.it), 23)) + '</text>');
       P.push('<text x="' + (b.x + 12) + '" y="' + (b.y + 34) + '" font-size="11.5" fill="var(--muted, #878a94)">' + xmlEsc(cut(recoItemSub(b.it), 27)) + '</text></g>');
@@ -2257,11 +2276,13 @@
     usedTypes.forEach((t, i) => {
       const x = M + (i % 3) * 230, y = legendY + Math.floor(i / 3) * 22;
       P.push('<line x1="' + x + '" y1="' + (y - 4) + '" x2="' + (x + 24) + '" y2="' + (y - 4) + '" stroke="' + color({ type: t }) + '" stroke-width="2"/>');
+      model.legend.push({ x, y, color: color({ type: t }), label: cut((types[t] && types[t].label) || t, 30) });
       P.push('<text x="' + (x + 32) + '" y="' + y + '" font-size="11.5" fill="var(--text-2, #b4b7c0)">' + xmlEsc(cut((types[t] && types[t].label) || t, 30)) + '</text>');
     });
+    if (internal) model.note = { x: M, y: legendY + Math.ceil(usedTypes.length / 3) * 22, text: internal + ' liaison' + (internal > 1 ? 's' : '') + ' à l’intérieur d’une zone : voir la liste des liaisons. Trait pointillé : longueur dépassée.' };
     if (internal) P.push('<text x="' + M + '" y="' + (legendY + Math.ceil(usedTypes.length / 3) * 22) + '" font-size="11.5" fill="var(--muted, #878a94)">' + internal + ' liaison' + (internal > 1 ? 's' : '') + ' à l’intérieur d’une zone : voir le tableau. Trait pointillé : longueur dépassée.</text>');
     P.push('</svg>');
-    return { svg: P.join(''), width: W };
+    return { svg: P.join(''), width: W, model };
   }
 
   async function renderReco(route) {
@@ -2274,6 +2295,9 @@
     } catch (err) { renderCrumbs([{ label: 'Accueil', href: '#/' }, { label: 'Recommander' }]); return loadError(box, 'Le fichier des recommandations (data/reco.json)', err); }
     if (state.preview && state.previewReco) data = state.previewReco;
     try { outils = await loadJson('data/outils.json'); } catch (err) { console.warn('[DIAG·SAV] outils.json indisponible : contrôles PoE et longueurs ignorés', err); }
+    let connectique = null;
+    try { connectique = await loadJson('data/connectique.json'); } catch (err) { console.warn('[DIAG·SAV] connectique.json indisponible : contrôle des ports ignoré', err); }
+    if (state.preview && state.previewConn) connectique = state.previewConn;
     let cat = null;
     try { cat = await loadCatalogue(); } catch (err) { console.warn('[DIAG·SAV] catalogue indisponible : contrôle réseau limité', err); }
     if (state.recoChecked !== data) {
@@ -2291,7 +2315,7 @@
     // réponses : seulement celles des questions visibles, dans l'ordre
     const raw = E.cleanAnswers(data, params);
     const answers = {};
-    for (const q of data.questions) {
+    for (const q of E.questions(data)) {
       if (!(q.id in raw)) continue;
       if (!E.test(q.si, { values: answers, params: data.parametres || {} })) continue;
       answers[q.id] = raw[q.id];
@@ -2315,7 +2339,7 @@
 
     let stage;
     if (current) stage = recoQuestion(data, current, answers, visible, !!editing);
-    else stage = recoResult(data, answers, { outils, cat, niveaux, nivSel });
+    else stage = recoResult(data, answers, { outils, cat, connectique, niveaux, nivSel });
 
     box.replaceChildren(...[
       h('div', { class: 'phead' },
@@ -2373,9 +2397,9 @@
 
   const ALERT_UI = { erreur: ['high', '!', 'Bloquant'], alerte: ['moderate', '!', 'À vérifier'], info: ['low', 'i', 'Info'], ok: ['ok', '✓', 'OK'] };
 
-  function recoResult(data, answers, { outils, cat, niveaux, nivSel }) {
+  function recoResult(data, answers, { outils, cat, connectique, niveaux, nivSel }) {
     const E = RE();
-    const ctx = { products: state.products, catalogue: cat, outils, swaps: recoSwaps };
+    const ctx = { products: state.products, catalogue: cat, outils, connectique, swaps: recoSwaps };
     const configs = niveaux.map(n => ({ n, r: E.compute(data, answers, n.id, ctx) }));
     const calc = (configs[0] || { r: { calculs: [] } }).r.calculs;
     const params = data.parametres || {};
@@ -2396,6 +2420,15 @@
 
     const brand = E.brandOf(data, answers);
     const itemRow = (n, it) => {
+      if (it.inclus && it.original) {
+        const pr = state.products.get(it.product), incl = state.products.get(it.inclus);
+        return h('li', { class: 'reco-item reco-item--extra is-included' },
+          h('span', { class: 'reco-item__qty' }, ''),
+          h('div', { class: 'reco-item__main' },
+            pr ? h('a', { class: 'reco-item__name', href: '#/produits/' + encodeURIComponent(it.product) }, productLabel(pr)) : h('span', { class: 'reco-item__name' }, it.product),
+            h('span', { class: 'reco-item__type' }, 'Inclus dans ' + (incl ? productLabel(incl) : it.inclus), pr && pr.status === 'draft' ? h('span', { class: 'badge badge--draft' }, 'À valider') : null),
+            it.why ? h('span', { class: 'reco-item__why' }, it.why) : null));
+      }
       if (!it.original) {
         const incl = it.inclus && state.products.get(it.inclus);
         return h('li', { class: 'reco-item reco-item--extra' + (it.inclus ? ' is-included' : '') },
@@ -2422,6 +2455,7 @@
              : h('span', { class: 'reco-item__name is-bad' }, '⚠ Produit inconnu : ' + it.product),
           pr ? h('span', { class: 'reco-item__type' }, pr.type + (productSourceLabel(pr) ? ' · ' + productSourceLabel(pr) : '')) : null,
           it.product === it.original && it.why ? h('span', { class: 'reco-item__why' }, it.why) : null,
+          it.auto && it.product === it.original ? h('span', { class: 'reco-item__why' }, 'Remplace ' + productLabel(state.products.get(it.auto) || { brand: '', model: it.auto }) + ' : marque imposée ' + brand + '.') : null,
           it.product !== it.original ? h('span', { class: 'reco-item__why' }, 'Remplace ' + productLabel(state.products.get(it.original) || { brand: '', model: it.original }) + ' (même famille).') : null,
           sel ? h('div', { class: 'reco-item__tools' }, sel,
             h('a', { class: 'btn btn--small btn--ghost', href: '#/comparer?ids=' + [it.original, ...alts.filter(a => a[2]).concat(alts.filter(a => !a[2])).slice(0, 2).map(a => a[0])].map(encodeURIComponent).join(',') }, 'Comparer')) : null));
@@ -2472,7 +2506,9 @@
         tabs, grid, syn,
         h('div', { class: 'result__footer' },
           swapped ? h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => { for (const k of Object.keys(recoSwaps)) delete recoSwaps[k]; rerender(); } }, 'Annuler les remplacements (' + swapped + ')') : null,
-          h('a', { class: 'btn', href: '#/recommander' }, 'Nouvelle recommandation'))));
+          h('button', { type: 'button', class: 'btn btn--primary', onclick: () => recoExport('pdf', data, answers, sel) }, 'Dossier PDF · ' + sel.n.label),
+          h('button', { type: 'button', class: 'btn', onclick: () => recoExport('xlsx', data, answers, sel) }, 'Dossier tableur (.xlsx)'),
+          h('a', { class: 'btn btn--ghost', href: '#/recommander' }, 'Nouvelle recommandation'))));
   }
 
   /** Synoptique + tableau des liaisons du niveau choisi. */
@@ -2495,6 +2531,7 @@
       h('div', { class: 'reco-syn__actions' },
         syn ? h('button', { type: 'button', class: 'btn btn--small', onclick: () => downloadFile('synoptique-' + n.id + '.svg', syn.svg, 'image/svg+xml') }, 'Télécharger le synoptique (SVG)') : null,
         h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => downloadFile('liaisons-' + n.id + '.csv', recoLinksCsv(r), 'text/csv;charset=utf-8') }, 'Liste des liaisons (CSV)')),
+      recoRack(r),
       h('div', { class: 'reco-syn__table' },
         h('table', { class: 'reco-links' },
           h('thead', null, h('tr', null, ['De', 'Vers', 'Liaison', 'Longueur', 'Contrôle'].map(t => h('th', { scope: 'col' }, t)))),
@@ -2503,6 +2540,64 @@
             h('td', null, l.typeLabel, l.note ? h('span', { class: 'reco-links__note' }, l.note) : null),
             h('td', { class: 'num' }, fmtL(l)),
             h('td', null, l.max === undefined ? '—' : (l.over ? '⚠ max ' + E.fmtNum(l.max, 0) + ' m' : '✓ ≤ ' + E.fmtNum(l.max, 0) + ' m'))))))));
+  }
+  /** Dossier complet d'un niveau : nomenclature, dimensionnement, baie, liaisons, synoptique, points à valider. */
+  function recoDossier(data, answers, { n, r }) {
+    const E = RE();
+    const besoin = E.visibleQuestions(data, answers).filter(q => q.id in answers).map(q => [q.label || q.texte, recoAnswerLabel(q, answers[q.id])]);
+    const nomenclature = [];
+    for (const m of r.modules) for (const it of m.items) {
+      const pr = it.product && state.products.get(it.product);
+      const incl = it.inclus && state.products.get(it.inclus);
+      nomenclature.push({ bloc: m.titre, qte: it.inclus ? 0 : it.qty, marque: pr ? pr.brand : '', modele: pr ? pr.model : (it.libelle || ''), ref: pr && pr.ref ? pr.ref : '',
+        type: pr ? pr.type : (it.inclus ? '' : 'Hors catalogue'), source: pr ? productSourceLabel(pr) : (it.source || ''),
+        statut: (pr && pr.status === 'draft') || it.status === 'draft' ? 'À valider' : '', inclus: it.inclus ? 'Inclus dans ' + (incl ? productLabel(incl) : it.inclus) : '', pourquoi: it.why || '' });
+      }
+    const fixed = (r.zones || []).filter(z => !z.salle).map(z => z.id);
+    const baie = r.modules.flatMap(m => m.items).filter(it => fixed.includes(it.zone)).map(it => [recoItemName(it), it.qty, it.inclus ? 'inclus' : '']);
+    const liaisons = (r.liaisons || []).map(l => ({ de: recoItemName(l.de), portDe: l.portDe, vers: recoItemName(l.vers), portVers: l.portVers, type: l.typeLabel,
+      longueur: l.longueur === undefined ? null : Math.round(l.longueur), max: l.max === undefined ? null : l.max, controle: l.max === undefined ? '' : (l.over ? 'Trop long' : 'OK'), note: l.note || '' }));
+    const SEV = { erreur: 'Bloquant', alerte: 'À vérifier', info: 'Info', ok: 'OK' };
+    const points = r.alerts.map(a => [SEV[a.niveau] || a.niveau, a.message, a.source || '']);
+    for (const m of r.modules) for (const t of m.notes) points.push(['Remarque', m.titre + ' : ' + t, '']);
+    const syn = buildSynoptic(data, r);
+    return { titre: (data.meta && data.meta.title) || 'Recommandation avant-vente', niveau: n.label, date: new Date().toLocaleDateString('fr-FR'),
+      avertissement: (data.meta && data.meta.disclaimer) || '', besoin, calculs: r.calculs.map(c => [c.label, E.fmtNum(c.value, c.decimales) + (c.unite ? ' ' + c.unite : ''), c.status === 'draft' ? 'À valider' : '', c.source || '']),
+      nomenclature, baie, liaisons, points, synoptique: syn ? syn.model : null };
+  }
+  async function recoExport(kind, data, answers, sel) {
+    let X, PDF;
+    try {
+      X = await loadScript('reco-export.js', 'DIAGSAV_RECO_EXPORT');
+      if (kind === 'pdf') PDF = await loadScript('pdf.js', 'DIAGSAV_PDF');
+    } catch (err) { toast('Export indisponible : ' + err.message); return; }
+    const d = recoDossier(data, answers, sel);
+    const base = 'dossier-avant-vente-' + sel.n.id;
+    if (kind === 'pdf') { const blob = X.pdf(d, PDF); downloadBlob(base + '.pdf', blob); }
+    else { const blob = X.xlsx(d); downloadBlob(base + '.xlsx', blob); }
+  }
+  function downloadBlob(name, blob) {
+    const url = URL.createObjectURL(blob);
+    const a = h('a', { href: url, download: name });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('Fichier « ' + name + ' » téléchargé');
+  }
+
+  /** Contenu de la baie : équipements des zones communes (hors salles). */
+  function recoRack(r) {
+    const fixed = (r.zones || []).filter(z => !z.salle);
+    const rows = [];
+    for (const z of fixed) for (const m of r.modules) for (const it of m.items) if (it.zone === z.id) rows.push({ z, it });
+    const extra = r.modules.flatMap(m => m.items).filter(it => !it.zone && !it.original && /baie/i.test(it.libelle || ''));
+    if (!rows.length) return null;
+    return h('div', { class: 'reco-rack' },
+      h('h4', { class: 'reco-module__title' }, 'Contenu de la baie (' + rows.reduce((s, x) => s + x.it.qty, 0) + ' équipements)'),
+      h('ul', { class: 'reco-rack__list' }, rows.map(({ it }) => h('li', null,
+        h('span', { class: 'reco-rack__qty' }, it.qty + ' ×'), ' ', recoItemName(it),
+        it.inclus ? h('span', { class: 'muted' }, ' · inclus') : null)),
+        extra.map(it => h('li', { class: 'muted' }, it.libelle))),
+      h('p', { class: 'reco-syn__lead' }, 'Hauteur en baie (U) non indiquée dans les catalogues : à relever sur les notices.'));
   }
   function recoLinksCsv(r) {
     const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
@@ -2528,8 +2623,8 @@
     for (const m of r.modules) {
       L.push(''); L.push(m.titre + ' :');
       m.items.forEach(it => {
+        if (it.inclus) { const incl = state.products.get(it.inclus); L.push('      dont ' + recoItemName(it) + ' (inclus dans ' + (incl ? productLabel(incl) : it.inclus) + ')'); return; }
         if (!it.original) {
-          if (it.inclus) { const incl = state.products.get(it.inclus); L.push('      dont ' + it.libelle + ' (inclus dans ' + (incl ? productLabel(incl) : it.inclus) + ')'); return; }
           L.push('  ' + it.qty + ' × ' + it.libelle + ' (hors catalogue' + (it.status === 'draft' ? ', à valider' : '') + ')');
           if (it.why) L.push('      ' + it.why);
           L.push('      Prix unitaire : à compléter');
@@ -2979,7 +3074,7 @@
   /* index.html et app.js doivent être de la même version. Juste après une publication,
      le cache de GitHub Pages peut servir un mélange des deux pendant quelques minutes :
      on recharge une fois, puis on prévient au lieu de planter. */
-  const APP_VERSION = '1.23.0';
+  const APP_VERSION = '1.24.0';
   const pageVersion = (document.querySelector('meta[name="diagsav-version"]') || {}).content;
   if (pageVersion !== APP_VERSION) {
     let retried = false;

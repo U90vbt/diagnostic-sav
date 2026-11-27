@@ -143,6 +143,11 @@ if (D) {
     if ('source' in pr && !sources[pr.source]) err(F, p, `source « ${pr.source} » non déclarée dans « sources »`);
     if ('page' in pr && !(Number.isInteger(pr.page) && pr.page > 0)) err(F, p, '« page » : entier positif attendu');
     if (pr.status !== undefined && pr.status !== 'draft') err(F, p, '« status » ne peut valoir que "draft"');
+    if ('url' in pr && !/^https:\/\/\S+$/.test(pr.url)) err(F, p, '« url » : adresse https attendue');
+    if (sources[pr.source] && sources[pr.source].web) {
+      if (!isStr(pr.url)) err(F, p, 'source web : « url » de la fiche constructeur obligatoire');
+      if (pr.status !== 'draft') err(F, p, 'source web : le produit doit être marqué « draft » (à valider)');
+    } else if (pr.source && !('page' in pr)) warn(F, p, 'page de la source non indiquée');
     const key = (pr.brand + ' ' + pr.model).toLowerCase().replace(/[^a-z0-9+]+/g, '');   // « + » distingue SLX-D et SLX-D+
     if (seenModel.has(key)) err(F, p, `même marque et modèle que « ${seenModel.get(key)} » (doublon)`);
     seenModel.set(key, pid);
@@ -181,7 +186,7 @@ if (R) {
     if (p.status !== undefined && p.status !== 'draft') err(F, `parametres.${id}`, '« status » ne peut valoir que "draft"');
   }
   // simulation : toutes les combinaisons de réponses à choix, valeurs proposées pour les nombres
-  const qs = R.questions || [];
+  const qs = engine.questions(R);
   let combos = [{}];
   for (const q of qs) {
     const vals = q.type === 'choix' ? (q.options || []).map(o => o.id) : [q.defaut != null ? q.defaut : (q.min != null ? q.min : 1)];
@@ -248,6 +253,29 @@ if (T) {
 
 /* ---------------- outils.json ---------------- */
 const O = load('outils.json', false);
+/* ---------------- connectique.json ---------------- */
+const K = load('connectique.json');
+if (K && D) {
+  const F = 'connectique.json';
+  const types = isObj(K.types_port) ? K.types_port : (err(F, 'types_port', 'section manquante'), {});
+  const sources = isObj(D.sources) ? D.sources : {};
+  const normes = new Set(((O && O.poe && O.poe.normes) || []).map(n => n.id));
+  for (const [pid, x] of Object.entries(K.produits || {})) {
+    const p = `produits.${pid}`;
+    if (!productIds.has(pid)) err(F, p, 'produit absent de decisions.json');
+    (x.ports || []).forEach((pt, i) => {
+      if (!types[pt.type]) err(F, `${p}.ports[${i}]`, `type de port « ${pt.type} » inconnu`);
+      if (!(Number.isInteger(pt.nombre) && pt.nombre > 0)) err(F, `${p}.ports[${i}]`, '« nombre » : entier positif attendu');
+    });
+    if (x.poe !== undefined && normes.size && !normes.has(x.poe)) err(F, p, `norme PoE « ${x.poe} » inconnue (outils.json)`);
+    if (x.poe_budget !== undefined && !(typeof x.poe_budget === 'number' && x.poe_budget > 0)) err(F, p, '« poe_budget » : nombre de watts attendu');
+    const src = sources[x.source];
+    if (!src) err(F, p, `source « ${x.source} » non déclarée dans decisions.json`);
+    else if (src.web) { if (!isStr(x.url)) err(F, p, 'source web : « url » obligatoire'); if (x.status !== 'draft') err(F, p, 'source web : « status » doit valoir "draft"'); }
+    else if (!(Number.isInteger(x.page) && x.page > 0)) err(F, p, '« page » : entier positif attendu');
+  }
+}
+
 if (O) {
   const F = 'outils.json';
   const normes = new Set(((O.poe || {}).normes || []).map(n => n.id));

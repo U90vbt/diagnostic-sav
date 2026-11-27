@@ -3033,6 +3033,54 @@
       "facts": [
         "Antenne directive active, 470 – 698 MHz"
       ]
+    },
+    "yealink-avhub": {
+      "facts": [
+        "Ports : 2 USB-A, 1 USB-B, 1 Codec, 7 VCH (RJ45)",
+        "Audio : RCA entrée/sortie, ligne 6,35 mm entrée et sortie",
+        "Multi-caméras, IntelliFocus multi-caméras, salle divisible, BYOD",
+        "Caméras, micros et enceintes raccordés en câble réseau avec alimentation PoE"
+      ]
+    },
+    "yealink-uvc86": {
+      "facts": [
+        "Double optique : PTZ 8 MP (90° en diagonale) et panoramique 8 MP (120° en diagonale)",
+        "Zoom HD 20,4x (12x optique)",
+        "Cadrage automatique, suivi de l'orateur, suivi du présentateur par zone et gestes",
+        "9 préréglages ; sorties USB, HDMI et VCH"
+      ]
+    },
+    "yealink-yps20": {
+      "facts": [
+        "Capteur infrarouge de position de cloison, montage en saillie",
+        "Raccordé au GPIO du processeur AP08 ; préréglages salle divisée / regroupée dans Room Designer",
+        "Câble de 10 m fourni"
+      ]
+    },
+    "yealink-mshare-e2": {
+      "facts": [
+        "Partage d'écran Full HD 1080p à 30 i/s, avec le son",
+        "Entrées HDMI et USB-C, sortie USB Type-B"
+      ]
+    },
+    "yealink-vch51-pro": {
+      "facts": [
+        "1 port RJ45 Gigabit alimenté en PoE (802.3af)",
+        "1 port USB-C (entrée vidéo DisplayPort), 1 port d'alimentation PD pour charger le PC",
+        "Partage jusqu'en 4K à 60 i/s, BYOD",
+        "Compatible MVC S40, S80, S90 et S98 (Teams Rooms sur Windows)"
+      ]
+    },
+    "yealink-mcore-4": {
+      "facts": [
+        "Mini-PC Teams Rooms sur Windows des MVC S40, S50 et S80",
+        "Processeur Intel Core Ultra 5 avec NPU (34 TOPS annoncés)"
+      ]
+    },
+    "yealink-mtouch-plus": {
+      "facts": [
+        "Console tactile 11,6\" des systèmes MVC (Teams Rooms sur Windows)"
+      ]
     }
   }
 }

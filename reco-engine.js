@@ -146,6 +146,9 @@
   function lookup(name, env) {
     if (name.startsWith('p.')) { const prm = env.params[name.slice(2)]; return prm ? Number(prm.valeur) : undefined; }
     if (name === 'niveau') return env.niveau;
+    if (name === 'salle') return env.salle;
+    // dans un bloc « par salle », « surface » désigne la réponse de la salle en cours (surface_2…)
+    if (env.salle !== undefined && (name + '_' + env.salle) in env.values) return env.values[name + '_' + env.salle];
     if (name in env.values) return env.values[name];
     return undefined;
   }
@@ -175,11 +178,39 @@
   }
   const fmtNum = (n, d = 1) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fr-FR');
 
+  /* ---------------- salles multiples ---------------- */
+  /** Nombre maximal de salles (meta.salles.max, 4 par défaut). */
+  const roomsMax = data => Math.max(1, Math.min(8, Number(((data.meta || {}).salles || {}).max) || 4));
+  /** Nombre de salles de la configuration (0 si le projet n'est pas multi-salles). */
+  function roomsCount(data, env) {
+    const cfg = (data.meta || {}).salles;
+    if (!cfg || !cfg.nombre || !test(cfg.si, env)) return 0;
+    const n = value(cfg.nombre, env);
+    return n === undefined ? 0 : Math.max(0, Math.min(roomsMax(data), Math.round(n)));
+  }
+  const subRoom = (txt, k, maitre) => txt == null ? txt : String(txt).replace(/\{salle\}/g, String(k)).replace(/\{maitre\}/g, String(maitre));
+  const qCache = new WeakMap();
+  /** Questions avec les questions « par salle » dépliées (surface → surface_1, surface_2…). */
+  function questions(data) {
+    if (qCache.has(data)) return qCache.get(data);
+    const nb = ((data.meta || {}).salles || {}).nombre;
+    const out = [];
+    for (const q of data.questions || []) {
+      if (!q.par_salle) { out.push(q); continue; }
+      for (let k = 1; k <= roomsMax(data); k++) {
+        const cond = [q.si ? '(' + q.si + ')' : '', nb ? nb + ' >= ' + k : ''].filter(Boolean).join(' et ');
+        out.push(Object.assign({}, q, { id: q.id + '_' + k, label: subRoom(q.label, k), texte: subRoom(q.texte, k), aide: subRoom(q.aide, k), si: cond, gabarit: q.id, par_salle: undefined }));
+      }
+    }
+    qCache.set(data, out);
+    return out;
+  }
+
   /* ---------------- questions et réponses ---------------- */
   /** Réponses typées (nombres convertis), limitées aux questions connues. */
   function cleanAnswers(data, raw) {
     const out = {};
-    for (const q of data.questions || []) {
+    for (const q of questions(data)) {
       if (!(q.id in raw)) continue;
       const v = raw[q.id];
       if (q.type === 'nombre') {
@@ -192,7 +223,7 @@
   /** Questions visibles compte tenu des réponses, dans l'ordre du fichier. */
   function visibleQuestions(data, answers) {
     const env = { values: answers, params: data.parametres || {}, niveau: undefined };
-    return (data.questions || []).filter(q => test(q.si, env));
+    return questions(data).filter(q => test(q.si, env));
   }
 
   /* ---------------- calcul d'une configuration ---------------- */
@@ -206,64 +237,120 @@
     const params = data.parametres || {};
     const values = Object.assign({}, answers);
     const env = { values, params, niveau };
+    const n = roomsCount(data, env);
+    const maitre = Math.min(Math.max(1, Math.round(values.salle_maitre || 1)), Math.max(1, n));
+    const rooms = Array.from({ length: n }, (_, i) => i + 1);
     const calculs = [];
+    const brand = brandOf(data, answers);
+    const pushCalc = (c, v, k) => calculs.push({ id: k ? c.id + '_' + k : c.id, label: k ? c.label + ' · salle ' + k : c.label, value: v,
+      unite: c.unite || '', decimales: c.decimales == null ? 1 : c.decimales, source: c.source, status: c.status });
     for (const c of data.calculs || []) {
+      if (c.par_salle) {
+        for (const k of rooms) {
+          const e = { values, params, niveau, salle: k };
+          if (!test(c.si, e)) continue;
+          const v = value(c.formule, e);
+          if (v === undefined) continue;
+          values[c.id + '_' + k] = v; pushCalc(c, v, k);
+        }
+        continue;
+      }
       if (!test(c.si, env)) continue;
       const v = value(c.formule, env);
       if (v === undefined) continue;
-      values[c.id] = v;
-      calculs.push({ id: c.id, label: c.label, value: v, unite: c.unite || '', decimales: c.decimales == null ? 1 : c.decimales, source: c.source, status: c.status });
+      values[c.id] = v; pushCalc(c, v);
     }
     const modules = [];
-    for (const m of data.modules || []) {
-      const matched = (m.regles || []).filter(r => test(r.si, env) && (!r.niveaux || !r.niveaux.length || r.niveaux.includes(niveau)));
+    const alerts = [];
+    const runModule = (m, e, k) => {
+      const matched = (m.regles || []).filter(r => test(r.si, e) && (!r.niveaux || !r.niveaux.length || r.niveaux.includes(niveau)));
       const used = m.mode === 'toutes' ? matched : matched.slice(0, 1);
       const items = [];
       const notes = [];
       used.forEach(r => {
         (r.items || []).forEach((it, i) => {
-          const q = value(it.qte == null ? 1 : it.qte, env);
+          const q = value(it.qte == null ? 1 : it.qte, e);
           const qty = q === undefined ? 1 : Math.max(0, Math.round(q));
           if (!qty) return;
-          const key = m.id + ':' + (m.regles || []).indexOf(r) + ':' + i;
-          const swapped = it.produit && ctx.swaps && ctx.swaps[niveau + '|' + key];
-          items.push({ key, product: swapped || it.produit || null, original: it.produit || null, qty, why: fill(it.pourquoi, env),
-            libelle: it.libelle ? fill(it.libelle, env) : null, repere: it.repere || null, zone: it.zone || null,
-            inclus: it.inclus || null, source: it.source || null, status: it.status || null });
+          const key = m.id + (k ? '@' + k : '') + ':' + (m.regles || []).indexOf(r) + ':' + i;
+          let base = it.produit || null, auto = null;
+          // marque imposée : remplacement automatique dans la même famille (blocs « filtre_marque »)
+          if (base && brand && m.filtre_marque && ctx.products && ctx.products.get) {
+            const pr = ctx.products.get(base);
+            if (pr && String(pr.brand).toLowerCase() !== String(brand).toLowerCase()) {
+              const alt = sameFamily(ctx.products, base, brand);
+              if (alt) { auto = base; base = alt; }
+              else alerts.push({ niveau: 'alerte', message: 'Pas d\'équivalent ' + brand + ' dans le catalogue pour ' + pr.brand + ' ' + pr.model + ' (' + m.titre + ').' });
+            }
+          }
+          const swapped = base && ctx.swaps && ctx.swaps[niveau + '|' + key];
+          items.push({ key, product: swapped || base, original: base, auto, qty, why: fill(it.pourquoi, e),
+            libelle: it.libelle ? fill(it.libelle, e) : null, repere: subRoom(it.repere, k, maitre) || null, zone: subRoom(it.zone, k, maitre) || null,
+            role: it.role || null, salle: k || null, inclus: it.inclus || null, source: it.source || null, status: it.status || null });
         });
-        if (r.note) notes.push(fill(r.note, env));
+        if (r.note) notes.push(fill(r.note, e));
       });
-      if (items.length || notes.length) modules.push({ id: m.id, titre: m.titre, items, notes });
+      if (items.length || notes.length) modules.push({ id: m.id + (k ? '@' + k : ''), titre: k ? m.titre + ' · salle ' + k : m.titre, salle: k || null, items, notes });
+    };
+    for (const m of data.modules || []) {
+      if (m.par_salle) for (const k of rooms) runModule(m, { values, params, niveau, salle: k }, k);
+      else runModule(m, env, null);
     }
+    // ordre : blocs par salle groupés salle par salle, puis blocs communs
+    modules.sort((x, y) => (x.salle || 99) - (y.salle || 99));
     const all = modules.flatMap(m => m.items);
-    const alerts = [];
-    const liaisons = computeLinks(data, env, all, ctx, alerts);
+    const liaisons = computeLinks(data, { values, params, niveau }, all, ctx, alerts, rooms, maitre);
     for (const c of data.controles || []) {
-      try { alerts.push(...runCheck(c, { env, all, answers, ctx })); }
+      try { alerts.push(...runCheck(c, { env, all, answers, ctx, liaisons, data })); }
       catch (err) { alerts.push({ niveau: 'info', message: 'Contrôle « ' + (c.type || '?') + ' » impossible : ' + err.message }); }
     }
-    return { niveau, calculs, modules, alerts, values, liaisons };
+    return { niveau, calculs, modules, alerts, values, liaisons, salles: n, maitre, zones: expandZones(data, n, maitre) };
+  }
+
+  /** Produit de la même famille et de la marque voulue (même type d'abord). */
+  function sameFamily(products, pid, brand) {
+    const pr = products.get(pid);
+    const key = t => String(t || '').toLowerCase().split(/[ ,(·]/)[0];
+    const list = [...products.entries()].filter(([id, p]) => id !== pid && p.family === pr.family && String(p.brand).toLowerCase() === String(brand).toLowerCase());
+    list.sort((a, b) => (key(b[1].type) === key(pr.type)) - (key(a[1].type) === key(pr.type)));
+    return list.length ? list[0][0] : null;
+  }
+
+  /** Zones du synoptique : les zones « par salle » dépliées, réparties de part et d'autre des zones communes. */
+  function expandZones(data, n, maitre) {
+    const fixed = [], rooms = [];
+    for (const z of data.zones || []) {
+      if (z.par_salle) for (let k = 1; k <= n; k++) rooms.push({ id: subRoom(z.id, k, maitre), label: subRoom(z.label, k, maitre) + (k === maitre && n > 1 && z.maitre ? ' · ' + z.maitre : ''), salle: k });
+      else fixed.push({ id: z.id, label: z.label });
+    }
+    if (!rooms.length) return fixed;
+    const left = rooms.filter((_, i) => i % 2 === 0), right = rooms.filter((_, i) => i % 2 === 1).reverse();
+    return [...left, ...fixed, ...right];
   }
 
   /* ---------------- liaisons (synoptique) ---------------- */
   /** Liaisons dont les deux extrémités sont dans la configuration ; longueurs contrôlées. */
-  function computeLinks(data, env, all, ctx, alerts) {
+  function computeLinks(data, env, all, ctx, alerts, rooms = [], maitre = 1) {
     const byRef = new Map();
     for (const it of all) if (it.repere && !byRef.has(it.repere)) byRef.set(it.repere, it);
     const types = data.types_liaison || {};
     const ref = ((ctx.outils || {}).longueurs || {}).liaisons || [];
     const out = [];
-    for (const l of data.liaisons || []) {
-      if (!test(l.si, env)) continue;
-      const a = byRef.get(l.de), b = byRef.get(l.vers);
-      if (!a || !b) continue;
+    const one = (l, e, k) => {
+      if (!test(l.si, e)) return;
+      const a = byRef.get(subRoom(l.de, k, maitre)), b = byRef.get(subRoom(l.vers, k, maitre));
+      if (!a || !b) return;
       const t = types[l.type] || {};
       const norme = ref.find(x => x.id === t.liaison);
       const max = t.max != null ? Number(t.max) : (norme ? norme.max : undefined);
-      const len = l.longueur == null || l.longueur === '' ? undefined : value(l.longueur, env);
+      const len = l.longueur == null || l.longueur === '' ? undefined : value(l.longueur, e);
       out.push({ de: a, vers: b, portDe: l.port_de || '', portVers: l.port_vers || '', type: l.type, typeLabel: t.label || l.type,
         couleur: t.couleur || 0, longueur: len, max, over: len !== undefined && max !== undefined && len > max,
-        solution: norme ? norme.solution : '', normeLabel: norme ? norme.label : '', note: fill(l.note, env) });
+        solution: norme ? norme.solution : '', normeLabel: norme ? norme.label : '', note: fill(l.note, e), salle: k || null });
+    };
+    for (const l of data.liaisons || []) {
+      if (l.par_salle) for (const k of rooms) one(l, Object.assign({}, env, { salle: k }), k);
+      else one(l, env, null);
     }
     const groups = new Map();
     for (const l of out.filter(x => x.over)) {
@@ -280,7 +367,7 @@
   function brandOf(data, answers) {
     const qid = data.meta && data.meta.question_marque;
     if (!qid || !(qid in answers)) return null;
-    const q = (data.questions || []).find(x => x.id === qid);
+    const q = questions(data).find(x => x.id === qid);
     const o = q && (q.options || []).find(x => x.id === answers[qid]);
     return o && o.marque ? o.marque : null;
   }
@@ -293,12 +380,73 @@
     const n = (poe.normes || []).find(x => x.id === dev.norme);
     return n ? n.watts : 0;
   }
-  function runCheck(c, { env, all, answers, ctx }) {
+  /** Connectique d'un produit (connectique.json). */
+  const conn = (ctx, pid) => (((ctx.connectique || {}).produits || {})[pid]) || null;
+  const portCount = (ctx, pid, type) => { const c = conn(ctx, pid); const p = c && (c.ports || []).find(x => x.type === type); return p ? p.nombre : 0; };
+  const itemLabel = (ctx, it) => { const p = it.product && ctx.products && ctx.products.get && ctx.products.get(it.product); return (it.libelle || (p ? p.brand + ' ' + p.model : it.product)) + (it.salle && !(it.libelle || '').includes('salle') ? ' (salle ' + it.salle + ')' : ''); };
+  function runCheck(c, { env, all, answers, ctx, liaisons = [], data = {} }) {
     const out = [];
     const products = ctx.products || new Map();
     const label = pid => { const p = products.get && products.get(pid); return p ? (p.brand + ' ' + p.model) : pid; };
     if (c.type === 'regle') {
       if (test(c.si, env)) out.push({ niveau: c.niveau || 'alerte', message: fill(c.message, env), source: c.source });
+      return out;
+    }
+    if (c.type === 'unicite') {
+      if (!test(c.si, env)) return out;
+      const n = all.filter(it => it.role === c.role).reduce((s, it) => s + it.qty, 0);
+      if (n !== 1) out.push({ niveau: 'erreur', message: fill(c.message, env) + ' (' + n + ' trouvée' + (n > 1 ? 's' : '') + ')' });
+      else if (c.ok) out.push({ niveau: 'ok', message: fill(c.ok, env) });
+      return out;
+    }
+    if (c.type === 'ports') {
+      // pour chaque équipement, liaisons arrivant sur un type de port comparées au nombre de ports (connectique.json)
+      const types = data.types_liaison || {};
+      const use = new Map();
+      for (const l of liaisons) {
+        const pt = (types[l.type] || {}).port;
+        if (!pt) continue;
+        for (const [host, other] of [[l.vers, l.de], [l.de, l.vers]]) {
+          if (!host.product || !portCount(ctx, host.product, pt)) continue;
+          const k = host.repere + '|' + pt;
+          const u = use.get(k) || { it: host, pt, n: 0 };
+          u.n += other.inclus ? 1 : other.qty; use.set(k, u);
+          break;
+        }
+      }
+      for (const { it, pt, n } of use.values()) {
+        const cap = portCount(ctx, it.product, pt) * it.qty;
+        const tl = ((ctx.connectique || {}).types_port || {})[pt] || pt;
+        if (n > cap) out.push({ niveau: 'erreur', message: itemLabel(ctx, it) + ' : ' + n + ' raccordements « ' + tl + ' » pour ' + cap + ' port' + (cap > 1 ? 's' : '') + '.' });
+      }
+      return out;
+    }
+    if (c.type === 'poe' && ctx.connectique && liaisons.some(l => ((data.types_liaison || {})[l.type] || {}).poe)) {
+      // budget exact : appareils raccordés en PoE à chaque switch, puissance selon leur norme (connectique.json, outils.json)
+      const types = data.types_liaison || {};
+      const normes = ((ctx.outils || {}).poe || {}).normes || [];
+      const marge = ((ctx.outils || {}).poe || {}).marge || 0;
+      const bySw = new Map();
+      for (const l of liaisons) {
+        if (!(types[l.type] || {}).poe) continue;
+        const [sw, dev] = conn(ctx, l.vers.product) && conn(ctx, l.vers.product).poe_budget ? [l.vers, l.de] : [l.de, l.vers];
+        const sc = conn(ctx, sw.product);
+        if (!sc || !sc.poe_budget) continue;
+        const g = bySw.get(sw.repere) || { sw, w: 0, unknown: [] };
+        const dc = dev.product && conn(ctx, dev.product);
+        const nm = dc && dc.poe ? normes.find(x => x.id === dc.poe) : null;
+        if (nm) g.w += nm.watts * dev.qty;
+        else if (!(dc && dc.poe === undefined && dc.ports)) g.unknown.push(itemLabel(ctx, dev) + (dev.qty > 1 ? ' × ' + dev.qty : ''));
+        bySw.set(sw.repere, g);
+      }
+      for (const { sw, w, unknown } of bySw.values()) {
+        const budget = conn(ctx, sw.product).poe_budget * sw.qty;
+        const name = itemLabel(ctx, sw);
+        if (w > budget) out.push({ niveau: 'erreur', message: name + ' : budget PoE dépassé, ' + fmtNum(w) + ' W réservés pour ' + fmtNum(budget, 0) + ' W.' });
+        else if (w > budget * (1 - marge)) out.push({ niveau: 'alerte', message: name + ' : budget PoE juste, ' + fmtNum(w) + ' W sur ' + fmtNum(budget, 0) + ' W.' });
+        else if (!unknown.length) out.push({ niveau: 'ok', message: name + ' : ' + fmtNum(w) + ' W PoE réservés sur ' + fmtNum(budget, 0) + ' W.' });
+        if (unknown.length) out.push({ niveau: 'alerte', message: name + ' : budget PoE vérifiable en partie seulement (' + fmtNum(w) + ' W connus sur ' + fmtNum(budget, 0) + ' W). Consommation non renseignée pour ' + unknown.join(', ') + ' : à relever sur les notices, puis à saisir dans la connectique.' });
+      }
       return out;
     }
     if (c.type === 'poe') {
@@ -352,7 +500,8 @@
     if (!data || typeof data !== 'object') return ['Le fichier reco.json est vide ou mal formé.'];
     if (data.meta && data.meta.schema !== 2) w.push('reco.json : « meta.schema » doit valoir 2.');
     const qs = data.questions || [];
-    const known = new Set(['niveau']);
+    const known = new Set(['niveau', 'salle']);
+    const sal = (data.meta || {}).salles;
     const qIds = new Set();
     const niveaux = new Set((data.niveaux || []).map(n => n.id));
     if (!niveaux.size) w.push('reco.json : aucun niveau défini (« niveaux »).');
@@ -386,7 +535,9 @@
       } else w.push(where + ' : type « ' + q.type + ' » inconnu (choix ou nombre).');
       checkExpr(q.si, where + ' (condition d\'affichage)', known);
       qIds.add(q.id); known.add(q.id);
+      if (q.par_salle) for (let k = 1; k <= roomsMax(data); k++) { known.add(q.id + '_' + k); qIds.add(q.id + '_' + k); }
     });
+    if (sal && sal.nombre) { checkExpr(sal.nombre, 'meta.salles.nombre', known); checkExpr(sal.si, 'meta.salles.si', known); }
     for (const [id, prm] of Object.entries(data.parametres || {})) {
       if (!ID.test(id)) w.push('Paramètre « ' + id + ' » : identifiant invalide.');
       if (typeof prm.valeur !== 'number' || !isFinite(prm.valeur)) w.push('Paramètre « ' + id + ' » : valeur numérique attendue.');
@@ -399,11 +550,12 @@
       checkExpr(c.si, where + ' (condition)', known);
       checkExpr(c.formule, where, known);
       known.add(c.id);
+      if (c.par_salle) for (let k = 1; k <= roomsMax(data); k++) known.add(c.id + '_' + k);
     });
     const mIds = new Set();
     const reperes = new Set();
     const zones = new Set((data.zones || []).map(z => z.id));
-    (data.zones || []).forEach((z, i) => { if (!z.id || !/^[a-z][a-z0-9_]*$/.test(z.id)) w.push('Zone ' + (i + 1) + ' : identifiant invalide.'); if (!z.label) w.push('Zone « ' + (z.id || i + 1) + ' » : libellé manquant.'); });
+    (data.zones || []).forEach((z, i) => { if (!z.id || !/^[a-z][a-z0-9_]*(\{salle\})?[a-z0-9_]*$/.test(z.id)) w.push('Zone ' + (i + 1) + ' : identifiant invalide.'); if (z.par_salle && !String(z.id).includes('{salle}')) w.push('Zone « ' + z.id + ' » : une zone par salle doit contenir {salle} dans son identifiant.'); if (!z.label) w.push('Zone « ' + (z.id || i + 1) + ' » : libellé manquant.'); });
     (data.modules || []).forEach((m, i) => {
       const where = 'Bloc « ' + (m.titre || m.id || i + 1) + ' »';
       if (!m.id) w.push(where + ' : identifiant manquant.');
@@ -420,9 +572,10 @@
           if (!it.produit && !it.libelle) w.push(lw + ' : ni produit du catalogue, ni libellé hors catalogue.');
           else if (it.produit && !hasProduct(it.produit)) w.push(rw + ' : produit inconnu du catalogue (« ' + it.produit + ' »).');
           if (it.produit && it.libelle) w.push(lw + ' : choisir un produit du catalogue OU un libellé hors catalogue, pas les deux.');
-          if (it.repere != null && !/^[a-z][a-z0-9_]*$/.test(it.repere)) w.push(lw + ' : repère « ' + it.repere + ' » invalide (minuscules, chiffres et _).');
-          if (it.repere) reperes.add(it.repere);
-          if (it.zone && !zones.has(it.zone)) w.push(lw + ' : zone « ' + it.zone + ' » inconnue.');
+          if (it.repere != null && !/^[a-z][a-z0-9_]*$/.test(String(it.repere).replace(/\{(salle|maitre)\}/g, 'x'))) w.push(lw + ' : repère « ' + it.repere + ' » invalide (minuscules, chiffres et _).');
+          if (it.repere) reperes.add(String(it.repere).replace(/\{maitre\}/g, '{salle}'));
+          if (it.zone && !zones.has(String(it.zone).replace(/\{maitre\}/g, '{salle}'))) w.push(lw + ' : zone « ' + it.zone + ' » inconnue.');
+          if (it.repere && /\{salle\}/.test(it.repere) && !m.par_salle) w.push(lw + ' : « {salle} » dans le repère d\'un bloc qui n\'est pas « par salle ».');
           if (it.inclus && it.produit === it.inclus) w.push(lw + ' : un produit ne peut pas être inclus dans lui-même.');
           checkExpr(it.qte, rw + ', quantité', known);
         });
@@ -432,7 +585,8 @@
       const where = 'Contrôle ' + (i + 1) + ' (' + (c.type || '?') + ')';
       if (c.type === 'regle') { checkExpr(c.si, where, known); if (!c.message) w.push(where + ' : message manquant.'); }
       else if (c.type === 'reseau' || c.type === 'longueur') { if (!qIds.has(c.question)) w.push(where + ' : question « ' + c.question + ' » inconnue.'); }
-      else if (c.type !== 'poe') w.push(where + ' : type inconnu (poe, reseau, longueur, regle).');
+      else if (c.type === 'unicite') { if (!c.role) w.push(where + ' : rôle manquant.'); if (!c.message) w.push(where + ' : message manquant.'); checkExpr(c.si, where, known); }
+      else if (c.type !== 'poe' && c.type !== 'ports') w.push(where + ' : type inconnu (poe, ports, unicite, reseau, longueur, regle).');
     });
     const types = data.types_liaison || {};
     for (const [id, t] of Object.entries(types)) {
@@ -441,8 +595,9 @@
     }
     (data.liaisons || []).forEach((l, i) => {
       const where = 'Liaison ' + (i + 1) + ' (' + (l.de || '?') + ' → ' + (l.vers || '?') + ')';
-      if (!l.de || !reperes.has(l.de)) w.push(where + ' : repère de départ « ' + (l.de || '') + ' » absent des blocs.');
-      if (!l.vers || !reperes.has(l.vers)) w.push(where + ' : repère d\'arrivée « ' + (l.vers || '') + ' » absent des blocs.');
+      const norm = x => String(x || '').replace(/\{maitre\}/g, '{salle}');
+      if (!l.de || !reperes.has(norm(l.de))) w.push(where + ' : repère de départ « ' + (l.de || '') + ' » absent des blocs.');
+      if (!l.vers || !reperes.has(norm(l.vers))) w.push(where + ' : repère d\'arrivée « ' + (l.vers || '') + ' » absent des blocs.');
       if (l.de && l.de === l.vers) w.push(where + ' : départ et arrivée identiques.');
       if (!types[l.type]) w.push(where + ' : type « ' + (l.type || '') + ' » inconnu.');
       checkExpr(l.si, where + ' (condition)', known);
@@ -453,7 +608,7 @@
     return w;
   }
 
-  const API = { brandOf, parse: compile, evaluate, refs, test, value, fill, cleanAnswers, visibleQuestions, compute, validate, fmtNum };
+  const API = { questions, roomsCount, expandZones, brandOf, parse: compile, evaluate, refs, test, value, fill, cleanAnswers, visibleQuestions, compute, validate, fmtNum };
   root.DIAGSAV_RECO = API;
   if (typeof module === 'object' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

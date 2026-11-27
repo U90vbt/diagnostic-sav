@@ -50,6 +50,9 @@ const cases = [
   ['type de liaison inconnu', ({ edit }) => edit('reco.json', r => { r.liaisons[0].type = 'laser'; }), 1, 'type « laser » inconnu'],
   ['zone inconnue sur une ligne', ({ edit }) => edit('reco.json', r => { const it = r.modules.flatMap(m => m.regles).flatMap(g => g.items).find(x => x.zone); it.zone = 'grenier'; }), 1, 'zone « grenier » inconnue'],
   ['ligne sans produit ni libellé', ({ edit }) => edit('reco.json', r => { const it = r.modules.flatMap(m => m.regles).flatMap(g => g.items).find(x => x.libelle); delete it.libelle; }), 1, 'ni produit du catalogue, ni libellé'],
+  ['contrôle « unicite » sans rôle', ({ edit }) => edit('reco.json', r => { r.controles.find(c => c.type === 'unicite').role = ''; }), 1, 'rôle manquant'],
+  ['connectique : type de port inconnu', ({ edit }) => edit('connectique.json', c => { c.produits['yealink-avhub'].ports[0].type = 'fibre_magique'; }), 1, 'type de port « fibre_magique » inconnu'],
+  ['produit de source web sans lien', ({ edit }) => edit('decisions.json', d => { delete d.products['yealink-yps20'].url; }), 1, 'source web : « url » de la fiche constructeur obligatoire'],
   ['niveau inconnu dans une règle', ({ edit }) => edit('reco.json', r => { r.modules[0].regles[0].niveaux = ['luxe']; }), 1, 'niveau « luxe » inconnu'],
   ['produit en double (même marque et modèle)', ({ edit }) => edit('decisions.json', d => {
     const [id, p] = Object.entries(d.products)[0]; d.products[id + '-bis'] = { ...p };

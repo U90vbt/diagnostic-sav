@@ -114,7 +114,7 @@
     saveTimer = setTimeout(() => {
       try {
         E.savedAt = Date.now();
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 2, savedAt: E.savedAt, baseStamp: stamp(E.base.dec), recoStamp: stamp(E.base.reco), newsStamp: stamp(E.base.news), dec: E.dec, cat: E.cat, reco: E.reco, news: E.news }));
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 2, savedAt: E.savedAt, baseStamp: stamp(E.base.dec), recoStamp: stamp(E.base.reco), newsStamp: stamp(E.base.news), dec: E.dec, cat: E.cat, reco: E.reco, news: E.news, conn: E.conn }));
       } catch (err) {
         toast('Brouillon non enregistré : stockage du navigateur indisponible ou plein');
       }
@@ -155,15 +155,17 @@
       families: diffCollection(E.base.dec.families, E.dec.families),
       facts: diffCollection(E.base.cat.products, E.cat.products),
       reco: diffCollection(recoFlat(E.base.reco), recoFlat(E.reco)),
-      news: diffCollection(byId(E.base.news.items), byId(E.news.items))
+      news: diffCollection(byId(E.base.news.items), byId(E.news.items)),
+      conn: diffCollection(E.base.conn.produits || {}, E.conn.produits || {})
     };
     const metaChanged = fmt(E.base.dec.meta) !== fmt(E.dec.meta) || fmt(E.base.dec.categories) !== fmt(E.dec.categories);
-    d.total = ['symptoms', 'nodes', 'products', 'families', 'facts', 'reco', 'news']
+    d.total = ['symptoms', 'nodes', 'products', 'families', 'facts', 'reco', 'news', 'conn']
       .reduce((n, k) => n + d[k].added.length + d[k].removed.length + d[k].modified.length, 0) + (metaChanged ? 1 : 0);
     d.decChanged = fmt(E.base.dec) !== fmt(E.dec);
     d.catChanged = fmt(E.base.cat) !== fmt(E.cat);
     d.recoChanged = fmt(E.base.reco) !== fmt(E.reco);
     d.newsChanged = fmt(E.base.news) !== fmt(E.news);
+    d.connChanged = fmt(E.base.conn) !== fmt(E.conn);
     if (d.newsChanged && !(d.news.added.length + d.news.removed.length + d.news.modified.length)) d.total++;
     return d;
   }
@@ -222,6 +224,14 @@
     return el;
   }
 
+  /** Case à cocher avec libellé (et aide facultative). */
+  function checkField(label, checked, onChange, hint) {
+    const id = 'f' + (++fieldSeq);
+    return h('div', { class: 'ed-field ed-field--check' },
+      h('label', { class: 'ed-check', for: id },
+        h('input', { type: 'checkbox', id, checked: checked ? true : null, onchange: ev => onChange(ev.target.checked) }), ' ' + label),
+      hint ? h('p', { class: 'ed-hint' }, hint) : null);
+  }
   function selectInput(options, value, onChange, opts = {}) {
     const el = h('select', { class: 'ed-input ed-select' });
     const addOpt = (parent, o) => {
@@ -293,7 +303,7 @@
           h('p', { class: 'eyebrow' }, 'Procédures v' + ((E.dec.meta && E.dec.meta.version) || '?')),
           h('h1', { class: 'ed-title' }, 'Éditeur des procédures')),
         h('div', { class: 'ed-head__actions' },
-          h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => A.startPreview(E.dec, E.cat, '#/', { reco: E.reco, news: E.news }) }, 'Tester mes modifications'),
+          h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => A.startPreview(E.dec, E.cat, '#/', { reco: E.reco, news: E.news, conn: E.conn }) }, 'Tester mes modifications'),
           h('a', { class: 'btn btn--light', href: '#/editeur/export' }, 'Exporter'))),
       h('p', { class: 'ed-status', id: 'ed-status' }, statusText(diff, iss)),
       E.conflict ? h('p', { class: 'ed-alert' },
@@ -401,7 +411,7 @@
         h('div', { class: 'ed-actions' },
           h('a', { class: 'btn btn--small btn--ghost', href: '#/editeur/etape/' + encodeURIComponent(s.start) }, 'Modifier la question de départ'),
           s.start && E.dec.nodes[s.start] ? h('button', { type: 'button', class: 'btn btn--small btn--ghost',
-            onclick: () => A.startPreview(E.dec, E.cat, diagHref(s.id, [s.start]), { reco: E.reco, news: E.news }) }, 'Tester ce symptôme') : null,
+            onclick: () => A.startPreview(E.dec, E.cat, diagHref(s.id, [s.start]), { reco: E.reco, news: E.news, conn: E.conn }) }, 'Tester ce symptôme') : null,
           deleteButton('sym:' + s.id, 'Supprimer ce symptôme', () => {
             E.dec.symptoms = E.dec.symptoms.filter(x => x !== s);
             changed(false);
@@ -501,6 +511,8 @@
         E.dec = data; toast('✓ ' + file.name + ' chargé comme procédures (decisions.json)');
       } else if (Array.isArray(data.questions) && Array.isArray(data.modules)) {
         E.reco = data; toast('✓ ' + file.name + ' chargé comme recommandations (reco.json)');
+      } else if (data.produits && data.types_port) {
+        E.conn = data; toast('✓ ' + file.name + ' chargé comme connectique (connectique.json)');
       } else if (Array.isArray(data.items) && data.categories) {
         E.news = data; toast('✓ ' + file.name + ' chargé comme veille (news.json)');
       } else if (data.products && !data.nodes) {
@@ -555,7 +567,7 @@
         d.total ? h('ul', { class: 'ed-summary' },
           line('Symptômes', d.symptoms), line('Questions et résultats', d.nodes), line('Produits', d.products),
           line('Familles', d.families), line('Caractéristiques (catalogue)', d.facts),
-          line('Recommandations (reco.json)', d.reco), line('Veille (news.json)', d.news))
+          line('Recommandations (reco.json)', d.reco), line('Veille (news.json)', d.news), line('Connectique (connectique.json)', d.conn))
           : h('p', { class: 'ed-hint' }, 'Aucune modification par rapport aux fichiers publiés.'),
         iss.length ? h('p', { class: 'ed-alert' }, iss.length + ' point' + (iss.length > 1 ? 's' : '') + ' à corriger avant publication. ', h('a', { href: '#/editeur/verif' }, 'Voir la vérification')) : null,
         d.decChanged || d.catChanged ? field('Numéro de version', textInput(version, v => { version = v; }), 'Affiché en haut à droite du site (« Procédures v… ») pour vérifier que les tablettes sont à jour.') : null,
@@ -564,6 +576,7 @@
           h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => download('catalogue.json', exportedCatalogue()) }, 'Télécharger catalogue.json'),
           h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => download('reco.json', exportedSimple(E.reco, 'recoChanged')) }, 'Télécharger reco.json'),
           h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => download('news.json', exportedSimple(E.news, 'newsChanged')) }, 'Télécharger news.json'),
+          h('button', { type: 'button', class: 'btn btn--ghost', onclick: () => download('connectique.json', exportedSimple(E.conn, 'connChanged')) }, 'Télécharger connectique.json'),
           h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => copy(exportedDecisions(version)) }, 'Copier decisions.json'))),
       newImagesCard(),
       h('section', { class: 'ed-card' },
@@ -583,7 +596,7 @@
           h('label', { class: 'btn btn--small btn--ghost', for: 'ed-import' }, 'Importer un fichier JSON…'),
           deleteButton('reset', 'Abandonner le brouillon', () => {
             clearDraft();
-            E.dec = clone(E.base.dec); E.cat = clone(E.base.cat); E.reco = clone(E.base.reco); E.news = clone(E.base.news); E.savedAt = null; E.conflict = false;
+            E.dec = clone(E.base.dec); E.cat = clone(E.base.cat); E.reco = clone(E.base.reco); E.news = clone(E.base.news); E.conn = clone(E.base.conn); E.savedAt = null; E.conflict = false;
             toast('Brouillon abandonné : retour aux fichiers publiés');
             render(E.route, E.root);
           }))));
@@ -767,7 +780,7 @@
           const path = owner && pathTo(owner, id);
           return path ? h('button', { type: 'button', class: 'btn btn--small btn--ghost',
             title: 'Ouvre le diagnostic sur cette étape, avec vos modifications',
-            onclick: () => A.startPreview(E.dec, E.cat, diagHref(owner.id, path), { reco: E.reco, news: E.news }) }, 'Tester à partir d\'ici') : null;
+            onclick: () => A.startPreview(E.dec, E.cat, diagHref(owner.id, path), { reco: E.reco, news: E.news, conn: E.conn }) }, 'Tester à partir d\'ici') : null;
         })(),
         deleteButton('node:' + id, 'Supprimer cette étape', () => {
           for (const m of Object.values(E.dec.nodes)) for (const o of m.options || []) if (o.next === id) o.next = '';
@@ -1084,7 +1097,9 @@
         field('Statut', selectInput([{ value: '', label: 'Validé' }, { value: 'draft', label: 'À valider (badge affiché)' }], pr.status || '',
           v => { if (v) pr.status = v; else delete pr.status; changed(false); }),
           '« À valider » : fiche issue d\'une source qui n\'est pas une notice constructeur.'),
+        field('Fiche constructeur (lien, facultatif)', textInput(pr.url, v => setOpt('url', v), { placeholder: 'https://…' }), 'Obligatoire quand la source est une page web (sans numéro de page) ; la fiche reste alors « À valider ».'),
         field('Identifiant', textInput(pid, () => {}, { readonly: true }), 'Fixé à la création (il figure dans les liens de l\'Assistant produit).')),
+      connCard(pid),
       h('section', { class: 'ed-card' },
         h('h2', { class: 'ed-h3' }, 'Caractéristiques (Assistant produit)'),
         h('p', { class: 'ed-hint' }, 'Courtes et factuelles, reformulées : « Luminosité 8000 lumens », « 48 ports PoE+ ». Pas de texte commercial ni de prix. Enregistrées dans catalogue.json.'),
@@ -1122,6 +1137,45 @@
           toast('Produit supprimé (et retiré des étapes qui le citaient)');
           A.navigate('#/editeur/produits');
         }))));
+  }
+
+  /** Connectique d'un produit (connectique.json) : ports, PoE, source. */
+  function connCard(pid) {
+    const has = !!E.conn.produits[pid];
+    const box = h('section', { class: 'ed-card' });
+    const draw = () => {
+      const c = E.conn.produits[pid];
+      const types = Object.entries(E.conn.types_port || {}).map(([value, label]) => ({ value, label }));
+      const normes = [{ value: '', label: 'Pas alimenté en PoE / inconnu' }, { value: 'poe', label: 'PoE (802.3af)' }, { value: 'poe+', label: 'PoE+ (802.3at)' }, { value: 'poe++3', label: 'PoE++ type 3' }, { value: 'poe++4', label: 'PoE++ type 4' }];
+      const sources = Object.entries(E.dec.sources || {}).map(([sid, src]) => ({ value: sid, label: src.title + (src.edition ? ' — ' + src.edition : '') }));
+      if (!c) {
+        box.replaceChildren(h('h2', { class: 'ed-h3' }, 'Connectique (synoptique, ports, PoE)'),
+          h('p', { class: 'ed-hint' }, 'Aucune connectique saisie. Elle sert au contrôle des ports et au budget PoE de l\'avant-vente.'),
+          h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { E.conn.produits[pid] = { ports: [], source: (E.dec.products[pid] || {}).source || '' }; changed(false); draw(); } }, '+ Saisir la connectique'));
+        return;
+      }
+      c.ports = c.ports || [];
+      box.replaceChildren(
+        h('h2', { class: 'ed-h3' }, 'Connectique (synoptique, ports, PoE)'),
+        h('p', { class: 'ed-hint' }, 'Uniquement des données lues dans un document : indiquez la source et la page (ou le lien de la fiche web, la saisie restant « À valider »).'),
+        ...c.ports.map((pt, i) => h('div', { class: 'ed-row' },
+          field('Type de port ' + (i + 1), selectInput(types, pt.type || '', v => { pt.type = v; changed(false); }, { placeholder: '— type —' })),
+          field('Nombre', textInput(pt.nombre, v => { const n = parseInt(v, 10); if (n > 0) pt.nombre = n; changed(false); }, { type: 'number', inputmode: 'numeric' })),
+          h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer le port ' + (i + 1), onclick: () => { c.ports.splice(i, 1); changed(false); draw(); } }, '✕')))),
+        h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { c.ports.push({ type: '', nombre: 1 }); changed(false); draw(); } }, '+ Port'),
+        h('div', { class: 'ed-row' },
+          field('Alimenté en PoE', selectInput(normes, c.poe || '', v => { if (v) c.poe = v; else delete c.poe; changed(false); })),
+          field('Budget PoE fourni (W, switchs)', textInput(c.poe_budget, v => { const n = Number(String(v).replace(',', '.')); if (String(v).trim() && n > 0) c.poe_budget = n; else delete c.poe_budget; changed(false); }, { type: 'number', inputmode: 'decimal' }))),
+        h('div', { class: 'ed-row' },
+          field('Source', selectInput(sources, c.source || '', v => { c.source = v; changed(false); }, { placeholder: '— source —' })),
+          field('Page', textInput(c.page, v => { const n = parseInt(v, 10); if (n > 0) c.page = n; else delete c.page; changed(false); }, { type: 'number', inputmode: 'numeric' })),
+          field('Lien (source web)', textInput(c.url, v => { if (v.trim()) c.url = v.trim(); else delete c.url; changed(false); }, { placeholder: 'https://…' }))),
+        field('Statut', selectInput([{ value: '', label: 'Validé' }, { value: 'draft', label: 'À valider' }], c.status || '', v => { if (v) c.status = v; else delete c.status; changed(false); })),
+        h('div', { class: 'ed-actions' }, deleteButton('conn:' + pid, 'Supprimer la connectique', () => { delete E.conn.produits[pid]; changed(false); draw(); })));
+    };
+    draw();
+    void has;
+    return box;
   }
 
   screens.products = screenProducts;
@@ -1230,7 +1284,7 @@
   const SYNTAX_HELP = 'Formules : nombres (2.5), textes entre guillemets ("conf"), réponses (jauge), calculs déjà définis, repères (p.micro_zone_m2), + - * / ( ), == != < <= > >=, et, ou, non, dans ["a", "b"], arrondi_sup(x), arrondi_inf(x), arrondi(x), min(a, b), max(a, b). Le mot niveau vaut essentiel, confort ou premium.';
 
   function testButton(label) {
-    return h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => A.startPreview(E.dec, E.cat, '#/recommander', { reco: E.reco, news: E.news }) }, label || 'Tester le parcours');
+    return h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => A.startPreview(E.dec, E.cat, '#/recommander', { reco: E.reco, news: E.news, conn: E.conn }) }, label || 'Tester le parcours');
   }
 
   function screenReco() {
@@ -1278,6 +1332,7 @@
         field('Décimales', textInput(c.decimales, v => { setOpt(c, 'decimales', v, true); changed(false); }, { type: 'number', inputmode: 'numeric' }))),
       field('Formule', exprInput(c.formule, v => { c.formule = v; changed(false); }, 'ex. longueur * largeur')),
       field('Uniquement si (facultatif)', exprInput(c.si, v => { setOpt(c, 'si', v); changed(false); }, 'ex. type == "conf"')),
+      checkField('Calcul fait pour chaque salle', !!c.par_salle, v => { if (v) c.par_salle = true; else delete c.par_salle; changed(false); }),
       h('div', { class: 'ed-row' },
         field('Source ou repère', textInput(c.source, v => { setOpt(c, 'source', v); changed(false); })),
         field('Statut', statusSelect(c))))),
@@ -1289,7 +1344,7 @@
       } }, '+ Ajouter un calcul'));
 
     // contrôles
-    const KTYPES = { poe: 'Budget PoE (outils.json)', reseau: 'Audio / vidéo sur IP sans réseau dédié', longueur: 'Longueur de liaison (outils.json)', regle: 'Règle libre' };
+    const KTYPES = { poe: 'Budget PoE (connectique, outils.json)', ports: 'Ports disponibles (connectique)', unicite: 'Un seul élément d\'un rôle', reseau: 'Audio / vidéo sur IP sans réseau dédié', longueur: 'Longueur de liaison (outils.json)', regle: 'Règle libre' };
     const ctrls = h('div', { class: 'ed-options' }, r.controles.map((c, i) => {
       const nbQ = r.questions.filter(q => q.type === 'nombre').map(q => ({ value: q.id, label: q.label || q.id }));
       const chQ = r.questions.filter(q => q.type === 'choix').map(q => ({ value: q.id, label: q.label || q.id }));
@@ -1308,7 +1363,13 @@
         field('Question « distance »', selectInput(nbQ, c.question || '', v => { c.question = v; changed(false); }, { placeholder: '— choisir —' })),
         field('Liaison (identifiant dans outils.json)', textInput(c.liaison, v => { c.liaison = v; changed(false); })),
         field('Libellé', textInput(c.libelle, v => { setOpt(c, 'libelle', v); changed(false); })))];
-      else fields = [h('p', { class: 'ed-hint' }, 'Additionne la puissance PoE des appareils (outils.json) et la compare au budget des switchs de la configuration.')];
+      else if (c.type === 'unicite') fields = [h('div', { class: 'ed-row' },
+        field('Rôle', textInput(c.role, v => { c.role = v.trim(); changed(false); }, { placeholder: 'ex. tablette_maitre' })),
+        field('Uniquement si', exprInput(c.si, v => { setOpt(c, 'si', v); changed(false); }, 'ex. cloison == "oui"'))),
+        field('Message si ce n\'est pas exactement un', textInput(c.message, v => { c.message = v; changed(false); })),
+        field('Message si tout va bien (facultatif)', textInput(c.ok, v => { setOpt(c, 'ok', v); changed(false); }))];
+      else if (c.type === 'ports') fields = [h('p', { class: 'ed-hint' }, 'Compte les liaisons arrivant sur chaque équipement (type de port du type de liaison) et les compare au nombre de ports de sa connectique.')];
+      else fields = [h('p', { class: 'ed-hint' }, 'Avec la connectique : puissance des appareils raccordés en PoE à chaque switch, comparée à son budget. Sinon : table PoE de la page Outils.')];
       return h('div', { class: 'ed-option' },
         h('div', { class: 'ed-option__head' }, h('span', { class: 'ed-option__key' }, String(i + 1)), h('strong', null, KTYPES[c.type] || c.type),
           h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer le contrôle ' + (i + 1),
@@ -1316,7 +1377,7 @@
         ...fields);
     }),
       h('div', { class: 'ed-actions' }, Object.entries(KTYPES).map(([t, l]) => h('button', { type: 'button', class: 'btn btn--small btn--ghost',
-        onclick: () => { r.controles.push(t === 'regle' ? { type: t, si: '', niveau: 'alerte', message: '' } : t === 'reseau' ? { type: t, question: '', sans: ['non'] } : t === 'longueur' ? { type: t, question: '', liaison: 'ethernet' } : { type: t }); changed(true); } }, '+ ' + l))));
+        onclick: () => { r.controles.push(t === 'unicite' ? { type: t, role: '', message: '' } : t === 'regle' ? { type: t, si: '', niveau: 'alerte', message: '' } : t === 'reseau' ? { type: t, question: '', sans: ['non'] } : t === 'longueur' ? { type: t, question: '', liaison: 'ethernet' } : { type: t }); changed(true); } }, '+ ' + l))));
 
     return h('div', null,
       h('section', { class: 'ed-card' },
@@ -1350,6 +1411,12 @@
       h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Liaisons et synoptique (' + (r.liaisons || []).length + ')'),
         h('p', { class: 'ed-hint' }, (r.zones || []).length + ' zone(s), ' + Object.keys(r.types_liaison || {}).length + ' type(s) de liaison.'),
         h('div', { class: 'ed-actions' }, h('a', { class: 'btn btn--small', href: '#/editeur/reco-liaisons' }, 'Modifier les liaisons, zones et types'))),
+      h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Projets à plusieurs salles'),
+        h('p', { class: 'ed-hint' }, 'Les questions, calculs, blocs et liaisons marqués « par salle » sont répétés pour chaque salle.'),
+        h('div', { class: 'ed-row' },
+          field('Nombre de salles (formule)', exprInput((r.meta.salles || {}).nombre, v => { r.meta.salles = r.meta.salles || {}; setOpt(r.meta.salles, 'nombre', v); changed(false); }, 'ex. nb_salles')),
+          field('Seulement si', exprInput((r.meta.salles || {}).si, v => { r.meta.salles = r.meta.salles || {}; setOpt(r.meta.salles, 'si', v); changed(false); }, 'ex. type == "salles"')),
+          field('Maximum', textInput((r.meta.salles || {}).max, v => { r.meta.salles = r.meta.salles || {}; const n = parseInt(v, 10); if (n > 0) r.meta.salles.max = n; else delete r.meta.salles.max; changed(false); }, { type: 'number', inputmode: 'numeric' })))),
       h('section', { class: 'ed-card' }, h('h2', { class: 'ed-h3' }, 'Marque imposée'),
         field('Question qui limite les remplacements à une marque', selectInput(r.questions.filter(q => q.type === 'choix').map(q => ({ value: q.id, label: q.label || q.id })), (r.meta && r.meta.question_marque) || '', v => { setOpt(r.meta, 'question_marque', v); changed(false); }, { placeholder: '— aucune —' }),
           'Renseignez la marque sur les réponses de cette question (écran de la question).')));
@@ -1393,6 +1460,8 @@
           field('Question posée', textInput(q.texte, v => { q.texte = v; changed(false); }))),
         field('Aide (facultatif)', textInput(q.aide, v => { setOpt(q, 'aide', v); changed(false); }, { multiline: true, rows: 2 })),
         field('Poser seulement si (facultatif)', exprInput(q.si, v => { setOpt(q, 'si', v); changed(false); }, 'ex. type == "conf"'), SYNTAX_HELP),
+        checkField('Question posée pour chaque salle (« par salle »)', !!q.par_salle, v => { if (v) q.par_salle = true; else delete q.par_salle; changed(false); },
+          'Dépliée en ' + q.id + '_1, ' + q.id + '_2… selon le nombre de salles ; dans un bloc par salle, « ' + q.id + ' » désigne la réponse de la salle en cours. {salle} dans le texte devient le numéro.'),
         ...body,
         h('div', { class: 'ed-actions' }, testButton('Tester'), deleteButton('recoq:' + id, 'Supprimer cette question', () => {
           r.questions = r.questions.filter(x => x !== q); changed(false); A.navigate('#/editeur/reco');
@@ -1412,7 +1481,8 @@
         field('Inclus dans (produit du catalogue)', selectInput(products, it.inclus || '', v => { setOpt(it, 'inclus', v); changed(false); }, { placeholder: '— non —' }))),
       h('div', { class: 'ed-row' },
         field('Repère (pour les liaisons)', textInput(it.repere, v => { setOpt(it, 'repere', v.trim()); changed(false); }, { placeholder: 'ex. s1_ecran' })),
-        field('Zone du synoptique', selectInput(zones, it.zone || '', v => { setOpt(it, 'zone', v); changed(false); }, { placeholder: '— aucune —' }))),
+        field('Zone du synoptique', selectInput(zones, it.zone || '', v => { setOpt(it, 'zone', v); changed(false); }, { placeholder: '— aucune —' })),
+        field('Rôle (contrôles)', textInput(it.role, v => { setOpt(it, 'role', v.trim()); changed(false); }, { placeholder: 'ex. tablette_maitre' }))),
       h('div', { class: 'ed-row' },
         field('Fiche constructeur (lien)', textInput(it.source, v => { setOpt(it, 'source', v.trim()); changed(false); }, { placeholder: 'https://…' })),
         field('Statut', statusSelect(it))));
@@ -1442,13 +1512,15 @@
         field('Type de liaison', selectInput(typeOpts, l.type || '', v => { l.type = v; changed(false); }, { placeholder: '— type —' })),
         field('Longueur en m (nombre ou formule)', exprInput(l.longueur, v => { const t = String(v).trim(); l.longueur = /^\d+(\.\d+)?$/.test(t) ? Number(t) : t; changed(false); }, 'ex. distance_baie')),
         field('Uniquement si (facultatif)', exprInput(l.si, v => { setOpt(l, 'si', v); changed(false); }, 'ex. distance_baie > 5'))),
-      field('Remarque (facultatif)', textInput(l.note, v => { setOpt(l, 'note', v); changed(false); })))),
+      field('Remarque (facultatif)', textInput(l.note, v => { setOpt(l, 'note', v); changed(false); })),
+      checkField('Liaison répétée pour chaque salle', !!l.par_salle, v => { if (v) l.par_salle = true; else delete l.par_salle; changed(false); }))),
       h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => { r.liaisons.push({ de: '', port_de: '', vers: '', port_vers: '', type: '', longueur: '' }); changed(false); draw(); } }, '+ Liaison'));
     draw();
     const zoneBox = h('div', { class: 'ed-options' });
     const drawZones = () => zoneBox.replaceChildren(...r.zones.map((z, i) => h('div', { class: 'ed-row' },
       field('Zone ' + (i + 1) + ' (colonne du synoptique)', textInput(z.label, v => { z.label = v; changed(false); })),
       field('Identifiant', textInput(z.id, v => { z.id = v.trim(); changed(false); }), 'Utilisé par les lignes des blocs.'),
+      checkField('Une colonne par salle', !!z.par_salle, v => { if (v) z.par_salle = true; else delete z.par_salle; changed(false); }),
       h('div', { class: 'ed-list__tools' },
         h('button', { type: 'button', class: 'ed-icon', 'aria-label': 'Monter la zone ' + (i + 1), disabled: i === 0 || null, onclick: () => { [r.zones[i - 1], r.zones[i]] = [r.zones[i], r.zones[i - 1]]; changed(false); drawZones(); } }, '↑'),
         h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer la zone ' + (i + 1), onclick: () => { r.zones.splice(i, 1); changed(false); drawZones(); } }, '✕')))),
@@ -1460,6 +1532,8 @@
       field('Type « ' + k + ' »', textInput(t.label, v => { t.label = v; changed(false); })),
       field('Longueur maximale : liaison de outils.json', textInput(t.liaison, v => { setOpt(t, 'liaison', v.trim()); changed(false); }, { placeholder: 'ex. ethernet, hdmi, usb2, hdbaset' })),
       field('Couleur', selectInput(COLORS, String(t.couleur || 0), v => { t.couleur = Number(v); changed(false); })),
+      field('Type de port compté', textInput(t.port, v => { setOpt(t, 'port', v.trim()); changed(false); }, { placeholder: 'ex. vch, poe_out' })),
+      checkField('Alimente en PoE', !!t.poe, v => { if (v) t.poe = true; else delete t.poe; changed(false); }),
       h('div', { class: 'ed-list__tools' }, h('button', { type: 'button', class: 'ed-icon ed-icon--danger', 'aria-label': 'Supprimer le type ' + k, onclick: () => { delete r.types_liaison[k]; changed(false); drawTypes(); } }, '✕')))),
       h('button', { type: 'button', class: 'btn btn--small btn--ghost', onclick: () => {
         const name = (prompt('Identifiant du nouveau type (minuscules et _) :', 'nouveau_type') || '').trim();
@@ -1527,6 +1601,8 @@
         h('div', { class: 'ed-row' },
           field('Titre du bloc', textInput(m.titre, v => { m.titre = v; changed(false); })),
           field('Règles appliquées', selectInput([{ value: '', label: 'La première règle vraie' }, { value: 'toutes', label: 'Toutes les règles vraies' }], m.mode || '', v => { setOpt(m, 'mode', v); changed(false); }))),
+        checkField('Bloc répété pour chaque salle', !!m.par_salle, v => { if (v) m.par_salle = true; else delete m.par_salle; changed(false); }, 'Les repères et zones peuvent contenir {salle} (numéro de la salle) et {maitre} (salle maître).'),
+        checkField('Respecter la marque imposée', !!m.filtre_marque, v => { if (v) m.filtre_marque = true; else delete m.filtre_marque; changed(false); }, 'Un produit d\'une autre marque est remplacé par un produit de la même famille de la marque imposée.'),
         h('p', { class: 'ed-hint' }, SYNTAX_HELP),
         box,
         h('div', { class: 'ed-actions' }, testButton('Tester'), deleteButton('recob:' + id, 'Supprimer ce bloc', () => {
@@ -1545,17 +1621,21 @@
     let pubReco, pubNews;
     try { pubReco = await A.loadPublishedJson('data/reco.json'); } catch (err) { console.warn('[DIAG·SAV] Éditeur : reco.json indisponible', err); pubReco = { meta: { schema: 2 }, niveaux: [], questions: [], parametres: {}, calculs: [], modules: [], controles: [] }; }
     try { pubNews = await A.loadPublishedJson('data/news.json'); } catch (err) { console.warn('[DIAG·SAV] Éditeur : news.json indisponible', err); pubNews = { meta: {}, categories: [], impacts: {}, items: [] }; }
-    E.base = { dec: pubDec, cat: pubCat, reco: pubReco, news: pubNews };
+    let pubConn;
+    try { pubConn = await A.loadPublishedJson('data/connectique.json'); } catch (err) { console.warn('[DIAG·SAV] Éditeur : connectique.json indisponible', err); pubConn = { meta: {}, types_port: {}, produits: {} }; }
+    E.base = { dec: pubDec, cat: pubCat, reco: pubReco, news: pubNews, conn: pubConn };
     const draft = readDraft();
     if (draft) {
       E.dec = draft.dec; E.cat = draft.cat; E.savedAt = draft.savedAt;
       E.reco = (draft.reco && draft.reco.meta && draft.reco.meta.schema === 2) ? draft.reco : clone(pubReco); E.news = draft.news || clone(pubNews);
+      E.conn = draft.conn || clone(pubConn);
       E.conflict = draft.baseStamp !== stamp(pubDec)
         || (draft.reco && draft.recoStamp && draft.recoStamp !== stamp(pubReco))
         || (draft.news && draft.newsStamp && draft.newsStamp !== stamp(pubNews));
     } else {
-      E.dec = clone(pubDec); E.cat = clone(pubCat); E.reco = clone(pubReco); E.news = clone(pubNews);
+      E.dec = clone(pubDec); E.cat = clone(pubCat); E.reco = clone(pubReco); E.news = clone(pubNews); E.conn = clone(pubConn);
     }
+    E.conn.produits = E.conn.produits || {}; E.conn.types_port = E.conn.types_port || {};
     E.news.items = E.news.items || [];
     E.dec.nodes = E.dec.nodes || {};
     E.dec.symptoms = E.dec.symptoms || [];

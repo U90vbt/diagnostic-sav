@@ -167,6 +167,56 @@
         return doc;
       },
       space(n = 8) { y -= n; return doc; },
+      /** Tableau : cols = [{ label, w (fraction de la largeur) }], rows = [[texte…]]. En-tête répété à chaque page. */
+      table(cols, rows, o = {}) {
+        const size = o.size || 8.5, lh = size * 1.3, pad = 3;
+        const ws = cols.map(c => c.w * contentW);
+        const xs = ws.map((_, i) => MARGIN + ws.slice(0, i).reduce((a, b) => a + b, 0));
+        const head = () => {
+          const lines = cols.map((c, i) => wrap(c.label, size, true, ws[i] - 2 * pad));
+          const hh = Math.max(...lines.map(l => l.length)) * lh + 2 * pad;
+          ensure(hh + lh * 2);
+          ops.push(rgb('#e9edf2') + ' rg ' + MARGIN + ' ' + (y - hh).toFixed(2) + ' ' + contentW.toFixed(2) + ' ' + hh.toFixed(2) + ' re f');
+          lines.forEach((ls, i) => ls.forEach((l, j) => textLine(l, xs[i] + pad, y - pad - (j + 1) * lh + size * 0.3, size, true, '#222222')));
+          y -= hh;
+        };
+        head();
+        for (const row of rows) {
+          const lines = row.map((cell, i) => wrap(cell == null ? '' : String(cell), size, false, ws[i] - 2 * pad));
+          const rh = Math.max(1, ...lines.map(l => l.length)) * lh + 2 * pad;
+          if (!ops || y - rh < MARGIN + FOOTER) { newPage(); head(); }
+          lines.forEach((ls, i) => ls.forEach((l, j) => textLine(l, xs[i] + pad, y - pad - (j + 1) * lh + size * 0.3, size, false, (o.colors && o.colors(row, i)) || '#111111')));
+          y -= rh;
+          ops.push(rgb('#d5dbe3') + ' RG 0.4 w ' + MARGIN + ' ' + y.toFixed(2) + ' m ' + (PAGE_W - MARGIN) + ' ' + y.toFixed(2) + ' l S');
+        }
+        y -= 6;
+        return doc;
+      },
+      /** Figure vectorielle (synoptique) : { W, H, zones, boxes, paths, legend, note }, mise à la largeur de la page. */
+      figure(m) {
+        const k = Math.min(1, contentW / m.W), fh = m.H * k;
+        if (!ops || y - fh < MARGIN + FOOTER) newPage();
+        const X = v => (MARGIN + v * k).toFixed(2), Y = v => (y - v * k).toFixed(2);
+        const rect = (x, yy, w, hh, fill, stroke) => ops.push(rgb(fill) + ' rg ' + rgb(stroke) + ' RG 0.6 w ' + X(x) + ' ' + Y(yy + hh) + ' ' + (w * k).toFixed(2) + ' ' + (hh * k).toFixed(2) + ' re B');
+        for (const z of m.zones) { rect(z.x, z.y, z.w, z.h, '#f1f3f6', '#b9c0ca'); textLine(z.label, +X(z.x + 12), +Y(z.y + 22), 13 * k, true, '#222222'); }
+        for (const p of m.paths) {
+          ops.push((p.dashed ? '[3 2] 0 d ' : '[] 0 d ') + rgb(p.color) + ' RG ' + (1.6 * k + 0.4).toFixed(2) + ' w ' + p.pts.map((pt, i) => X(pt[0]) + ' ' + Y(pt[1]) + (i ? ' l' : ' m')).join(' ') + ' S [] 0 d');
+        }
+        for (const b of m.boxes) {
+          rect(b.x, b.y, b.w, b.h, '#ffffff', '#8c95a1');
+          textLine(b.title, +X(b.x + 10), +Y(b.y + 18), 12 * k, true, '#111111');
+          textLine(b.sub, +X(b.x + 10), +Y(b.y + 34), 10.5 * k, false, '#555555');
+        }
+        for (const l of m.legend) {
+          ops.push(rgb(l.color) + ' RG 1.6 w ' + X(l.x) + ' ' + Y(l.y - 4) + ' m ' + X(l.x + 24) + ' ' + Y(l.y - 4) + ' l S');
+          textLine(l.label, +X(l.x + 32), +Y(l.y), 11 * k, false, '#333333');
+        }
+        if (m.note) textLine(m.note.text, +X(m.note.x), +Y(m.note.y), 10.5 * k, false, '#666666');
+        y -= fh + 8;
+        return doc;
+      },
+      /** Nouvelle page. */
+      page() { newPage(); return doc; },
 
       /** Assemble le fichier et renvoie un Blob application/pdf. */
       toBlob() {

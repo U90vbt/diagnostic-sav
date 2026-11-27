@@ -1,11 +1,16 @@
 {
   "meta": {
-    "version": "1.1.0",
+    "version": "1.2.0",
     "schema": 2,
     "updated": "2026-11-27",
     "title": "Recommandation avant-vente",
     "disclaimer": "Recommandation indicative calculée à partir de repères à valider : quantités et modèles à confirmer après repérage.",
-    "question_marque": "ecosysteme"
+    "question_marque": "ecosysteme",
+    "salles": {
+      "nombre": "nb_salles",
+      "max": 4,
+      "si": "type == \"salles\""
+    }
   },
   "niveaux": [
     {
@@ -45,7 +50,7 @@
         },
         {
           "id": "salles",
-          "label": "Deux salles divisibles (cloison amovible)"
+          "label": "Plusieurs salles (divisibles ou non)"
         }
       ]
     },
@@ -84,38 +89,69 @@
       "si": "type dans [\"conf\", \"reunion\"]"
     },
     {
-      "id": "surface_s1",
-      "label": "Surface salle 1",
+      "id": "nb_salles",
+      "label": "Nombre de salles",
       "type": "nombre",
-      "texte": "Surface de la salle 1 (celle qui pilote quand la cloison est ouverte) ?",
-      "unite": "m²",
-      "min": 6,
-      "max": 500,
-      "defaut": 44,
+      "texte": "Combien de salles faut-il équiper ?",
+      "unite": "salles",
+      "min": 1,
+      "max": 4,
+      "defaut": 2,
       "si": "type == \"salles\""
     },
     {
-      "id": "surface_s2",
-      "label": "Surface salle 2",
+      "id": "superficie",
+      "label": "Surface salle {salle}",
       "type": "nombre",
-      "texte": "Surface de la salle 2 ?",
+      "texte": "Surface de la salle {salle} ?",
       "unite": "m²",
       "min": 6,
       "max": 500,
-      "defaut": 50,
-      "si": "type == \"salles\""
+      "defaut": 45,
+      "si": "type == \"salles\"",
+      "par_salle": true
     },
     {
-      "id": "distance_baie",
-      "label": "Distance baie",
+      "id": "distance",
+      "label": "Distance baie – salle {salle}",
       "type": "nombre",
-      "texte": "Longueur de câble entre la baie technique et la salle la plus éloignée ?",
+      "texte": "Longueur de câble entre la baie technique et la salle {salle} ?",
       "unite": "m",
       "min": 1,
       "max": 300,
       "defaut": 20,
       "si": "type == \"salles\"",
+      "par_salle": true,
       "aide": "Par les chemins de câbles, descentes comprises. Sert à choisir entre câbles directs et prolongateurs, et à contrôler chaque liaison."
+    },
+    {
+      "id": "cloison",
+      "label": "Cloisons amovibles",
+      "type": "choix",
+      "texte": "Les salles peuvent-elles fusionner en une grande salle (cloisons amovibles) ?",
+      "options": [
+        {
+          "id": "oui",
+          "label": "Oui, salles divisibles"
+        },
+        {
+          "id": "non",
+          "label": "Non, salles indépendantes"
+        }
+      ],
+      "si": "type == \"salles\" et nb_salles >= 2"
+    },
+    {
+      "id": "salle_maitre",
+      "label": "Salle maître",
+      "type": "nombre",
+      "texte": "Quelle salle pilote la grande salle quand les cloisons sont ouvertes ?",
+      "unite": "",
+      "min": 1,
+      "max": 4,
+      "defaut": 1,
+      "si": "type == \"salles\" et cloison == \"oui\"",
+      "aide": "Seule sa tablette lance et contrôle la réunion en mode regroupé."
     },
     {
       "id": "surface",
@@ -187,9 +223,9 @@
     },
     {
       "id": "ecosysteme",
-      "label": "Écosystème",
+      "label": "Écosystème souhaité",
       "type": "choix",
-      "texte": "Une marque est-elle imposée pour la visio ?",
+      "texte": "Quel écosystème souhaitez-vous pour la visio ?",
       "options": [
         {
           "id": "yealink",
@@ -374,70 +410,35 @@
       "status": "draft"
     },
     {
-      "id": "surface_totale",
-      "label": "Surface en grande salle",
-      "formule": "surface_s1 + surface_s2",
-      "unite": "m²",
-      "decimales": 0,
-      "si": "type == \"salles\""
-    },
-    {
-      "id": "mic50_s1",
-      "label": "Micros CM50, salle 1",
-      "formule": "max(1, arrondi_sup(surface_s1 / p.cm50_surface_m2))",
+      "id": "mic50",
+      "label": "Micros CM50",
+      "formule": "max(1, arrondi_sup(superficie / p.cm50_surface_m2))",
       "unite": "",
       "decimales": 0,
       "si": "type == \"salles\"",
+      "par_salle": true,
       "source": "Un CM50 pour 78 m²",
       "status": "draft"
     },
     {
-      "id": "mic50_s2",
-      "label": "Micros CM50, salle 2",
-      "formule": "max(1, arrondi_sup(surface_s2 / p.cm50_surface_m2))",
+      "id": "mic20",
+      "label": "Micros CM20",
+      "formule": "max(1, arrondi_sup(superficie / p.cm20_surface_m2))",
       "unite": "",
       "decimales": 0,
       "si": "type == \"salles\"",
-      "source": "Un CM50 pour 78 m²",
-      "status": "draft"
-    },
-    {
-      "id": "mic20_s1",
-      "label": "Micros CM20, salle 1",
-      "formule": "max(1, arrondi_sup(surface_s1 / p.cm20_surface_m2))",
-      "unite": "",
-      "decimales": 0,
-      "si": "type == \"salles\"",
+      "par_salle": true,
       "source": "Un CM20 pour 28 m²",
       "status": "draft"
     },
     {
-      "id": "mic20_s2",
-      "label": "Micros CM20, salle 2",
-      "formule": "max(1, arrondi_sup(surface_s2 / p.cm20_surface_m2))",
+      "id": "hp",
+      "label": "Enceintes de plafond",
+      "formule": "max(2, arrondi_sup(superficie / p.hp_plafond_m2))",
       "unite": "",
       "decimales": 0,
       "si": "type == \"salles\"",
-      "source": "Un CM20 pour 28 m²",
-      "status": "draft"
-    },
-    {
-      "id": "hp_s1",
-      "label": "Enceintes de plafond, salle 1",
-      "formule": "max(2, arrondi_sup(surface_s1 / p.hp_plafond_m2))",
-      "unite": "",
-      "decimales": 0,
-      "si": "type == \"salles\"",
-      "source": "Une enceinte pour 12 m²",
-      "status": "draft"
-    },
-    {
-      "id": "hp_s2",
-      "label": "Enceintes de plafond, salle 2",
-      "formule": "max(2, arrondi_sup(surface_s2 / p.hp_plafond_m2))",
-      "unite": "",
-      "decimales": 0,
-      "si": "type == \"salles\"",
+      "par_salle": true,
       "source": "Une enceinte pour 12 m²",
       "status": "draft"
     }
@@ -1393,112 +1394,87 @@
     },
     {
       "id": "salles_visio",
-      "titre": "Teams Rooms (par salle)",
+      "titre": "Teams Rooms",
+      "par_salle": true,
       "mode": "toutes",
+      "filtre_marque": true,
       "regles": [
         {
           "si": "type == \"salles\"",
           "items": [
             {
               "produit": "yealink-mvc-s90",
-              "qte": 2,
-              "pourquoi": "Un système Microsoft Teams Rooms sur Windows par salle : MCore 4, MTouch Plus, AVHub, 2 caméras UVC86."
+              "qte": 1,
+              "pourquoi": "Teams Rooms sur Windows : MCore 4, MTouch Plus, AVHub, 2 caméras UVC86."
             },
             {
-              "libelle": "MCore 4 · salle 1",
+              "produit": "yealink-mcore-4",
               "qte": 1,
               "pourquoi": "Mini-PC Teams Rooms, en baie.",
-              "repere": "s1_mcore",
+              "repere": "s{salle}_mcore",
               "zone": "baie",
-              "inclus": "yealink-mvc-s90",
-              "source": "https://www.yealink.com/en/product-campare/microsoft-teams-rooms-mvcs90"
+              "inclus": "yealink-mvc-s90"
             },
             {
-              "libelle": "AVHub · salle 1",
+              "produit": "yealink-avhub",
               "qte": 1,
-              "pourquoi": "Maître des caméras quand la cloison est ouverte.",
-              "repere": "s1_avhub",
+              "pourquoi": "Caméras, PC de l'intervenant et fusion des salles.",
+              "repere": "s{salle}_avhub",
               "zone": "baie",
-              "inclus": "yealink-mvc-s90",
-              "source": "https://www.yealink.com/en/product-campare/microsoft-teams-rooms-mvcs90"
+              "inclus": "yealink-mvc-s90"
             },
             {
-              "libelle": "MCore 4 · salle 2",
-              "qte": 1,
-              "repere": "s2_mcore",
-              "zone": "baie",
-              "inclus": "yealink-mvc-s90",
-              "source": "https://www.yealink.com/en/product-campare/microsoft-teams-rooms-mvcs90"
-            },
-            {
-              "libelle": "AVHub · salle 2",
-              "qte": 1,
-              "pourquoi": "Passe en « Switch Mode » derrière l'AVHub de la salle 1.",
-              "repere": "s2_avhub",
-              "zone": "baie",
-              "inclus": "yealink-mvc-s90",
-              "source": "https://www.yealink.com/en/product-campare/microsoft-teams-rooms-mvcs90"
-            },
-            {
-              "libelle": "UVC86 avant",
+              "produit": "yealink-uvc86",
               "qte": 1,
               "pourquoi": "Au-dessus de l'écran : participants.",
-              "repere": "s1_cam_av",
-              "zone": "salle1",
-              "inclus": "yealink-mvc-s90",
-              "source": "https://www.yealink.com/en/product-campare/microsoft-teams-rooms-mvcs90"
+              "repere": "s{salle}_cam_av",
+              "zone": "salle{salle}",
+              "inclus": "yealink-mvc-s90"
             },
             {
-              "libelle": "UVC86 arrière",
+              "produit": "yealink-uvc86",
               "qte": 1,
               "pourquoi": "Au fond : suivi du formateur et de l'écran.",
-              "repere": "s1_cam_ar",
-              "zone": "salle1",
-              "inclus": "yealink-mvc-s90",
-              "source": "https://www.yealink.com/en/product-campare/microsoft-teams-rooms-mvcs90"
-            },
-            {
-              "libelle": "MTouch Plus",
-              "qte": 1,
-              "pourquoi": "Tablette maître en grande salle.",
-              "repere": "s1_tab",
-              "zone": "salle1",
-              "inclus": "yealink-mvc-s90",
-              "source": "https://www.yealink.com/en/product-campare/microsoft-teams-rooms-mvcs90"
-            },
-            {
-              "libelle": "UVC86 avant",
-              "qte": 1,
-              "repere": "s2_cam_av",
-              "zone": "salle2",
-              "inclus": "yealink-mvc-s90",
-              "source": "https://www.yealink.com/en/product-campare/microsoft-teams-rooms-mvcs90"
-            },
-            {
-              "libelle": "UVC86 arrière",
-              "qte": 1,
-              "repere": "s2_cam_ar",
-              "zone": "salle2",
-              "inclus": "yealink-mvc-s90",
-              "source": "https://www.yealink.com/en/product-campare/microsoft-teams-rooms-mvcs90"
-            },
-            {
-              "libelle": "MTouch Plus",
-              "qte": 1,
-              "pourquoi": "Inactive quand la cloison est ouverte.",
-              "repere": "s2_tab",
-              "zone": "salle2",
-              "inclus": "yealink-mvc-s90",
-              "source": "https://www.yealink.com/en/product-campare/microsoft-teams-rooms-mvcs90"
+              "repere": "s{salle}_cam_ar",
+              "zone": "salle{salle}",
+              "inclus": "yealink-mvc-s90"
             }
-          ],
-          "note": "Fusion des salles : les deux AVHub reliés par leur port Codec, celui de la salle 1 maître (fonction « Divisible Room » Yealink, à confirmer avec Yealink)."
+          ]
+        },
+        {
+          "si": "type == \"salles\" et cloison == \"oui\" et salle == salle_maitre",
+          "items": [
+            {
+              "produit": "yealink-mtouch-plus",
+              "qte": 1,
+              "pourquoi": "Tablette maître : seule à piloter la grande salle.",
+              "repere": "s{salle}_tab",
+              "zone": "salle{salle}",
+              "inclus": "yealink-mvc-s90",
+              "role": "tablette_maitre"
+            }
+          ]
+        },
+        {
+          "si": "type == \"salles\" et non (cloison == \"oui\" et salle == salle_maitre)",
+          "items": [
+            {
+              "produit": "yealink-mtouch-plus",
+              "qte": 1,
+              "pourquoi": "Tablette de la salle.",
+              "repere": "s{salle}_tab",
+              "zone": "salle{salle}",
+              "inclus": "yealink-mvc-s90"
+            }
+          ]
         }
       ]
     },
     {
       "id": "salles_affichage",
-      "titre": "Écrans interactifs",
+      "titre": "Écran interactif",
+      "par_salle": true,
+      "filtre_marque": true,
       "regles": [
         {
           "si": "type == \"salles\"",
@@ -1507,15 +1483,8 @@
               "produit": "yealink-meetingboard-pro-65",
               "qte": 1,
               "pourquoi": "Version 86\" de la gamme MeetingBoard Pro, en écran tactile de la salle Teams.",
-              "repere": "s1_ecran",
-              "zone": "salle1"
-            },
-            {
-              "produit": "yealink-meetingboard-pro-65",
-              "qte": 1,
-              "pourquoi": "Version 86\" de la gamme MeetingBoard Pro.",
-              "repere": "s2_ecran",
-              "zone": "salle2"
+              "repere": "s{salle}_ecran",
+              "zone": "salle{salle}"
             }
           ]
         }
@@ -1523,30 +1492,24 @@
     },
     {
       "id": "salles_prolongateurs",
-      "titre": "Prolongateurs vers les écrans",
+      "titre": "Prolongateurs vers l'écran",
+      "par_salle": true,
       "regles": [
         {
-          "si": "type == \"salles\" et distance_baie > 5",
+          "si": "type == \"salles\" et distance > 5",
           "items": [
             {
-              "libelle": "Émetteur HDMI + USB · salle 1",
+              "libelle": "Émetteur HDMI + USB · salle {salle}",
               "qte": 1,
-              "pourquoi": "Baie à {distance_baie} m : au-delà d'un câble HDMI ou USB passif.",
-              "repere": "s1_tx",
+              "pourquoi": "Baie à {distance} m : au-delà d'un câble HDMI ou USB passif.",
+              "repere": "s{salle}_tx",
               "zone": "baie",
               "status": "draft"
             },
             {
-              "libelle": "Émetteur HDMI + USB · salle 2",
+              "libelle": "Récepteur HDMI + USB · salle {salle}",
               "qte": 1,
-              "repere": "s2_tx",
-              "zone": "baie",
-              "status": "draft"
-            },
-            {
-              "libelle": "Récepteurs HDMI + USB (derrière les écrans)",
-              "qte": 2,
-              "pourquoi": "Un par écran.",
+              "pourquoi": "Derrière l'écran.",
               "status": "draft"
             }
           ],
@@ -1557,6 +1520,8 @@
     {
       "id": "salles_micros",
       "titre": "Micros de plafond",
+      "par_salle": true,
+      "filtre_marque": true,
       "regles": [
         {
           "si": "type == \"salles\"",
@@ -1566,17 +1531,10 @@
           "items": [
             {
               "produit": "yealink-cm20",
-              "qte": "mic20_s1",
-              "pourquoi": "{mic20_s1} micro(s) pour {surface_s1} m².",
-              "repere": "s1_mic",
-              "zone": "salle1"
-            },
-            {
-              "produit": "yealink-cm20",
-              "qte": "mic20_s2",
-              "pourquoi": "{mic20_s2} micro(s) pour {surface_s2} m².",
-              "repere": "s2_mic",
-              "zone": "salle2"
+              "qte": "mic20",
+              "pourquoi": "{mic20} micro(s) pour {superficie} m².",
+              "repere": "s{salle}_mic",
+              "zone": "salle{salle}"
             }
           ]
         },
@@ -1585,17 +1543,10 @@
           "items": [
             {
               "produit": "yealink-cm50",
-              "qte": "mic50_s1",
-              "pourquoi": "{mic50_s1} micro(s) pour {surface_s1} m², Dante.",
-              "repere": "s1_mic",
-              "zone": "salle1"
-            },
-            {
-              "produit": "yealink-cm50",
-              "qte": "mic50_s2",
-              "pourquoi": "{mic50_s2} micro(s) pour {surface_s2} m², Dante.",
-              "repere": "s2_mic",
-              "zone": "salle2"
+              "qte": "mic50",
+              "pourquoi": "{mic50} micro(s) pour {superficie} m², Dante.",
+              "repere": "s{salle}_mic",
+              "zone": "salle{salle}"
             }
           ]
         }
@@ -1604,51 +1555,18 @@
     {
       "id": "salles_hp",
       "titre": "Enceintes de plafond",
+      "par_salle": true,
+      "filtre_marque": true,
       "regles": [
         {
           "si": "type == \"salles\"",
           "items": [
             {
               "produit": "yealink-cs10-d",
-              "qte": "hp_s1",
-              "pourquoi": "{hp_s1} enceintes Dante pour {surface_s1} m².",
-              "repere": "s1_hp",
-              "zone": "salle1"
-            },
-            {
-              "produit": "yealink-cs10-d",
-              "qte": "hp_s2",
-              "pourquoi": "{hp_s2} enceintes Dante pour {surface_s2} m².",
-              "repere": "s2_hp",
-              "zone": "salle2"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "salles_dsp",
-      "titre": "Traitement audio et cloison",
-      "mode": "toutes",
-      "regles": [
-        {
-          "si": "type == \"salles\"",
-          "items": [
-            {
-              "produit": "yealink-ap08",
-              "qte": 1,
-              "pourquoi": "Un seul DSP : USB 1 vers la salle 1, USB 2 vers la salle 2 ; préréglages séparé / regroupé.",
-              "repere": "ap08",
-              "zone": "baie"
-            },
-            {
-              "libelle": "Yealink YPS20 · capteur de cloison",
-              "qte": 1,
-              "pourquoi": "Capteur infrarouge en tête de cloison, sur le GPIO de l'AP08.",
-              "repere": "yps20",
-              "zone": "salle1",
-              "source": "https://www.yealink.com/en/product-detail/yps20",
-              "status": "draft"
+              "qte": "hp",
+              "pourquoi": "{hp} enceintes Dante pour {superficie} m².",
+              "repere": "s{salle}_hp",
+              "zone": "salle{salle}"
             }
           ]
         }
@@ -1657,26 +1575,18 @@
     {
       "id": "salles_partage",
       "titre": "PC de l'intervenant",
+      "par_salle": true,
+      "filtre_marque": true,
       "regles": [
         {
           "si": "type == \"salles\"",
           "items": [
             {
-              "libelle": "Yealink VCH51 Pro · salle 1",
+              "produit": "yealink-vch51-pro",
               "qte": 1,
               "pourquoi": "Un câble USB-C : partage 4K et BYOD ; compatible MVC S90.",
-              "repere": "s1_vch",
-              "zone": "salle1",
-              "source": "https://www.yealink.com/en/product-detail/vch51pro",
-              "status": "draft"
-            },
-            {
-              "libelle": "Yealink VCH51 Pro · salle 2",
-              "qte": 1,
-              "repere": "s2_vch",
-              "zone": "salle2",
-              "source": "https://www.yealink.com/en/product-detail/vch51pro",
-              "status": "draft"
+              "repere": "s{salle}_vch",
+              "zone": "salle{salle}"
             }
           ],
           "note": "VCH51 Pro : entrée USB-C seule ; un PC en HDMI seul demande un adaptateur."
@@ -1686,6 +1596,7 @@
     {
       "id": "salles_panneaux",
       "titre": "Réservation",
+      "par_salle": true,
       "regles": [
         {
           "si": "type == \"salles\"",
@@ -1695,10 +1606,49 @@
           "items": [
             {
               "produit": "yealink-roompanel-e2",
-              "qte": 2,
-              "pourquoi": "Un panneau de réservation par porte, LED d'occupation."
+              "qte": 1,
+              "pourquoi": "Panneau de réservation à la porte, LED d'occupation.",
+              "repere": "s{salle}_panneau",
+              "zone": "salle{salle}"
             }
           ]
+        }
+      ]
+    },
+    {
+      "id": "salles_dsp",
+      "titre": "Traitement audio",
+      "regles": [
+        {
+          "si": "type == \"salles\"",
+          "items": [
+            {
+              "produit": "yealink-ap08",
+              "qte": "arrondi_sup(nb_salles / 2)",
+              "pourquoi": "Un AP08 pour deux salles (2 ports USB-B) ; préréglages séparé / regroupé.",
+              "repere": "ap08",
+              "zone": "baie"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "salles_fusion",
+      "titre": "Fusion des salles",
+      "regles": [
+        {
+          "si": "type == \"salles\" et cloison == \"oui\"",
+          "items": [
+            {
+              "produit": "yealink-yps20",
+              "qte": "nb_salles - 1",
+              "pourquoi": "Un capteur par cloison, sur le GPIO de l'AP08.",
+              "repere": "yps20",
+              "zone": "salle{maitre}"
+            }
+          ],
+          "note": "Fusion : les AVHub reliés par leur port Codec, celui de la salle {salle_maitre} maître (fonction « Divisible Room » Yealink)."
         }
       ]
     },
@@ -1708,7 +1658,7 @@
       "mode": "toutes",
       "regles": [
         {
-          "si": "type == \"salles\"",
+          "si": "type == \"salles\" et nb_salles <= 2",
           "niveaux": [
             "essentiel",
             "confort"
@@ -1724,7 +1674,23 @@
           ]
         },
         {
-          "si": "type == \"salles\"",
+          "si": "type == \"salles\" et nb_salles > 2",
+          "niveaux": [
+            "essentiel",
+            "confort"
+          ],
+          "items": [
+            {
+              "produit": "netgear-gsm4248px",
+              "qte": 1,
+              "pourquoi": "40 ports PoE+, 960 W.",
+              "repere": "switch",
+              "zone": "baie"
+            }
+          ]
+        },
+        {
+          "si": "type == \"salles\" et nb_salles <= 2",
           "niveaux": [
             "premium"
           ],
@@ -1733,6 +1699,21 @@
               "produit": "netgear-gsm4328",
               "qte": 1,
               "pourquoi": "24 ports PoE+, 648 W, 4 SFP+ 10G.",
+              "repere": "switch",
+              "zone": "baie"
+            }
+          ]
+        },
+        {
+          "si": "type == \"salles\" et nb_salles > 2",
+          "niveaux": [
+            "premium"
+          ],
+          "items": [
+            {
+              "produit": "netgear-gsm4248ux",
+              "qte": 1,
+              "pourquoi": "40 ports PoE++, 2 880 W.",
               "repere": "switch",
               "zone": "baie"
             }
@@ -1796,25 +1777,52 @@
       "message": "Image de {diagonale_pouces} pouces nécessaire : au-delà des écrans proposés, envisager un vidéoprojecteur ou un mur LED."
     },
     {
+      "type": "ports"
+    },
+    {
+      "type": "unicite",
+      "si": "type == \"salles\" et cloison == \"oui\"",
+      "role": "tablette_maitre",
+      "message": "Une seule tablette maître doit piloter la grande salle",
+      "ok": "Une seule tablette maître : celle de la salle {salle_maitre}."
+    },
+    {
       "type": "regle",
-      "si": "type == \"salles\"",
+      "si": "type == \"salles\" et cloison == \"oui\" et salle_maitre > nb_salles",
+      "niveau": "erreur",
+      "message": "Salle maître {salle_maitre} : il n'y a que {nb_salles} salles."
+    },
+    {
+      "type": "regle",
+      "si": "type == \"salles\" et cloison == \"oui\" et 2 * nb_salles > 8",
+      "niveau": "erreur",
+      "message": "{nb_salles} salles × 2 caméras : au-delà des 8 caméras synchronisées annoncées pour un système MVC S90.",
+      "source": "Fiche Yealink MVC S90"
+    },
+    {
+      "type": "regle",
+      "si": "type == \"salles\" et cloison == \"oui\" et nb_salles > 2",
+      "niveau": "alerte",
+      "message": "Fusion de plus de deux salles : la fonction « Divisible Room » est décrite pour deux AVHub ; architecture à valider avec Yealink."
+    },
+    {
+      "type": "regle",
+      "si": "type == \"salles\" et cloison == \"oui\"",
       "niveau": "info",
-      "message": "Salles divisibles : faire confirmer par Yealink que le capteur YPS20 déclenche aussi la fusion des AVHub (pas seulement l'audio), et la durée de bascule (redémarrage des deux systèmes).",
+      "message": "Faire confirmer par Yealink que le capteur YPS20 déclenche aussi la fusion des AVHub (pas seulement l'audio), et la durée de bascule (redémarrage des systèmes).",
       "source": "Fonction « Divisible Room » Yealink"
     }
   ],
   "zones": [
     {
-      "id": "salle1",
-      "label": "Salle 1 · maître"
+      "id": "salle{salle}",
+      "label": "Salle {salle}",
+      "par_salle": true,
+      "maitre": "maître"
     },
     {
       "id": "baie",
       "label": "Baie technique"
-    },
-    {
-      "id": "salle2",
-      "label": "Salle 2"
     }
   ],
   "types_liaison": {
@@ -1831,17 +1839,21 @@
     "usb": {
       "label": "USB",
       "liaison": "usb2",
-      "couleur": 5
+      "couleur": 5,
+      "port": "usb_b"
     },
     "vch": {
       "label": "VCH vers l'AVHub",
       "liaison": "ethernet",
-      "couleur": 2
+      "couleur": 2,
+      "port": "vch"
     },
     "reseau": {
       "label": "Réseau PoE / Dante",
       "liaison": "ethernet",
-      "couleur": 3
+      "couleur": 3,
+      "port": "poe_out",
+      "poe": true
     },
     "gpio": {
       "label": "Contact GPIO",
@@ -1850,227 +1862,167 @@
     "codec": {
       "label": "Codec (fusion des salles)",
       "liaison": "ethernet",
-      "couleur": 6
+      "couleur": 6,
+      "port": "codec"
+    },
+    "lan": {
+      "label": "Réseau (sans PoE)",
+      "liaison": "ethernet",
+      "couleur": 7,
+      "port": "poe_out"
     }
   },
   "liaisons": [
     {
-      "de": "s1_cam_av",
+      "de": "s{salle}_cam_av",
       "port_de": "VCH",
-      "vers": "s1_avhub",
+      "vers": "s{salle}_avhub",
       "port_vers": "VCH",
       "type": "vch",
-      "longueur": "distance_baie"
+      "longueur": "distance",
+      "par_salle": true
     },
     {
-      "de": "s1_cam_ar",
+      "de": "s{salle}_cam_ar",
       "port_de": "VCH",
-      "vers": "s1_avhub",
+      "vers": "s{salle}_avhub",
       "port_vers": "VCH",
       "type": "vch",
-      "longueur": "distance_baie"
+      "longueur": "distance",
+      "par_salle": true
     },
     {
-      "de": "s1_vch",
+      "de": "s{salle}_vch",
       "port_de": "RJ45",
-      "vers": "s1_avhub",
+      "vers": "s{salle}_avhub",
       "port_vers": "VCH",
       "type": "vch",
-      "longueur": "distance_baie",
-      "note": "Raccordement à confirmer sur la notice."
+      "longueur": "distance",
+      "note": "Raccordement à confirmer sur la notice.",
+      "par_salle": true
     },
     {
-      "de": "s1_mcore",
+      "de": "s{salle}_mcore",
       "port_de": "USB",
-      "vers": "s1_avhub",
+      "vers": "s{salle}_avhub",
       "port_vers": "USB-B",
       "type": "usb",
-      "longueur": "2"
+      "longueur": "2",
+      "par_salle": true
     },
     {
-      "de": "s1_mcore",
+      "de": "s{salle}_mcore",
       "port_de": "HDMI + USB",
-      "vers": "s1_tx",
+      "vers": "s{salle}_tx",
       "port_vers": "HDMI + USB",
       "type": "hdmi",
       "longueur": "2",
-      "si": "distance_baie > 5"
+      "si": "distance > 5",
+      "par_salle": true
     },
     {
-      "de": "s1_tx",
+      "de": "s{salle}_tx",
       "port_de": "RJ45",
-      "vers": "s1_ecran",
+      "vers": "s{salle}_ecran",
       "port_vers": "HDMI in + USB tactile",
       "type": "hdmi_usb_ext",
-      "longueur": "distance_baie",
-      "si": "distance_baie > 5"
+      "longueur": "distance",
+      "si": "distance > 5",
+      "par_salle": true
     },
     {
-      "de": "s1_mcore",
+      "de": "s{salle}_mcore",
       "port_de": "HDMI",
-      "vers": "s1_ecran",
+      "vers": "s{salle}_ecran",
       "port_vers": "HDMI in",
       "type": "hdmi",
-      "longueur": "distance_baie",
-      "si": "distance_baie <= 5"
+      "longueur": "distance",
+      "si": "distance <= 5",
+      "par_salle": true
     },
     {
-      "de": "s1_mcore",
+      "de": "s{salle}_mcore",
       "port_de": "USB",
-      "vers": "s1_ecran",
+      "vers": "s{salle}_ecran",
       "port_vers": "USB tactile",
       "type": "usb",
-      "longueur": "distance_baie",
-      "si": "distance_baie <= 5"
+      "longueur": "distance",
+      "si": "distance <= 5",
+      "par_salle": true
     },
     {
       "de": "ap08",
-      "port_de": "USB-B 1",
-      "vers": "s1_mcore",
+      "port_de": "USB-B",
+      "vers": "s{salle}_mcore",
       "port_vers": "USB",
       "type": "usb",
-      "longueur": "2"
-    },
-    {
-      "de": "s1_mic",
-      "port_de": "RJ45",
-      "vers": "switch",
-      "port_vers": "PoE+",
-      "type": "reseau",
-      "longueur": "distance_baie"
-    },
-    {
-      "de": "s1_hp",
-      "port_de": "RJ45",
-      "vers": "switch",
-      "port_vers": "PoE+",
-      "type": "reseau",
-      "longueur": "distance_baie"
-    },
-    {
-      "de": "s1_tab",
-      "port_de": "RJ45",
-      "vers": "switch",
-      "port_vers": "PoE+",
-      "type": "reseau",
-      "longueur": "distance_baie"
-    },
-    {
-      "de": "s1_mcore",
-      "port_de": "LAN",
-      "vers": "switch",
-      "port_vers": "1G",
-      "type": "reseau",
-      "longueur": "2"
-    },
-    {
-      "de": "s2_cam_av",
-      "port_de": "VCH",
-      "vers": "s2_avhub",
-      "port_vers": "VCH",
-      "type": "vch",
-      "longueur": "distance_baie"
-    },
-    {
-      "de": "s2_cam_ar",
-      "port_de": "VCH",
-      "vers": "s2_avhub",
-      "port_vers": "VCH",
-      "type": "vch",
-      "longueur": "distance_baie"
-    },
-    {
-      "de": "s2_vch",
-      "port_de": "RJ45",
-      "vers": "s2_avhub",
-      "port_vers": "VCH",
-      "type": "vch",
-      "longueur": "distance_baie",
-      "note": "Raccordement à confirmer sur la notice."
-    },
-    {
-      "de": "s2_mcore",
-      "port_de": "USB",
-      "vers": "s2_avhub",
-      "port_vers": "USB-B",
-      "type": "usb",
-      "longueur": "2"
-    },
-    {
-      "de": "s2_mcore",
-      "port_de": "HDMI + USB",
-      "vers": "s2_tx",
-      "port_vers": "HDMI + USB",
-      "type": "hdmi",
       "longueur": "2",
-      "si": "distance_baie > 5"
+      "par_salle": true
     },
     {
-      "de": "s2_tx",
-      "port_de": "RJ45",
-      "vers": "s2_ecran",
-      "port_vers": "HDMI in + USB tactile",
-      "type": "hdmi_usb_ext",
-      "longueur": "distance_baie",
-      "si": "distance_baie > 5"
-    },
-    {
-      "de": "s2_mcore",
-      "port_de": "HDMI",
-      "vers": "s2_ecran",
-      "port_vers": "HDMI in",
-      "type": "hdmi",
-      "longueur": "distance_baie",
-      "si": "distance_baie <= 5"
-    },
-    {
-      "de": "s2_mcore",
-      "port_de": "USB",
-      "vers": "s2_ecran",
-      "port_vers": "USB tactile",
-      "type": "usb",
-      "longueur": "distance_baie",
-      "si": "distance_baie <= 5"
-    },
-    {
-      "de": "ap08",
-      "port_de": "USB-B 2",
-      "vers": "s2_mcore",
-      "port_vers": "USB",
-      "type": "usb",
-      "longueur": "2"
-    },
-    {
-      "de": "s2_mic",
+      "de": "s{salle}_mic",
       "port_de": "RJ45",
       "vers": "switch",
       "port_vers": "PoE+",
       "type": "reseau",
-      "longueur": "distance_baie"
+      "longueur": "distance",
+      "par_salle": true
     },
     {
-      "de": "s2_hp",
+      "de": "s{salle}_hp",
       "port_de": "RJ45",
       "vers": "switch",
       "port_vers": "PoE+",
       "type": "reseau",
-      "longueur": "distance_baie"
+      "longueur": "distance",
+      "par_salle": true
     },
     {
-      "de": "s2_tab",
+      "de": "s{salle}_tab",
       "port_de": "RJ45",
       "vers": "switch",
       "port_vers": "PoE+",
       "type": "reseau",
-      "longueur": "distance_baie"
+      "longueur": "distance",
+      "par_salle": true
     },
     {
-      "de": "s2_mcore",
+      "de": "s{salle}_panneau",
+      "port_de": "RJ45",
+      "vers": "switch",
+      "port_vers": "PoE+",
+      "type": "reseau",
+      "longueur": "distance",
+      "par_salle": true
+    },
+    {
+      "de": "s{salle}_mcore",
       "port_de": "LAN",
       "vers": "switch",
       "port_vers": "1G",
-      "type": "reseau",
-      "longueur": "2"
+      "type": "lan",
+      "longueur": "2",
+      "par_salle": true
+    },
+    {
+      "de": "s{salle}_avhub",
+      "port_de": "Codec",
+      "vers": "s{maitre}_avhub",
+      "port_vers": "Codec",
+      "type": "codec",
+      "longueur": "2",
+      "si": "cloison == \"oui\" et salle != salle_maitre",
+      "par_salle": true
+    },
+    {
+      "de": "yps20",
+      "port_de": "Contact",
+      "vers": "ap08",
+      "port_vers": "GPIO",
+      "type": "gpio",
+      "longueur": "distance",
+      "si": "salle == salle_maitre",
+      "par_salle": true
     },
     {
       "de": "ap08",
@@ -2079,22 +2031,6 @@
       "port_vers": "PoE+",
       "type": "reseau",
       "longueur": "2"
-    },
-    {
-      "de": "s1_avhub",
-      "port_de": "Codec",
-      "vers": "s2_avhub",
-      "port_vers": "Codec",
-      "type": "codec",
-      "longueur": "2"
-    },
-    {
-      "de": "yps20",
-      "port_de": "Contact",
-      "vers": "ap08",
-      "port_vers": "GPIO",
-      "type": "gpio",
-      "longueur": "distance_baie"
     }
   ]
 }
